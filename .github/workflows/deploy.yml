@@ -15,8 +15,8 @@ jobs:
         fetch-depth: 0
     - name: Configure git
       run: |-
-        git config user.name  'ReaTeam Bot'
-        git config user.email 'reateam-bot@cfillion.ca'
+        git config user.name 'AmbroseBS Bot'
+        git config user.email 'bot@ambrosebs.com'
     - name: Install Pandoc
       run:  sudo apt-get install -yy pandoc
     - name: Set up Ruby
