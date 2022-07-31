@@ -4,6 +4,9 @@ on:
     branches: main
 jobs:
   reapack-index:
+    concurrency: 
+      group: ${{ github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
     - name: Fetch repository
