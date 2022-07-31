@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="frenchy64-reaper-scripts" commit="b991c33a618db46000061adcdcb6849b9f00774d">
+<index version="1" name="frenchy64-reaper-scripts" commit="d26549086162599ab4de7ac0417e3b8c56bf7c67">
   <category name="Example">
     <reapack name="frenchy64_Hello world.lua" type="script" desc="Hello world">
       <metadata>
@@ -17,7 +17,7 @@ Markdown
 ]]></description>
       </metadata>
       <version name="1.0" author="cfillion" time="2021-01-04T23:30:32Z">
-        <source main="main">https://github.com/frenchy64/frenchy64-reaper-scripts/raw/b991c33a618db46000061adcdcb6849b9f00774d/Example/frenchy64_Hello%20world.lua</source>
+        <source main="main">https://github.com/frenchy64/frenchy64-reaper-scripts/raw/d26549086162599ab4de7ac0417e3b8c56bf7c67/Example/frenchy64_Hello%20world.lua</source>
       </version>
     </reapack>
   </category>
