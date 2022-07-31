@@ -1,0 +1,38 @@
+name: deploy
+on:
+  push:
+    branches: main
+concurrency: 
+  group: deploy
+  cancel-in-progress: true
+jobs:
+  reapack-index:
+    if: ${{ false }}  # disable for now
+    runs-on: ubuntu-latest
+    steps:
+    - name: Fetch repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Configure git
+      run: |-
+        git config user.name 'AmbroseBS Bot'
+        git config user.email 'bot@ambrosebs.com'
+    - name: Install Pandoc
+      run:  sudo apt-get install -yy pandoc
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.0'
+    - name: Install reapack-index
+      run:  gem install reapack-index
+    - name: Install clojure tools
+      uses: DeLaGuardo/setup-clojure@10.2
+      with:
+        bb: 1.2.174
+    - run: ./compile.clj
+    - run: git add .
+    - name: Update index.xml
+      run:  reapack-index --commit
+    - name: Push changes
+      run:  git push
