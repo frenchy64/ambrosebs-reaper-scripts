@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="frenchy64-reaper-scripts" commit="d26549086162599ab4de7ac0417e3b8c56bf7c67">
+<index version="1" name="frenchy64-reaper-scripts" commit="a49a3b5ab39f8b070d2cff648c2caa32a686d845">
   <category name="Example">
-    <reapack name="frenchy64_Hello world.lua" type="script" desc="Hello world">
+    <reapack name="frenchy64_Hello world.lua" type="script" desc="frenchy64's Hello world">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
