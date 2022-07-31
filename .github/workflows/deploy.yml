@@ -2,11 +2,11 @@ name: deploy
 on:
   push:
     branches: main
+concurrency: 
+  group: deploy
+  cancel-in-progress: true
 jobs:
   reapack-index:
-    concurrency: 
-      group: ${{ github.ref }}
-      cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
     - name: Fetch repository
