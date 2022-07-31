@@ -22,6 +22,21 @@ Markdown
     </reapack>
   </category>
   <metadata>
-    <description>frenchy64's Reaper scripts</description>
+    <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs36 ReaPack Repository Template\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 reapack-index looks for package files in subfolders. The folder tree represents the package categories shown in ReaPack.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Each package file is expected to begin with a metadata header. See {\field{\*\fldinst{HYPERLINK "https://github.com/cfillion/reapack-index/wiki/Packaging-Documentation"}}{\fldrslt{\ul
+Packaging Documentation
+}}}
+ on reapack-index's wiki.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 The URL to import in ReaPack is {\field{\*\fldinst{HYPERLINK "https://github.com/frenchy64/frenchy64-reaper-scripts/raw/main/index.xml"}}{\fldrslt{\ul
+https://github.com/frenchy64/frenchy64-reaper-scripts/raw/main/index.xml
+}}}
+.\par}
+}
+]]></description>
   </metadata>
 </index>
