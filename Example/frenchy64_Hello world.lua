@@ -1,5 +1,5 @@
--- @description Hello world
--- @author cfillion
+-- @description frenchy64's Hello world
+-- @author frenchy64
 -- @version 1.0
 -- @about
 --   This is an example of a package file. It installs itself as a ReaScript that
