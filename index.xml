@@ -16,8 +16,8 @@ Markdown
 }
 ]]></description>
       </metadata>
-      <version name="1.0" author="cfillion" time="2021-01-04T23:30:32Z">
-        <source main="main">https://github.com/frenchy64/frenchy64-reaper-scripts/raw/d26549086162599ab4de7ac0417e3b8c56bf7c67/Example/frenchy64_Hello%20world.lua</source>
+      <version name="1.0" author="frenchy64" time="2022-07-31T23:30:32Z">
+        <source main="main">https://github.com/frenchy64/frenchy64-reaper-scripts/raw/e5ff7751c46076653c22ab89b8eae84d89db1176/Example/frenchy64_Hello%20world.lua</source>
       </version>
     </reapack>
   </category>
