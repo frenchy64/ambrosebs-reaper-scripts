@@ -167,22 +167,54 @@
   (println piano-E->B)
   )
 
-(defn midi-note->notation-name [n]
-  )
+(def midi-names ["C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A" "A#" "B"])
+(let [name-set (set midi-names)]
+  (defn midi-name? [n]
+    (contains? name-set n)))
 
-(def midi-note-names ["C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A" "A#" "B"])
-(assert (apply distinct? midi-note-names))
-(assert (= 12 (count midi-note-names)))
+(assert (apply distinct? midi-names))
+(assert (= 12 (count midi-names)))
 
-;; 21 => A0
-(def lowest-named-midi-note 21)
-(def lowest-named-midi-name "A")
-(def lowest-named-midi-octave 0)
+;; 0 => C-1
+(def lowest-midi-name (first midi-names))
+(def lowest-midi-octave -1)
+(def highest-midi-octave 9)
+(def lowest-midi-note 0)
+(def highest-midi-note 127)
 
-(deftest midi-note->notation-name-test
-  (doseq [[i n] (map 62)]
-    (testing [i n]
-      (is (= i n)))))
+(defn midi-number? [n]
+  (and (nat-int? n)
+       (<= lowest-midi-note n highest-midi-note)))
+
+(defn midi-octave? [o]
+  (<= -1 lowest-midi-note-octave ))
+
+(defn midi-coord? [[n o :as v]]
+  (and (vector? v)
+       (= 2 (count v))
+       (midi-name? n)
+       (midi-octave? o)))
+
+(defn midi-coord-str [[n o :as v]]
+  {:pre [(midi-coord? v)]}
+  (str n o))
+
+(deftest midi-coord-str-test
+  (is (= "C-1" (midi-coord-str ["C" -1])))
+  (is (= "C0" (midi-coord-str ["C" 0])))
+  (is (= "G9" (midi-coord-str ["G" 9]))))
+
+(defn midi-number->coord [n]
+  {:pre [(midi-number? n)]
+   :post [(midi-coord? %)]}
+  [(nth midi-names (mod n (count midi-names)))
+   (+ lowest-midi-note-octave
+      (quot n (count midi-names)))])
+
+(deftest midi-number->coord-test
+  (is (= "C-1" (midi-coord-str (midi-number->coord 0))))
+  (is (= "B1" (midi-coord-str (midi-number->coord 35))))
+  (is (= "G9" (midi-coord-str (midi-number->coord 127)))))
 
 (defn ascii-solution [solution]
   (let [lowest-midi (apply min (keys solution))]
