@@ -11,7 +11,6 @@ function InMusicalNotation(editor)
   return 2 == reaper.MIDIEditor_GetMode(editor)
 end
 
-debug_mode = true
 if debug_mode then
   reaper.ShowConsoleMsg("Running\n")
 end
@@ -26,6 +25,19 @@ function GoDown()
   else
     -- Edit: Decrease pitch cursor one semitone
     reaper.MIDIEditor_OnCommand(editor, 40050)
+  end
+end
+
+function GoUp()
+  editor = reaper.MIDIEditor_GetActive()
+  if InMusicalNotation(editor) then
+    -- Navigate: Move edit cursor left one measure
+    for i = 1,4,1 do
+      reaper.MIDIEditor_OnCommand(editor, 40683)
+    end
+  else
+    -- Edit: Increase pitch cursor one semitone
+    reaper.MIDIEditor_OnCommand(editor, 40049)
   end
 end
 
