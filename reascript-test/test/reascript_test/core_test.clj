@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [reascript-test.core :refer :all]
             [clojure.data :as data]
-            [clojure.pprint :refer [pprint] :as pp]))
+            [clojure.pprint :refer [pprint] :as pp]
+            [clojure.string :as str]))
 ;-- TODO suggest (or provide constrait for) middle for Virtual MIDI keyboard
 ;notation_name = "D5 Enharmonic Drum Notation"
 ;root = "D4"
@@ -31,27 +32,27 @@
    :root "D4"
    :virtual-midi-keyboard-middle "D5"
    :instruments {"C1" {:name "Crash High"},
-                  "C2" {:name "Crash Medium"},
-                  "CB" {:name "Cowbell"},
-                  "CH" {:name "China"},
-                  "HC" {:name "Hi-Hat Closed"},
-                  "HH" {:name "Hi-Hat Half"},
-                  "HO" {:name "Hi-Hat Open"},
-                  "HP" {:name "Hi-Hat Pedal"},
-                  "K1" {:name "Kick 1"},
-                  "K2" {:name "Kick 2"},
-                  "RB" {:name "Ride Bell"},
-                  "RE" {:name "Ride Edge"},
-                  "RM" {:name "Ride Middle"},
-                  "RS" {:name "Snare Rim Shot"},
-                  "SC" {:name "Snare Center"},
-                  "SP" {:name "Splash"},
-                  "SS" {:name "Snare Stick"},
-                  "T1" {:name "High Floor Tom"},
-                  "T2" {:name "High Tom"},
-                  "T3" {:name "Mid Tom"},
-                  "T4" {:name "Low Tom"},
-                  "T5" {:name "Very Low Tom"}}
+                 "C2" {:name "Crash Medium"},
+                 "CB" {:name "Cowbell"},
+                 "CH" {:name "China"},
+                 "HC" {:name "Hi-Hat Closed"},
+                 "HH" {:name "Hi-Hat Half"},
+                 "HO" {:name "Hi-Hat Open"},
+                 "HP" {:name "Hi-Hat Pedal"},
+                 "K1" {:name "Kick 1"},
+                 "K2" {:name "Kick 2"},
+                 "RB" {:name "Ride Bell"},
+                 "RE" {:name "Ride Edge"},
+                 "RM" {:name "Ride Middle"},
+                 "RS" {:name "Snare Rim Shot"},
+                 "SC" {:name "Snare Center"},
+                 "SP" {:name "Splash"},
+                 "SS" {:name "Snare Stick"},
+                 "T1" {:name "High Floor Tom"},
+                 "T2" {:name "High Tom"},
+                 "T3" {:name "Mid Tom"},
+                 "T4" {:name "Low Tom"},
+                 "T5" {:name "Very Low Tom"}}
    :notation-map {"D4" ["HP", "CB"]
                   "E4" ["K2"],
                   "F4" ["K1"],
@@ -137,25 +138,66 @@
              :printed-note "B#5"
              :accidental "sharp"}}))
 
-(let [midi-note-numbers (mapv :midi-note-number drum-notation-map1-solution)]
-  (assert (apply < midi-note-numbers) midi-note-numbers))
+;; https://asciiart.website/index.php?art=music/pianos
+;; by Alexander Craxton
 
-(defn multi-frequencies [c]
-  (into {} (remove (comp #{1} val))
-        (frequencies c)))
+(def piano-ascii
+  (str/join "\n"
+            ["_____________________________"
+             "|  | | | |  |  | | | | | |  |"
+             "|  | | | |  |  | | | | | |  |"
+             "|  | | | |  |  | | | | | |  |"
+             "|  |_| |_|  |  |_| |_| |_|  |"
+             "|   |   |   |   |   |   |   |"
+             "|   |   |   |   |   |   |   |"
+             "|___|___|___|___|___|___|___|"]))
 
-(let [constraint-names (mapcat identity (:notation-map drum-notation-map1))
-      solution-names (map :name drum-notation-map1-solution)]
-  (assert (apply distinct? constraint-names)
-          (multi-frequencies constraint-names))
-  (assert (apply distinct? solution-names)
-          (multi-frequencies solution-names))
-  (assert (= (set constraint-names) (set solution-names))
-          (let [[only-in-constraints only-in-solution] (data/diff constraint-names solution-names)]
-            (str "Only in constraints: " (pr-str only-in-constraints) "\n"
-                 "Only in solution: " (pr-str only-in-solution)))))
+(def piano-C->E
+  (str/join "\n"
+            (map #(subs % 0 13)
+                 (str/split-lines piano-ascii))))
 
+(def piano-E->B
+  (str/join "\n"
+            (map #(subs % 12)
+                 (str/split-lines piano-ascii))))
 
+(comment
+  (println piano-C->E)
+  (println piano-E->B)
+  )
+
+(defn midi-note->notation-name [n]
+  )
+
+(def midi-note-names ["C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A" "A#" "B"])
+(assert (apply distinct? midi-note-names))
+(assert (= 12 (count midi-note-names)))
+
+;; 21 => A0
+(def lowest-named-midi-note 21)
+(def lowest-named-midi-name "A")
+(def lowest-named-midi-octave 0)
+
+(deftest midi-note->notation-name-test
+  (doseq [[i n] (map 62)]
+    (testing [i n]
+      (is (= i n)))))
+
+(defn ascii-solution [solution]
+  (let [lowest-midi (apply min (keys solution))]
+    )
+  )
+
+(assert (apply distinct? (map :instrument-id (vals drum-notation-map1-solution))))
+;; TODO stronger consistency check by combining midi note number + accidental
+(assert (apply distinct? (map :printed-note (vals drum-notation-map1-solution))))
+
+(defn pprint-solution [solution]
+  )
+
+#_
 (deftest drum-notation-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+  (testing "Guitar Pro 8 mapping"
+    (is (= (infer-notation-mappings drum-notation-map1)
+           1))))
