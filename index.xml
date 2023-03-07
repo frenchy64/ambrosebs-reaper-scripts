@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="frenchy64-reaper-scripts" commit="92509755197d52fea74174265f026f1e1619d40c">
+<index version="1" name="frenchy64-reaper-scripts" commit="2571f0bde8e95531fb2bc7ceccc0ddff5a4df4af">
   <category name="Example">
     <reapack name="frenchy64_Hello world.lua" type="script" desc="frenchy64's Hello world">
       <metadata>
@@ -34,6 +34,20 @@ Markdown
       </metadata>
       <version name="1.0" author="frenchy64" time="2023-03-07T01:36:30Z">
         <source main="midi_editor">https://github.com/frenchy64/frenchy64-reaper-scripts/raw/92509755197d52fea74174265f026f1e1619d40c/MIDI%20Editor/ambrosebs_Go%20forward%204%20bars%20in%20Notation,%20otherwise%20decrease%20pitch%20cursor%20one%20semitone.lua</source>
+      </version>
+    </reapack>
+    <reapack name="ambrosebs_Inherit first accidentals.lua" type="script">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Ensure every note in a MIDI item shares the same accidentals (inherited from the first instance of that note).\par}
+}
+]]></description>
+      </metadata>
+      <version name="1.0" author="frenchy64" time="2023-03-07T08:30:01Z">
+        <source main="midi_editor">https://github.com/frenchy64/frenchy64-reaper-scripts/raw/2571f0bde8e95531fb2bc7ceccc0ddff5a4df4af/MIDI%20Editor/ambrosebs_Inherit%20first%20accidentals.lua</source>
       </version>
     </reapack>
   </category>
