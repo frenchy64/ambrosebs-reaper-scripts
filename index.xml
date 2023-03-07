@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="frenchy64-reaper-scripts" commit="b29b38409e443794662812831fad32db344eaa00">
+<index version="1" name="frenchy64-reaper-scripts" commit="db0efa94e2798cfaa2d1e2b81c7c92b729141b34">
   <category name="Example">
     <reapack name="frenchy64_Hello world.lua" type="script" desc="frenchy64's Hello world">
       <metadata>
@@ -18,6 +18,22 @@ Markdown
       </metadata>
       <version name="1.0" author="frenchy64" time="2022-07-31T23:30:32Z">
         <source main="main">https://github.com/frenchy64/frenchy64-reaper-scripts/raw/e5ff7751c46076653c22ab89b8eae84d89db1176/Example/frenchy64_Hello%20world.lua</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="Notation">
+    <reapack name="ambrosebs_Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone.lua" type="script" desc="Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone (match file name without extension and author)">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Intended to be assigned to the Down arrow in the MIDI Editor, this action simulates pressing Down in musical notation software such as Dorico by guessing how many bars the music is zoomed by. If in a different MIDI editor mode, decreases the pitch cursor, which goes "down" in that view.\par}
+}
+]]></description>
+      </metadata>
+      <version name="1.0" author="frenchy64" time="2023-03-07T01:30:20Z">
+        <source main="main">https://github.com/frenchy64/frenchy64-reaper-scripts/raw/db0efa94e2798cfaa2d1e2b81c7c92b729141b34/Notation/ambrosebs_Go%20forward%204%20bars%20in%20Notation,%20otherwise%20decrease%20pitch%20cursor%20one%20semitone.lua</source>
       </version>
     </reapack>
   </category>
