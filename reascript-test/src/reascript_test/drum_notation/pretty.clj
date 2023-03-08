@@ -130,7 +130,20 @@
         ;; check for Cb, Cbb, B#, B##
         starting-octave (-> soln first key midi-number->coord :octave)
         ending-octave (-> soln rseq first key midi-number->coord :octave)
-        annotations (update-keys soln #(-> % midi-number->coord :midi-name))]
-    (assert (= starting-octave ending-octave) "NYI")
-    (->piano-ascii starting-octave annotations)))
-
+        split-piano-octaves (mapv (fn [octave]
+                                    (let [annotations (into {} (keep (fn [[k v]]
+                                                                       (let [coord (midi-number->coord k)]
+                                                                         (when (= octave (:octave coord))
+                                                                           {(:midi-name coord) v}))))
+                                                            soln)]
+                                      (str/split-lines (->piano-ascii octave annotations))))
+                                  (range starting-octave (inc ending-octave)))
+        nlines (-> split-piano-octaves first count)]
+    (str/join "\n"
+              (map (fn [line]
+                     (apply str (concat (map (fn [ss]
+                                               (let [s (nth ss line)]
+                                                 (subs s 0 (dec (count s)))))
+                                             (pop split-piano-octaves))
+                                        (nth (peek split-piano-octaves) line))))
+                   (range nlines)))))

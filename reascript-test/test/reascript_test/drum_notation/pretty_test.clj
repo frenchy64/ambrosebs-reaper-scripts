@@ -100,4 +100,15 @@
                     "|___|___|___|___|___|___|___|"])
          (sut/pretty-solution
            (into (sorted-map)
-                 (select-keys gp8/drum-notation-map1-solution [62 63 64 65]))))))
+                 (select-keys gp8/drum-notation-map1-solution [62 63 64 65])))))
+
+  (is-string= (str/join "\n" ["_C4__________________________C5__________________________"
+                              "|  | |♮| |  |  | | | | | |  |  |♭| | |  |  | | | | | |  |"
+                              "|  | | | |  |  | | | | | |  |  |T| | |  |  | | | | | |  |"
+                              "|  | | | |  |  | | | | | |  |  |2| | |  |  | | | | | |  |"
+                              "|  |_| |_|  |  |_| |_| |_|  |  |_| |_|  |  |_| |_| |_|  |"
+                              "|   |HP |   |   |   |   |   |   |   |   |   |   |   |   |"
+                              "|___|___|___|___|___|___|___|___|___|___|___|___|___|___|"])
+              (sut/pretty-solution
+                (into (sorted-map)
+                      (select-keys gp8/drum-notation-map1-solution [62 73])))))

@@ -54,13 +54,6 @@
                 (+ lowest-midi-octave
                    (quot n (count midi-names)))))
 
-(defn solution? [m]
-  (and (map? m)
-       (sorted? m)
-       (pos? (count m))
-       (every? midi-number? (keys m))
-       (every? (every-pred :instrument-id :accidental) (vals m))))
-
 ;; TODO assert alphanumeric, no unicode
 (defn instrument-id? [id]
   (and (string? id)
@@ -75,3 +68,13 @@
 
 (defn reaper-accidental? [r]
   (contains? reaper-accidental->string r))
+
+(defn solution? [m]
+  (and (map? m)
+       (sorted? m)
+       (pos? (count m))
+       (every? midi-number? (keys m))
+       (every? (every-pred map?
+                           (comp instrument-id? :instrument-id)
+                           (comp reaper-accidental? :accidental))
+               (vals m))))
