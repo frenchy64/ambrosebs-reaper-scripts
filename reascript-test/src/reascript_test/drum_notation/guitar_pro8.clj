@@ -1,4 +1,5 @@
-(ns reascript-test.drum-notation.guitar-pro8)
+(ns reascript-test.drum-notation.guitar-pro8
+  (:require [reascript-test.drum-notation.rep :refer :all]))
 
 ;-- TODO suggest (or provide constrait for) middle for Virtual MIDI keyboard
 ;notation_name = "D5 Enharmonic Drum Notation"
@@ -24,8 +25,9 @@
 
 (def drum-notation-map1
   {:name "D5 Enharmonic Drum Notation"
-   :root "D4"
-   :virtual-midi-keyboard-middle "D5"
+   :root {:midi-name "D"
+          :octave 4}
+   ;:virtual-midi-keyboard-middle "D5"
    :instruments {"C1" {:name "Crash High"},
                  "C2" {:name "Crash Medium"},
                  "CB" {:name "Cowbell"},
@@ -61,6 +63,8 @@
                   "G5" ["HC", "HH", "HO", "C2"],
                   "A5" ["C1", "SP"],
                   "B5" ["CH"]}})
+
+(assert (notation-spec? drum-notation-map1))
 
 ;; :printed-note + :accidental are redundant for readability
 ;; {midi-note-number info}
@@ -133,6 +137,4 @@
              #_#_:printed-note "B#5"
              :accidental "sharp"}}))
 
-(assert (apply distinct? (map :instrument-id (vals drum-notation-map1-solution))))
-;; TODO stronger consistency check by combining midi note number + accidental
-;(assert (apply distinct? (map :printed-note (vals drum-notation-map1-solution))))
+(assert (solution? drum-notation-map1-solution))

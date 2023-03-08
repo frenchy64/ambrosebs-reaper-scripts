@@ -2,10 +2,6 @@
   (:require [clojure.data :as data]
             [clojure.string :as str]))
 
-;;;;;;;;;;;;;;;;;;;;;;
-;; MIDI representation
-;;;;;;;;;;;;;;;;;;;;;;
-
 (def midi-names ["C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A" "A#" "B"])
 (def midi-names-set (set midi-names))
 (defn midi-name? [n]
@@ -47,6 +43,15 @@
   {:pre [(midi-coord? v)]}
   (str midi-name octave))
 
+(defn parse-midi-name [s]
+  (let [trailing (Integer/parseInt (nth s (dec (count s))))
+        negative? (= \- (nth s (- (count s) 2)))
+        octave (cond-> trailing
+                 negative? -)
+        nme (subs s 0 (cond-> (dec (count s))
+                        negative? dec))]
+    (->midi-coord nme octave)))
+
 (defn midi-number->coord [n]
   {:pre [(midi-number? n)]
    :post [(midi-coord? %)]}
@@ -69,11 +74,34 @@
 (defn reaper-accidental? [r]
   (contains? reaper-accidental->string r))
 
+(defn instruments-map? [m]
+  (and (map? m)
+       (every? instrument-id? (keys m))
+       (every? (every-pred map? (comp string? :name))
+               (vals m))))
+
+(defn notation-constraints? [m]
+  (and (map? m)
+       (every? instrument-id? (keys m))
+       (every? (every-pred vector?
+                           #(every? instrument-id? %))
+               (vals m))))
+
+(defn notation-spec? [m]
+  (and (map? m)
+       (string? (:name m))
+       (midi-coord? (:root m))
+       (instruments-map? (:instruments m))
+       (notation-constraints? (:notation-map m))))
+
 (defn solution? [m]
   (and (map? m)
        (sorted? m)
        (pos? (count m))
        (every? midi-number? (keys m))
+       (apply distinct? (map :instrument-id (vals m)))
+       ;; TODO stronger consistency check by combining midi note number + accidental
+       ;(apply distinct? (map :printed-note (vals m)))
        (every? (every-pred map?
                            (comp instrument-id? :instrument-id)
                            (comp reaper-accidental? :accidental))
