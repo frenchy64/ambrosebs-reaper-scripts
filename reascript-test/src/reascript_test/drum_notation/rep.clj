@@ -92,9 +92,17 @@
        (every? (every-pred map? (comp string? :name))
                (vals m))))
 
+(defn midi-number-constraints? [m]
+  (and (map? m)
+       (sorted? m)
+       (every? midi-number? (keys m))
+       (every? (every-pred vector?
+                           #(every? instrument-id? %))
+               (vals m))))
+
 (defn notation-constraints? [m]
   (and (map? m)
-       (every? instrument-id? (keys m))
+       (every? parse-midi-coord (keys m))
        (every? (every-pred vector?
                            #(every? instrument-id? %))
                (vals m))))
@@ -118,3 +126,13 @@
                            (comp instrument-id? :instrument-id)
                            (comp reaper-accidental? :accidental))
                (vals m))))
+
+(defn coord-str-constraints->midi-number-constraints [cs]
+  {:pre [(notation-constraints? cs)]
+   :post [(midi-number-constraints? %)]}
+  (into (sorted-map)
+        (map (fn [[midi-coord-str v]]
+               (prn midi-coord-str)
+               {(-> midi-coord-str parse-midi-coord midi-coord->number)
+                v}))
+        cs))

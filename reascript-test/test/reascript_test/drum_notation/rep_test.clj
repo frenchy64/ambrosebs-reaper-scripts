@@ -2,6 +2,7 @@
   (:require [clojure.test :refer [deftest is testing]]
             [clojure.data :as data]
             [clojure.string :as str]
+            [reascript-test.drum-notation.guitar-pro8 :as gp8]
             [reascript-test.drum-notation.rep :as sut]))
 
 (deftest midi-coord-str-test
@@ -30,3 +31,19 @@
   (is (= 35 (sut/midi-coord->number {:midi-name "B" :octave 1})))
   (is (= 36 (sut/midi-coord->number {:midi-name "C" :octave 2})))
   (is (= 127 (sut/midi-coord->number {:midi-name "G" :octave 9}))))
+
+(deftest coord-str-constraints->midi-number-constraints-test
+  (is (= {62 ["HP" "CB"]
+          64 ["K2"]
+          65 ["K1"]
+          67 ["T5"]
+          69 ["T4"]
+          71 ["T3"]
+          72 ["RS" "SC" "SS"]
+          74 ["T2"]
+          76 ["T1"]
+          77 ["RM" "RB" "RE"]
+          79 ["HC" "HH" "HO" "C2"]
+          81 ["C1" "SP"]
+          83 ["CH"]}
+        (sut/coord-str-constraints->midi-number-constraints (:notation-map gp8/drum-notation-map1)))))
