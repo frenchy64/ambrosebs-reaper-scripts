@@ -4,6 +4,8 @@
             [clojure.data :as data]
             [clojure.pprint :refer [pprint] :as pp]
             [clojure.string :as str]))
+
+
 ;-- TODO suggest (or provide constrait for) middle for Virtual MIDI keyboard
 ;notation_name = "D5 Enharmonic Drum Notation"
 ;root = "D4"
@@ -167,6 +169,36 @@
        (every? midi-number? (keys m))
        (every? (every-pred :instrument-id :accidental) (vals m))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ASCII printing
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def example-piano-ascii
+  (str/join "\n"
+            ["_____________________________"
+             "|  | | | |  |  | | | | | |  |"
+             "|  | | | |  |  | | | | | |  |"
+             "|  | | | |  |  | | | | | |  |"
+             "|  |_| |_|  |  |_| |_| |_|  |"
+             "|   |   |   |   |   |   |   |"
+             "|___|___|___|___|___|___|___|"]))
+
+(def example-piano-C->E
+  (str/join "\n"
+            (map #(subs % 0 13)
+                 (str/split-lines example-piano-ascii))))
+
+(def example-piano-E->B
+  (str/join "\n"
+            (map #(subs % 12)
+                 (str/split-lines example-piano-ascii))))
+
+(comment
+  (println example-piano-C->E)
+  (println example-piano-E->B)
+  )
+
+
 ;; https://asciiart.website/index.php?art=music/pianos
 ;; by Alexander Craxton
 (def piano-ascii-template
@@ -208,6 +240,7 @@
    "B"  \b})
 
 (assert (= (set midi-names)
+           (set (keys note-name->piano-template-accidental))
            (set (keys note-name->piano-template-instrument-id))))
 
 (def all-piano-template-variables
@@ -233,9 +266,13 @@
           :a :a " |" :b :b " |\n|___|___|___|___|___|___|___|"]
          piano-ascii-kw-template)))
 
+(defn piano-ascii-instantiation? [replacements]
+  (and (map? replacements)
+       (every? char? (keys replacements))
+       (every? #(every? string? %) (vals replacements))))
+
 (defn instantiate-piano-ascii [replacements]
-  {:pre [(every? char? (keys replacements))
-         (every? #(every? string? %) (vals replacements))]}
+  {:pre [(piano-ascii-instantiation? replacements)]}
   (let [state (atom replacements)]
     (reduce (fn [acc template]
               (str acc
@@ -257,8 +294,17 @@
                                                \A ["𝄪"]})
                      "𝄪")))
 
-(defn ->piano-ascii [octave note-info]
-  {:pre [(midi-octave? octave)]}
+(defn piano-note-annotations? [annotations]
+  (and (map? annotations)
+       (every? midi-name? (keys annotations))
+       (every? (every-pred map?
+                           (comp instrument-id? :instrument-id)
+                           (comp reaper-accidental? :accidental))
+               (vals annotations))))
+
+(defn ->piano-ascii [octave annotations]
+  {:pre [(piano-note-annotations? annotations)
+         (midi-octave? octave)]}
   (let [padded-C-octave (-> ["C"] ;; can't be in template since C is a template variable
                             (into (mapv str (str octave))))
         padded-C-octave (cond-> padded-C-octave
@@ -281,7 +327,7 @@
                                                 (assert accidental-id note-name)
                                                 ;; flat => ["1" "𝄫"]
                                                 {accidental-id [astr]}))))))
-                           note-info)]
+                           annotations)]
     (instantiate-piano-ascii replacements)))
 
 (defn- str->str-join-expr [s]
@@ -327,31 +373,6 @@
                                               :accidental "natural"}})] 
                 (with-out-str
                   (print r)))))
-
-(def example-piano-ascii
-  (str/join "\n"
-            ["_____________________________"
-             "|  | | | |  |  | | | | | |  |"
-             "|  | | | |  |  | | | | | |  |"
-             "|  | | | |  |  | | | | | |  |"
-             "|  |_| |_|  |  |_| |_| |_|  |"
-             "|   |   |   |   |   |   |   |"
-             "|___|___|___|___|___|___|___|"]))
-
-(def example-piano-C->E
-  (str/join "\n"
-            (map #(subs % 0 13)
-                 (str/split-lines example-piano-ascii))))
-
-(def example-piano-E->B
-  (str/join "\n"
-            (map #(subs % 12)
-                 (str/split-lines example-piano-ascii))))
-
-(comment
-  (println example-piano-C->E)
-  (println example-piano-E->B)
-  )
 
 (assert (apply distinct? midi-names))
 (assert (= 12 (count midi-names)))
@@ -408,11 +429,15 @@
 
 (defn pretty-solution [soln]
   {:pre [(solution? soln)]}
-  (let [starting-midi-number (-> soln first key midi-number->coord)
-        C-in-this-octave-coord (-> starting-midi-number
-                                   midi-number->coord
-                                   (assoc :midi-name "C"))]
-    ))
+  (let [;; TODO include more octaves if enharmonic respellings spill outside these bounds
+        ;; check for Cb, Cbb, B#, B##
+        starting-octave (-> soln first key midi-number->coord :octave)
+        ending-octave (-> soln rseq first key midi-number->coord :octave)
+        annotations (update-keys soln (fn [[midi-num info]]
+                                        {(-> midi-num midi-number->coord :midi-name)
+                                         info}))]
+    (assert (= starting-octave ending-octave) "NYI")
+    (->piano-ascii starting-octave annotations)))
 
 (deftest pretty-solution-test
   (is (= (str/join "\n"
