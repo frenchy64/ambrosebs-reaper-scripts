@@ -67,6 +67,20 @@
                   "A5" ["C1", "SP"],
                   "B5" ["CH"]}})
 
+(defn instrument-id? [id]
+  (and (string? id)
+       (= 2 (count id))))
+
+(def reaper-accidental->string
+  {"flat" "♭"
+   "doubleflat" "𝄫"
+   "natural" "♮"
+   "sharp" "♯"
+   "doublesharp" "𝄪"})
+
+(defn reaper-accidental? [r]
+  (contains? reaper-accidental->string r))
+
 ;; :printed-note + :accidental are redundant for readability
 ;; {midi-note-number info}
 (def drum-notation-map1-solution
@@ -138,10 +152,170 @@
              :printed-note "B#5"
              :accidental "sharp"}}))
 
+(declare midi-number?)
+
+(defn solution? [m]
+  (and (map? m)
+       (sorted? m)
+       (pos? (count m))
+       (every? midi-number? (keys m))
+       (every? (every-pred :instrument-id :accidental) (vals m))))
+
 ;; https://asciiart.website/index.php?art=music/pianos
 ;; by Alexander Craxton
+(def piano-ascii-template
+  (str/join "\n"
+            ["_HHH_________________________"
+             "|1 |2|3|4|5 |6 |7|8|9|0|i|j |"
+             "|  |C| |D|  |  |F| |G| |A|  |"
+             "|  |C| |D|  |  |F| |G| |A|  |"
+             "|  |_| |_|  |  |_| |_| |_|  |"
+             "|cc |dd |ee |ff |gg |aa |bb |"
+             "|___|___|___|___|___|___|___|"]))
 
-(def piano-ascii
+(def note-name->piano-template-accidental
+  {"C"  \1
+   "C#" \2
+   "D"  \3
+   "D#" \4
+   "E"  \5
+   "F"  \6
+   "F#" \7
+   "G"  \8
+   "G#" \9
+   "A"  \0
+   "A#" \i
+   "B"  \j})
+
+(def note-name->piano-template-instrument-id
+  {"C"  \c
+   "C#" \C
+   "D"  \d
+   "D#" \D
+   "E"  \e
+   "F"  \f
+   "F#" \F
+   "G"  \g
+   "G#" \G
+   "A"  \a
+   "A#" \A
+   "B"  \b})
+
+(def all-piano-template-variables
+  (-> (set (vals note-name->piano-template-accidental))
+      (into (vals note-name->piano-template-instrument-id))
+      (conj \H)))
+
+(def piano-ascii-kw-template
+  (into [] (comp (map (fn [c]
+                        (cond-> c
+                          (all-piano-template-variables c) (-> str keyword))))
+                 (partition-by keyword?)
+                 (mapcat (fn [ps]
+                           (cond-> ps
+                             (char? (first ps)) (->> (apply str) list)))))
+        piano-ascii-template))
+
+(deftest piano-ascii-kw-template-test
+  (is (= ["_" :H :H :H "_________________________\n|"
+          :1 " |" :2 "|" :3 "|" :4 "|" :5 " |" :6 " |" :7 "|" :8 "|" :9 "|" :0 "|" :i "|" :j " |\n|  |"
+          :C "| |" :D "|  |  |" :F "| |" :G "| |" :A "|  |\n|  |" :C "| |" :D "|  |  |" :F "| |" :G "| |" :A
+          "|  |\n|  |_| |_|  |  |_| |_| |_|  |\n|" :c :c " |" :d :d " |" :e :e " |" :f :f " |" :g :g " |"
+          :a :a " |" :b :b " |\n|___|___|___|___|___|___|___|"]
+         piano-ascii-kw-template)))
+
+(defn instantiate-piano-ascii [replacements]
+  {:pre [(every? char? (keys replacements))]}
+  (let [state (atom replacements)]
+    (reduce (fn [acc template]
+              (str acc
+                   (if (simple-keyword? template)
+                     (let [k (first (name template))
+                           _ (assert (char? k) template)
+                           [prev-state] (swap-vals! state update k next)
+                           subst (-> prev-state (get k) first)]
+                       (or subst " "))
+                     template)))
+            ""
+            piano-ascii-kw-template)))
+
+(deftest instantiate-piano-ascii-test
+  (is (= (instantiate-piano-ascii {}))))
+
+(defn ->piano-ascii [octave note-info]
+  {:pre [(midi-octave? octave)]}
+  (let [padded-C-octave (str "C" ;; can't be in template since C means something else
+                           (let [s (str octave)]
+                             (cond-> s
+                               (= 1 (count s)) (str "_"))))
+        _ (assert (= 3 (count padded-C-octave)) octave)
+        replacements (into {\H padded-C-octave}
+                           (map (fn [[note-name {:keys [instrument-id accidental] :as info}]]
+                                  {:pre [(midi-name? note-name)
+                                         (instrument-id? instrument-id)
+                                         (reaper-accidental? accidental)
+                                         (= 2 (count info))]}
+                                  (let []
+                                    (-> (cond
+                                          ;; C => ["cc" "K1"]
+                                          (= 1 (count note-name)) {(first (str/lower-case note-name)) instrument-id}
+                                          ;; C# => ["C" "K"], ["C" "2"]
+                                          :else {(first note-name) instrument-id})
+                                        (into (when accidental
+                                                (let [astr (get reaper-accidental->string accidental)
+                                                      _ (assert astr accidental)
+                                                      accidental-id (get note-name->piano-template-accidental note-name)]
+                                                  (assert accidental-id note-name)
+                                                  ;; flat => ["1" "𝄫"]
+                                                  {accidental-id astr})))))))
+                           note-info)]
+    (instantiate-piano-ascii replacements)))
+
+(defn- str->str-join-expr [s]
+  (list 'str/join "\n" (str/split-lines s)))
+
+(defmacro is-string= [s1 s2]
+  `(let [s1# ~s1
+         s2# ~s2]
+     (is (= s1# s2#)
+         (pr-str (data/diff (str/split-lines s1#)
+                            (str/split-lines s2#))))))
+
+(deftest ->piano-ascii-test
+  (is-string= (str/join "\n"
+                        ["_C4__________________________"
+                         "|  | | | |  |  | | | |♭| |  |"
+                         "|  | | | |  |  | | | | | |  |"
+                         "|  | | | |  |  | | | | | |  |"
+                         "|  |_| |_|  |  |_| |_| |_|  |"
+                         "|   |   |   |   |   |K2 |   |"
+                         "|___|___|___|___|___|___|___|"])
+              (let [r (->piano-ascii 4 {"A" {:instrument-id "K2"
+                                             :accidental "flat"}})] 
+                (with-out-str
+                  (print r))))
+  (is-string= (str/join "\n"
+                        ["_C-1_________________________"
+                         "|  |𝄪|♮| |  |  | | | |♭|𝄪|♭ |"
+                         "|  |D| | |  |  | | | | |K|  |"
+                         "|  |2| | |  |  | | | | |1|  |"
+                         "|  |_| |_|  |  |_| |_| |_|  |"
+                         "|   |EE |   |   |   |K2 |C2 |"
+                         "|___|___|___|___|___|___|___|"])
+              (let [r (->piano-ascii -1 {"A" {:instrument-id "K2"
+                                              :accidental "flat"}
+                                         "A#" {:instrument-id "K1"
+                                               :accidental "doubleflat"}
+                                         "B" {:instrument-id "C2"
+                                              :accidental "flat"}
+                                         "C#" {:instrument-id "D2"
+                                               :accidental "doublesharp"}
+                                         "D" {:instrument-id "EE"
+                                               :accidental "natural"}})] 
+                (with-out-str
+                  (print r)))))
+
+(def example-piano-ascii
   (str/join "\n"
             ["_____________________________"
              "|  | | | |  |  | | | | | |  |"
@@ -152,19 +326,19 @@
              "|   |   |   |   |   |   |   |"
              "|___|___|___|___|___|___|___|"]))
 
-(def piano-C->E
+(def example-piano-C->E
   (str/join "\n"
             (map #(subs % 0 13)
-                 (str/split-lines piano-ascii))))
+                 (str/split-lines example-piano-ascii))))
 
-(def piano-E->B
+(def example-piano-E->B
   (str/join "\n"
             (map #(subs % 12)
-                 (str/split-lines piano-ascii))))
+                 (str/split-lines example-piano-ascii))))
 
 (comment
-  (println piano-C->E)
-  (println piano-E->B)
+  (println example-piano-C->E)
+  (println example-piano-E->B)
   )
 
 (def midi-names ["C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A" "A#" "B"])
@@ -187,46 +361,70 @@
        (<= lowest-midi-note n highest-midi-note)))
 
 (defn midi-octave? [o]
-  (<= -1 lowest-midi-note-octave ))
+  (<= lowest-midi-note-octave
+      o
+      highest-midi-octave))
 
-(defn midi-coord? [[n o :as v]]
-  (and (vector? v)
+(defn midi-coord? [{:keys [midi-name octave] :as v}]
+  (and (map v)
        (= 2 (count v))
-       (midi-name? n)
-       (midi-octave? o)))
+       (midi-name? midi-name)
+       (midi-octave? octave)))
 
-(defn midi-coord-str [[n o :as v]]
+(defn ->midi-coord [midi-name octave]
+  {:pre [(midi-name? midi-name)
+         (midi-octave? octave)]
+   :post [(midi-coord? %)]}
+  {:midi-name midi-name
+   :octave octave})
+
+(defn midi-coord-str [{:keys [midi-name octave] :as v}]
   {:pre [(midi-coord? v)]}
-  (str n o))
+  (str midi-name octave))
 
 (deftest midi-coord-str-test
-  (is (= "C-1" (midi-coord-str ["C" -1])))
-  (is (= "C0" (midi-coord-str ["C" 0])))
-  (is (= "G9" (midi-coord-str ["G" 9]))))
+  (is (= "C-1" (midi-coord-str (->midi-coord "C" -1))))
+  (is (= "C0" (midi-coord-str (->midi-coord "C" 0))))
+  (is (= "G9" (midi-coord-str (->midi-coord "G" 9)))))
 
 (defn midi-number->coord [n]
   {:pre [(midi-number? n)]
    :post [(midi-coord? %)]}
-  [(nth midi-names (mod n (count midi-names)))
-   (+ lowest-midi-note-octave
-      (quot n (count midi-names)))])
+  (->midi-coord (nth midi-names (mod n (count midi-names)))
+                (+ lowest-midi-note-octave
+                   (quot n (count midi-names)))))
 
 (deftest midi-number->coord-test
   (is (= "C-1" (midi-coord-str (midi-number->coord 0))))
   (is (= "B1" (midi-coord-str (midi-number->coord 35))))
   (is (= "G9" (midi-coord-str (midi-number->coord 127)))))
 
-(defn ascii-solution [solution]
-  (let [lowest-midi (apply min (keys solution))]
-    )
-  )
+(defn pretty-solution [soln]
+  {:pre [(solution? soln)]}
+  (let [starting-midi-number (-> soln first key midi-number->coord)
+        C-in-this-octave-coord (-> starting-midi-number
+                                   midi-number->coord
+                                   (assoc :midi-name "C"))]
+    ))
+
+(deftest pretty-solution-test
+  (is (= (str/join "\n"
+                   ["_C4__________________________"
+                    "|  | |♮|♭|♮ |♮ | | | | | |  |"
+                    "|  | | | |  |  | | | | | |  |"
+                    "|  | | |C|  |  | | | | | |  |"
+                    "|  | | |B|  |  | | | | | |  |"
+                    "|  |_| |_|  |  |_| |_| |_|  |"
+                    "|   |   |   |   |   |   |   |"
+                    "|   |HP |K2 |K1 |   |   |   |"
+                    "|___|___|___|___|___|___|___|"])
+          (pretty-solution
+           (into (sorted-map)
+                 (select-keys drum-notation-map1-solution [62 63 64 65]))))))
 
 (assert (apply distinct? (map :instrument-id (vals drum-notation-map1-solution))))
 ;; TODO stronger consistency check by combining midi note number + accidental
 (assert (apply distinct? (map :printed-note (vals drum-notation-map1-solution))))
-
-(defn pprint-solution [solution]
-  )
 
 #_
 (deftest drum-notation-test
