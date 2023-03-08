@@ -7,9 +7,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;
 
 (def midi-names ["C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A" "A#" "B"])
-(let [name-set (set midi-names)]
-  (defn midi-name? [n]
-    (contains? name-set n)))
+(def midi-names-set (set midi-names))
+(defn midi-name? [n]
+  (contains? midi-names-set n))
+
+(assert (apply distinct? midi-names))
+(assert (= 12 (count midi-names)))
 
 ;; 0 => C-1
 (def lowest-midi-name (first midi-names))
@@ -57,3 +60,18 @@
        (pos? (count m))
        (every? midi-number? (keys m))
        (every? (every-pred :instrument-id :accidental) (vals m))))
+
+;; TODO assert alphanumeric, no unicode
+(defn instrument-id? [id]
+  (and (string? id)
+       (= 2 (count id))))
+
+(def reaper-accidental->string
+  {"flat" "♭"
+   "doubleflat" "𝄫"
+   "natural" "♮"
+   "sharp" "♯"
+   "doublesharp" "𝄪"})
+
+(defn reaper-accidental? [r]
+  (contains? reaper-accidental->string r))
