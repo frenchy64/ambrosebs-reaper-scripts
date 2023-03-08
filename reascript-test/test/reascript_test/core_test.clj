@@ -67,6 +67,7 @@
                   "A5" ["C1", "SP"],
                   "B5" ["CH"]}})
 
+;; TODO assert alphanumeric, no unicode
 (defn instrument-id? [id]
   (and (string? id)
        (= 2 (count id))))
@@ -152,6 +153,11 @@
              :printed-note "B#5"
              :accidental "sharp"}}))
 
+(def midi-names ["C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A" "A#" "B"])
+(let [name-set (set midi-names)]
+  (defn midi-name? [n]
+    (contains? name-set n)))
+
 (declare midi-number?)
 
 (defn solution? [m]
@@ -201,6 +207,9 @@
    "A#" \A
    "B"  \b})
 
+(assert (= (set midi-names)
+           (set (keys note-name->piano-template-instrument-id))))
+
 (def all-piano-template-variables
   (-> (set (vals note-name->piano-template-accidental))
       (into (vals note-name->piano-template-instrument-id))
@@ -225,7 +234,8 @@
          piano-ascii-kw-template)))
 
 (defn instantiate-piano-ascii [replacements]
-  {:pre [(every? char? (keys replacements))]}
+  {:pre [(every? char? (keys replacements))
+         (every? #(every? string? %) (vals replacements))]}
   (let [state (atom replacements)]
     (reduce (fn [acc template]
               (str acc
@@ -234,20 +244,25 @@
                            _ (assert (char? k) template)
                            [prev-state] (swap-vals! state update k next)
                            subst (-> prev-state (get k) first)]
+                       (when subst (assert (string? subst) (pr-str (class subst))))
                        (or subst " "))
                      template)))
             ""
             piano-ascii-kw-template)))
 
 (deftest instantiate-piano-ascii-test
-  (is (= (instantiate-piano-ascii {}))))
+  (is (= example-piano-ascii
+         (instantiate-piano-ascii {\H ["_" "_" "_"]})))
+  (is (str/includes? (instantiate-piano-ascii {\H ["_" "_" "_"]
+                                               \A ["𝄪"]})
+                     "𝄪")))
 
 (defn ->piano-ascii [octave note-info]
   {:pre [(midi-octave? octave)]}
-  (let [padded-C-octave (str "C" ;; can't be in template since C means something else
-                           (let [s (str octave)]
-                             (cond-> s
-                               (= 1 (count s)) (str "_"))))
+  (let [padded-C-octave (-> ["C"] ;; can't be in template since C is a template variable
+                            (into (mapv str (str octave))))
+        padded-C-octave (cond-> padded-C-octave
+                          (= 2 (count padded-C-octave)) (conj "_"))
         _ (assert (= 3 (count padded-C-octave)) octave)
         replacements (into {\H padded-C-octave}
                            (map (fn [[note-name {:keys [instrument-id accidental] :as info}]]
@@ -255,19 +270,17 @@
                                          (instrument-id? instrument-id)
                                          (reaper-accidental? accidental)
                                          (= 2 (count info))]}
-                                  (let []
-                                    (-> (cond
-                                          ;; C => ["cc" "K1"]
-                                          (= 1 (count note-name)) {(first (str/lower-case note-name)) instrument-id}
-                                          ;; C# => ["C" "K"], ["C" "2"]
-                                          :else {(first note-name) instrument-id})
-                                        (into (when accidental
-                                                (let [astr (get reaper-accidental->string accidental)
-                                                      _ (assert astr accidental)
-                                                      accidental-id (get note-name->piano-template-accidental note-name)]
-                                                  (assert accidental-id note-name)
-                                                  ;; flat => ["1" "𝄫"]
-                                                  {accidental-id astr})))))))
+                                  (-> ;; C => {\c ["K" "1"]}
+                                      {(get note-name->piano-template-instrument-id note-name)
+                                       ;; TODO allow unicode in instrument-id. figure out how to split by unicode char.
+                                       (mapv str instrument-id)}
+                                      (into (when accidental
+                                              (let [astr (get reaper-accidental->string accidental)
+                                                    _ (assert astr accidental)
+                                                    accidental-id (get note-name->piano-template-accidental note-name)]
+                                                (assert accidental-id note-name)
+                                                ;; flat => ["1" "𝄫"]
+                                                {accidental-id [astr]}))))))
                            note-info)]
     (instantiate-piano-ascii replacements)))
 
@@ -296,7 +309,7 @@
                   (print r))))
   (is-string= (str/join "\n"
                         ["_C-1_________________________"
-                         "|  |𝄪|♮| |  |  | | | |♭|𝄪|♭ |"
+                         "|  |𝄪|♮| |  |  | | | |♭|𝄫|♭ |"
                          "|  |D| | |  |  | | | | |K|  |"
                          "|  |2| | |  |  | | | | |1|  |"
                          "|  |_| |_|  |  |_| |_| |_|  |"
@@ -311,7 +324,7 @@
                                          "C#" {:instrument-id "D2"
                                                :accidental "doublesharp"}
                                          "D" {:instrument-id "EE"
-                                               :accidental "natural"}})] 
+                                              :accidental "natural"}})] 
                 (with-out-str
                   (print r)))))
 
@@ -322,7 +335,6 @@
              "|  | | | |  |  | | | | | |  |"
              "|  | | | |  |  | | | | | |  |"
              "|  |_| |_|  |  |_| |_| |_|  |"
-             "|   |   |   |   |   |   |   |"
              "|   |   |   |   |   |   |   |"
              "|___|___|___|___|___|___|___|"]))
 
@@ -340,11 +352,6 @@
   (println example-piano-C->E)
   (println example-piano-E->B)
   )
-
-(def midi-names ["C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A" "A#" "B"])
-(let [name-set (set midi-names)]
-  (defn midi-name? [n]
-    (contains? name-set n)))
 
 (assert (apply distinct? midi-names))
 (assert (= 12 (count midi-names)))
