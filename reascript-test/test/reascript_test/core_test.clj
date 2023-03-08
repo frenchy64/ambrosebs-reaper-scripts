@@ -5,6 +5,66 @@
             [clojure.pprint :refer [pprint] :as pp]
             [clojure.string :as str]))
 
+;;;;;;;;;;;;;;;;;;;;;;
+;; MIDI representation
+;;;;;;;;;;;;;;;;;;;;;;
+
+(def midi-names ["C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A" "A#" "B"])
+(let [name-set (set midi-names)]
+  (defn midi-name? [n]
+    (contains? name-set n)))
+
+;; 0 => C-1
+(def lowest-midi-name (first midi-names))
+(def lowest-midi-octave -1)
+(def highest-midi-octave 9)
+(def lowest-midi-note 0)
+(def highest-midi-note 127)
+
+(defn midi-number? [n]
+  (and (nat-int? n)
+       (<= lowest-midi-note n highest-midi-note)))
+
+(defn midi-octave? [o]
+  (<= lowest-midi-octave
+      o
+      highest-midi-octave))
+
+(defn midi-coord? [{:keys [midi-name octave] :as v}]
+  (and (map v)
+       (= 2 (count v))
+       (midi-name? midi-name)
+       (midi-octave? octave)))
+
+(defn ->midi-coord [midi-name octave]
+  {:pre [(midi-name? midi-name)
+         (midi-octave? octave)]
+   :post [(midi-coord? %)]}
+  {:midi-name midi-name
+   :octave octave})
+
+(defn midi-coord-str [{:keys [midi-name octave] :as v}]
+  {:pre [(midi-coord? v)]}
+  (str midi-name octave))
+
+(deftest midi-coord-str-test
+  (is (= "C-1" (midi-coord-str (->midi-coord "C" -1))))
+  (is (= "C0" (midi-coord-str (->midi-coord "C" 0))))
+  (is (= "G9" (midi-coord-str (->midi-coord "G" 9)))))
+
+(defn midi-number->coord [n]
+  {:pre [(midi-number? n)]
+   :post [(midi-coord? %)]}
+  (->midi-coord (nth midi-names (mod n (count midi-names)))
+                (+ lowest-midi-octave
+                   (quot n (count midi-names)))))
+
+(deftest midi-number->coord-test
+  (is (= "C-1" (midi-coord-str (midi-number->coord 0))))
+  (is (= "B1" (midi-coord-str (midi-number->coord 35))))
+  (is (= "G9" (midi-coord-str (midi-number->coord 127))))
+  (is (thrown? AssertionError (midi-coord-str (midi-number->coord -1))))
+  (is (thrown? AssertionError (midi-coord-str (midi-number->coord 128)))))
 
 ;-- TODO suggest (or provide constrait for) middle for Virtual MIDI keyboard
 ;notation_name = "D5 Enharmonic Drum Notation"
@@ -89,78 +149,71 @@
 (def drum-notation-map1-solution
   (into (sorted-map)
         {62 {:instrument-id "HP",
-             :printed-note "D4"
+             #_#_:printed-note "D4"
              :accidental "natural"},
          63 {:instrument-id "CB",
-             :printed-note "Db4"
+             #_#_:printed-note "Db4"
              :accidental "flat"},
          64 {:instrument-id "K2",
-             :printed-note "E4"
+             #_#_:printed-note "E4"
              :accidental "natural"},
          65 {:instrument-id "K1",
-             :printed-note "F4"
+             #_#_:printed-note "F4"
              :accidental "natural"},
          66 {:instrument-id "T5",
-             :printed-note "Gb4"
+             #_#_:printed-note "Gb4"
              :accidental "flat"}
          67 {:instrument-id "T4",
-             :printed-note "Abb4"
+             #_#_:printed-note "Abb4"
              :accidental "doubleflat"}
          69 {:instrument-id "T3"
-             :printed-note "Bbb4"
+             #_#_:printed-note "Bbb4"
              :accidental "doubleflat"}
          70 {:instrument-id "SC"
-             :printed-note "Cbb5"
+             #_#_:printed-note "Cbb5"
              :accidental "doubleflat"}
          71 {:instrument-id "SS"
-             :printed-note "Cb5"
+             #_#_:printed-note "Cb5"
              :accidental "flat"}
          72 {:instrument-id "SR"
-             :printed-note "C5"
+             #_#_:printed-note "C5"
              :accidental "natural"}
          73 {:instrument-id "T2"
-             :printed-note "Db5"
+             #_#_:printed-note "Db5"
              :accidental "flat"}
          74 {:instrument-id "T1"
-             :printed-note "Ebb5"
+             #_#_:printed-note "Ebb5"
              :accidental "doubleflat"}
          75 {:instrument-id "RB"
-             :printed-note "Fbb5"
+             #_#_:printed-note "Fbb5"
              :accidental "doubleflat"}
          76 {:instrument-id "RE"
-             :printed-note "Fb5"
+             #_#_:printed-note "Fb5"
              :accidental "flat"}
          77 {:instrument-id "RM"
-             :printed-note "F5"
+             #_#_:printed-note "F5"
              :accidental "natural"}
          78 {:instrument-id "HH"
-             :printed-note "Gb5"
+             #_#_:printed-note "Gb5"
              :accidental "flat"}
          79 {:instrument-id "HC"
-             :printed-note "G5"
+             #_#_:printed-note "G5"
              :accidental "natural"}
          80 {:instrument-id "HO"
-             :printed-note "G#5"
+             #_#_:printed-note "G#5"
              :accidental "sharp"}
          81 {:instrument-id "C2"
-             :printed-note "G##5"
+             #_#_:printed-note "G##5"
              :accidental "doublesharp"}
          82 {:instrument-id "C1"
-             :printed-note "A#5"
+             #_#_:printed-note "A#5"
              :accidental "sharp"}
          83 {:instrument-id "SP"
-             :printed-note "A##5"
+             #_#_:printed-note "A##5"
              :accidental "doublesharp"}
          84 {:instrument-id "CH"
-             :printed-note "B#5"
+             #_#_:printed-note "B#5"
              :accidental "sharp"}}))
-
-(def midi-names ["C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A" "A#" "B"])
-(let [name-set (set midi-names)]
-  (defn midi-name? [n]
-    (contains? name-set n)))
-
-(declare midi-number?)
 
 (defn solution? [m]
   (and (map? m)
@@ -377,65 +430,13 @@
 (assert (apply distinct? midi-names))
 (assert (= 12 (count midi-names)))
 
-;; 0 => C-1
-(def lowest-midi-name (first midi-names))
-(def lowest-midi-octave -1)
-(def highest-midi-octave 9)
-(def lowest-midi-note 0)
-(def highest-midi-note 127)
-
-(defn midi-number? [n]
-  (and (nat-int? n)
-       (<= lowest-midi-note n highest-midi-note)))
-
-(defn midi-octave? [o]
-  (<= lowest-midi-note-octave
-      o
-      highest-midi-octave))
-
-(defn midi-coord? [{:keys [midi-name octave] :as v}]
-  (and (map v)
-       (= 2 (count v))
-       (midi-name? midi-name)
-       (midi-octave? octave)))
-
-(defn ->midi-coord [midi-name octave]
-  {:pre [(midi-name? midi-name)
-         (midi-octave? octave)]
-   :post [(midi-coord? %)]}
-  {:midi-name midi-name
-   :octave octave})
-
-(defn midi-coord-str [{:keys [midi-name octave] :as v}]
-  {:pre [(midi-coord? v)]}
-  (str midi-name octave))
-
-(deftest midi-coord-str-test
-  (is (= "C-1" (midi-coord-str (->midi-coord "C" -1))))
-  (is (= "C0" (midi-coord-str (->midi-coord "C" 0))))
-  (is (= "G9" (midi-coord-str (->midi-coord "G" 9)))))
-
-(defn midi-number->coord [n]
-  {:pre [(midi-number? n)]
-   :post [(midi-coord? %)]}
-  (->midi-coord (nth midi-names (mod n (count midi-names)))
-                (+ lowest-midi-note-octave
-                   (quot n (count midi-names)))))
-
-(deftest midi-number->coord-test
-  (is (= "C-1" (midi-coord-str (midi-number->coord 0))))
-  (is (= "B1" (midi-coord-str (midi-number->coord 35))))
-  (is (= "G9" (midi-coord-str (midi-number->coord 127)))))
-
 (defn pretty-solution [soln]
   {:pre [(solution? soln)]}
   (let [;; TODO include more octaves if enharmonic respellings spill outside these bounds
         ;; check for Cb, Cbb, B#, B##
         starting-octave (-> soln first key midi-number->coord :octave)
         ending-octave (-> soln rseq first key midi-number->coord :octave)
-        annotations (update-keys soln (fn [[midi-num info]]
-                                        {(-> midi-num midi-number->coord :midi-name)
-                                         info}))]
+        annotations (update-keys soln #(-> % midi-number->coord :midi-name))]
     (assert (= starting-octave ending-octave) "NYI")
     (->piano-ascii starting-octave annotations)))
 
@@ -443,20 +444,18 @@
   (is (= (str/join "\n"
                    ["_C4__________________________"
                     "|  | |♮|♭|♮ |♮ | | | | | |  |"
-                    "|  | | | |  |  | | | | | |  |"
                     "|  | | |C|  |  | | | | | |  |"
                     "|  | | |B|  |  | | | | | |  |"
                     "|  |_| |_|  |  |_| |_| |_|  |"
-                    "|   |   |   |   |   |   |   |"
                     "|   |HP |K2 |K1 |   |   |   |"
                     "|___|___|___|___|___|___|___|"])
-          (pretty-solution
+         (pretty-solution
            (into (sorted-map)
                  (select-keys drum-notation-map1-solution [62 63 64 65]))))))
 
 (assert (apply distinct? (map :instrument-id (vals drum-notation-map1-solution))))
 ;; TODO stronger consistency check by combining midi note number + accidental
-(assert (apply distinct? (map :printed-note (vals drum-notation-map1-solution))))
+;(assert (apply distinct? (map :printed-note (vals drum-notation-map1-solution))))
 
 #_
 (deftest drum-notation-test
