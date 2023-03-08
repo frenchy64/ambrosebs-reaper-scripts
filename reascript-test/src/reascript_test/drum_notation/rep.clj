@@ -4,6 +4,7 @@
 
 (def midi-names ["C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A" "A#" "B"])
 (def midi-names-set (set midi-names))
+(def midi-name->pos (into {} (map-indexed (fn [i m] {m i})) midi-names))
 (defn midi-name? [n]
   (contains? midi-names-set n))
 
@@ -43,8 +44,10 @@
   {:pre [(midi-coord? v)]}
   (str midi-name octave))
 
-(defn parse-midi-name [s]
-  (let [trailing (Integer/parseInt (nth s (dec (count s))))
+(defn parse-midi-coord [s]
+  {:pre [(string? s)]
+   :post [(midi-coord? %)]}
+  (let [trailing (Integer/parseInt (str (nth s (dec (count s)))))
         negative? (= \- (nth s (- (count s) 2)))
         octave (cond-> trailing
                  negative? -)
@@ -58,6 +61,15 @@
   (->midi-coord (nth midi-names (mod n (count midi-names)))
                 (+ lowest-midi-octave
                    (quot n (count midi-names)))))
+
+;; 0 => C-1
+;; 12 => C-1
+;; 24 => C-1
+(defn midi-coord->number [{:keys [midi-name octave] :as c}]
+  {:pre [(midi-coord? c)]
+   :post [(midi-number? %)]}
+  (+ (midi-name->pos midi-name)
+     (* 12 (inc octave))))
 
 ;; TODO assert alphanumeric, no unicode
 (defn instrument-id? [id]
