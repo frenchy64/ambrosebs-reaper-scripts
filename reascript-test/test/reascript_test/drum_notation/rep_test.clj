@@ -19,6 +19,8 @@
   (is (thrown? AssertionError (sut/midi-coord-str (sut/midi-number->coord 128)))))
 
 (deftest parse-midi-coord-test
+  (is (= {:midi-name "C" :octave -1} (sut/parse-midi-coord "C-1")))
+  (is (= {:midi-name "C#" :octave 0} (sut/parse-midi-coord "C#0")))
   (is (= {:midi-name "C" :octave 4} (sut/parse-midi-coord "C4"))))
 
 (deftest midi-coord->number-test
