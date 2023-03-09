@@ -86,6 +86,8 @@
   (is (= [{60 "HP"
            61 "CB"}
           {60 "HP"
+           62 "CB"}
+          {61 "HP"
            62 "CB"}]
          (sut/possible-allocations-for-staff-position 60 60 ["HP" "CB"])))
   ;; root allows all respellings
@@ -111,6 +113,8 @@
            62 "CB"}
           {60 "HP"
            61 "CB"}
+          {60 "HP"
+           62 "CB"}
           {61 "HP"
            62 "CB"}]
          (sut/possible-allocations-for-staff-position 58 60 ["HP" "CB"])))
@@ -121,6 +125,10 @@
           {58 "HP"
            59 "CB"
            60 "K1"
+           62 "K2"}
+          {58 "HP"
+           59 "CB"
+           61 "K1"
            62 "K2"}
           {58 "HP"
            60 "CB"

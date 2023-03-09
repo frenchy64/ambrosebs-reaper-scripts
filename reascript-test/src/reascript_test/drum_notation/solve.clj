@@ -37,11 +37,11 @@
          (every? instrument-id? instrument-ids)
          (vector? instrument-ids)
          (apply distinct? instrument-ids)]}
-  (let [allowed-nums (enharmonic-midi-numbers root notated)]
-    (comb/combinations
-      (map )
-      (count instrument-ids))
-    ))
+  (->> (comb/combinations
+         (vec (enharmonic-midi-numbers root notated))
+         (count instrument-ids))
+       (mapv (fn [ns]
+               (zipmap ns instrument-ids)))))
 
 (defn find-solutions [root-coord str-cs]
   {:pre [(midi-coord? root-coord)
