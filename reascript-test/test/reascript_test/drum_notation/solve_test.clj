@@ -20,9 +20,11 @@
   (is (= [[{62 "HP", 63 "CB"} {62 "HP", 64 "CB"} {63 "HP", 64 "CB"}]
           [{62 "K2"} {63 "K2"} {64 "K2"} {65 "K2"} {66 "K2"}]]
          (sut/possible-allocations (midi-coord->number (:root gp8/drum-notation-map1))
-                                   (into (sorted-map)
-                                         (select-keys (coord-str-constraints->midi-number-constraints (:notation-map gp8/drum-notation-map1))
-                                                      (range 62 65))))))
+                                   (sorted-map 62 ["HP" "CB"]
+                                               ;; K2 shouldn't be allocated to 62, since
+                                               ;; {62 "HP" 63 "CB" 64 "K2"} and 
+                                               ;; {62 "K2" 63 "HP" 64 "CB"} are basically the same
+                                               64 ["K2"]))))
   (is (= [[{62 "HP", 63 "CB"} {62 "HP", 64 "CB"} {63 "HP", 64 "CB"}]
           [{62 "K2"} {63 "K2"} {64 "K2"} {65 "K2"} {66 "K2"}]
           [{63 "K1"} {64 "K1"} {65 "K1"} {66 "K1"} {67 "K1"}]]
