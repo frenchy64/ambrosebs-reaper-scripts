@@ -11,7 +11,7 @@ local function in_musical_notation_3f(editor)
   return (2 == reaper.MIDIEditor_GetMode(editor))
 end
 if __fnl_global__debug_2dmode then
-  reaper.ShowConsoleMsg("Running\n")
+  reaper.ShowConsoleMsg("Running test\n")
 else
 end
 local function go_down()
