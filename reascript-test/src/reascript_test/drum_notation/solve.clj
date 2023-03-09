@@ -17,17 +17,11 @@
         (range (max root (- notated 2))
                (+ notated 3))))
 
-(defn solution-score [soln]
-  {:pre [(solution? soln)]}
-  (->> (vals soln)
-       (map :accidental)
-       frequencies
-       (map (fn [[accidental n]]
-              (* n (case accidental
-                     "natural" 0
-                     ("flat" "sharp") 1
-                     ("doubleflat" "doublesharp") 2))))
-       (apply +)))
+(defn allocation? [v]
+  (and (map? v)
+       (every? midi-number? (keys v))
+       (every? instrument-id? (vals v))
+       (apply distinct? (vals v))))
 
 (defn possible-allocations-for-staff-position
   [root notated instrument-ids]
@@ -36,7 +30,8 @@
          (<= root notated) ;;TODO see note in enharmonic-midi-numbers
          (every? instrument-id? instrument-ids)
          (vector? instrument-ids)
-         (apply distinct? instrument-ids)]}
+         (apply distinct? instrument-ids)]
+   :post [(every? allocation? %)]}
   (->> (comb/combinations
          (vec (enharmonic-midi-numbers root notated))
          (count instrument-ids))
@@ -53,26 +48,28 @@
                                                                       {:notated-number n
                                                                        :allowed-midi-numbers (enharmonic-midi-numbers root-num n)}))))
                                                num-cs)
-        possible-states (into [] (mapcat (fn [[n is]]
-                                           (possible-allocations-for-staff-position root-num
-                                                                                    n
-                                                                                    is)))
-                              num-cs)
-        max-midi-number (apply max (mapcat :allowed-midi-numbers (vals instrument->allowed-midi-numbers)))
-        ;; heuristic: try and pack notes to the left first
-        ;; heuristic: trim states where two instruments are interchanged for no reason
-        all-states (apply comb/cartesian-product
-                          (map (fn [[id {:keys [allowed-midi-numbers]}]]
-                                 {:pre [(instrument-id? id)
-                                        (every? midi-number? allowed-midi-numbers)]}
-                                 (mapv #(vector id %) allowed-midi-numbers))
-                               instrument->allowed-midi-numbers))
-        all-solutions (keep (fn [solution]
-                              (when (apply distinct? (map second solution))
-                                (into (sorted-map) (map (fn [[k v]] {v {:instrument-id k
-                                                                        :accidental (accidental-relative-to
-                                                                                      (get-in instrument->allowed-midi-numbers [k :notated-number])
-                                                                                      v)}}))
-                                      solution)))
+        ;; heuristic: try and pack notes to the left first (handled by `possible-allocations-for-staff-position`)
+        ;; heuristic: trim states where two instruments are interchanged for no reason (handled by `possible-allocations-for-staff-position`)
+        possible-states (map (fn [[n is]]
+                               (possible-allocations-for-staff-position root-num
+                                                                        n
+                                                                        is))
+                             num-cs)
+        all-states (apply comb/cartesian-product possible-states)
+        all-solutions (keep (fn [state]
+                              (when (apply distinct? (map keys state))
+                                (into (sorted-map)
+                                      (mapcat (fn [allocation]
+                                                {:pre [(allocation? allocation)]}
+                                                (->> allocation
+                                                     (map (fn [[midi-num instrument-id]]
+                                                            {:pre [(instrument-id? instrument-id)
+                                                                   (midi-number? midi-num)]}
+                                                            {midi-num
+                                                             {:instrument-id instrument-id
+                                                              :accidental (accidental-relative-to
+                                                                            (get-in instrument->allowed-midi-numbers [instrument-id :notated-number])
+                                                                            midi-num)}})))))
+                                      state)))
                             all-states)]
-    (sort-by solution-score all-solutions)))
+    all-solutions))

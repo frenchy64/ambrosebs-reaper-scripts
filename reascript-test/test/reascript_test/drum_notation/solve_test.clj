@@ -17,11 +17,8 @@
 
 (deftest find-solutions-test
   (is (= [{62 {:instrument-id "HP", :accidental "natural"}, 63 {:instrument-id "CB", :accidental "sharp"}}
-          {62 {:instrument-id "CB", :accidental "natural"}, 63 {:instrument-id "HP", :accidental "sharp"}}
           {62 {:instrument-id "HP", :accidental "natural"}, 64 {:instrument-id "CB", :accidental "doublesharp"}}
-          {62 {:instrument-id "CB", :accidental "natural"}, 64 {:instrument-id "HP", :accidental "doublesharp"}}
-          {63 {:instrument-id "HP", :accidental "sharp"}, 64 {:instrument-id "CB", :accidental "doublesharp"}}
-          {63 {:instrument-id "CB", :accidental "sharp"}, 64 {:instrument-id "HP", :accidental "doublesharp"}}]
+          {63 {:instrument-id "HP", :accidental "sharp"}, 64 {:instrument-id "CB", :accidental "doublesharp"}}]
          (sut/find-solutions
            {:midi-name "D"
             :octave 4}
@@ -35,13 +32,6 @@
                  "|   |HP |   |   |   |   |   |"
                  "|___|___|___|___|___|___|___|"]
                 ["_C4__________________________"
-                 "|  | |♮|♯|  |  | | | | | |  |"
-                 "|  | | |H|  |  | | | | | |  |"
-                 "|  | | |P|  |  | | | | | |  |"
-                 "|  |_| |_|  |  |_| |_| |_|  |"
-                 "|   |CB |   |   |   |   |   |"
-                 "|___|___|___|___|___|___|___|"]
-                ["_C4__________________________"
                  "|  | |♮| |𝄪 |  | | | | | |  |"
                  "|  | | | |  |  | | | | | |  |"
                  "|  | | | |  |  | | | | | |  |"
@@ -49,37 +39,38 @@
                  "|   |HP |CB |   |   |   |   |"
                  "|___|___|___|___|___|___|___|"]
                 ["_C4__________________________"
-                 "|  | |♮| |𝄪 |  | | | | | |  |"
-                 "|  | | | |  |  | | | | | |  |"
-                 "|  | | | |  |  | | | | | |  |"
-                 "|  |_| |_|  |  |_| |_| |_|  |"
-                 "|   |CB |HP |   |   |   |   |"
-                 "|___|___|___|___|___|___|___|"]
-                ["_C4__________________________"
                  "|  | | |♯|𝄪 |  | | | | | |  |"
                  "|  | | |H|  |  | | | | | |  |"
                  "|  | | |P|  |  | | | | | |  |"
                  "|  |_| |_|  |  |_| |_| |_|  |"
                  "|   |   |CB |   |   |   |   |"
-                 "|___|___|___|___|___|___|___|"]
-                ["_C4__________________________"
-                 "|  | | |♯|𝄪 |  | | | | | |  |"
-                 "|  | | |C|  |  | | | | | |  |"
-                 "|  | | |B|  |  | | | | | |  |"
-                 "|  |_| |_|  |  |_| |_| |_|  |"
-                 "|   |   |HP |   |   |   |   |"
                  "|___|___|___|___|___|___|___|"]])
          (mapv pretty-solution
                (sut/find-solutions
                  {:midi-name "D"
                   :octave 4}
                  {"D4" ["HP", "CB"]}))))
-  (is (contains?
-        (sut/find-solutions
-          {:midi-name "D"
-           :octave 4}
-          (:notation-map gp8/drum-notation-map1))
-        gp8/drum-notation-map1-solution)))
+  (is (= {62 {:instrument-id "K2", :accidental "doubleflat"}
+          63 {:instrument-id "K1", :accidental "doubleflat"}
+          65 {:instrument-id "T5", :accidental "doubleflat"}
+          67 {:instrument-id "T4", :accidental "doubleflat"}
+          69 {:instrument-id "T3", :accidental "doubleflat"}
+          70 {:instrument-id "RS", :accidental "doubleflat"}
+          71 {:instrument-id "SC", :accidental "flat"}
+          72 {:instrument-id "T2", :accidental "doubleflat"}
+          74 {:instrument-id "T1", :accidental "doubleflat"}
+          75 {:instrument-id "RM", :accidental "doubleflat"}
+          76 {:instrument-id "RB", :accidental "flat"}
+          77 {:instrument-id "HC", :accidental "doubleflat"}
+          78 {:instrument-id "HH", :accidental "flat"}
+          79 {:instrument-id "C1", :accidental "doubleflat"}
+          80 {:instrument-id "SP", :accidental "flat"}
+          81 {:instrument-id "CH", :accidental "doubleflat"}}
+         (first
+           (sut/find-solutions
+             {:midi-name "D"
+              :octave 4}
+             (:notation-map gp8/drum-notation-map1))))))
 
 (deftest possible-allocations-for-staff-position-test
   ;; root cuts off some options
