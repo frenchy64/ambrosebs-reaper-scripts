@@ -17,32 +17,35 @@
   (is (thrown? AssertionError (sut/enharmonic-midi-numbers 61 60))))
 
 (deftest possible-allocations-test
+  (is (= [[{62 "HP"}]]
+         (sut/possible-allocations 62
+                                   (sorted-map 62 ["HP"]))))
   (is (= [[{62 "HP", 63 "CB"}]]
          (sut/possible-allocations 62
                                    (sorted-map 62 ["HP" "CB"]))))
   (is (= [[{62 "HP", 63 "CB"}]
-          [{64 "K2"} {65 "K2"} {66 "K2"}]]
+          [{64 "K2"}]]
          (sut/possible-allocations 62
                                    (sorted-map 62 ["HP" "CB"]
                                                64 ["K2"]))))
   (is (= [[{60 "L1", 61 "L2", 62 "HP", 63 "CB"}]
-          [{64 "K2"} {65 "K2"} {66 "K2"}]]
+          [{64 "K2"}]]
          (sut/possible-allocations 60
                                    (sorted-map 62 ["L1" "L2" "HP" "CB"]
                                                64 ["K2"]))))
   (is (= [[{62 "HP", 63 "CB"}]
-          [{64 "K2"} {65 "K2"} {66 "K2"}]
-          [{63 "K1"} {64 "K1"} {65 "K1"} {66 "K1"} {67 "K1"}]]
+          [{64 "K2"}]
+          [{65 "K1"}]]
          (sut/possible-allocations (midi-coord->number (:root gp8/drum-notation-map1))
                                    (into (sorted-map)
                                          (select-keys (coord-str-constraints->midi-number-constraints (:notation-map gp8/drum-notation-map1))
                                                       (range 62 66))))))
   (is (= [[{62 "HP", 63 "CB"}]
-          [{64 "K2"} {65 "K2"} {66 "K2"}]
-          [{63 "K1"} {64 "K1"} {65 "K1"} {66 "K1"} {67 "K1"}]
-          [{65 "T5"} {66 "T5"} {67 "T5"} {68 "T5"} {69 "T5"}]
-          [{67 "T4"} {68 "T4"} {69 "T4"} {70 "T4"} {71 "T4"}]
-          [{69 "T3"} {70 "T3"} {71 "T3"} {72 "T3"} {73 "T3"}]
+          [{64 "K2"}]
+          [{65 "K1"}]
+          [{66 "T5"}]
+          [{67 "T4"}]
+          [{69 "T3"}]
           [{70 "RS", 71 "SC", 72 "SS"}
            {70 "RS", 71 "SC", 73 "SS"}
            {70 "RS", 71 "SC", 74 "SS"}
@@ -53,8 +56,9 @@
            {71 "RS", 72 "SC", 74 "SS"}
            {71 "RS", 73 "SC", 74 "SS"}
            {72 "RS", 73 "SC", 74 "SS"}]
-          [{72 "T2"} {73 "T2"} {74 "T2"} {75 "T2"} {76 "T2"}]
-          [{74 "T1"} {75 "T1"} {76 "T1"} {77 "T1"} {78 "T1"}]
+          [{75 "T2"}] ;;hmm too restrictive?
+          [{76 "T1"}]
+          ;;TODO 75 not possible 
           [{75 "RM", 76 "RB", 77 "RE"}
            {75 "RM", 76 "RB", 78 "RE"}
            {75 "RM", 76 "RB", 79 "RE"}
@@ -80,7 +84,7 @@
            {81 "C1", 82 "SP"}
            {81 "C1", 83 "SP"}
            {82 "C1", 83 "SP"}]
-          [{81 "CH"} {82 "CH"} {83 "CH"} {84 "CH"} {85 "CH"}]]
+          [{84 "CH"}]]
          (sut/possible-allocations (midi-coord->number (:root gp8/drum-notation-map1))
                                    (coord-str-constraints->midi-number-constraints (:notation-map gp8/drum-notation-map1))))))
 
