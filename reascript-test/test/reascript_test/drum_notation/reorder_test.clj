@@ -21,8 +21,8 @@
                        63 {:instrument-id "CB", :accidental "sharp"})
            63 62)))
   (is (= {:type :solution
-          :solution (sorted-map 63 {:instrument-id "HP", :accidental "sharp"}
-                                64 {:instrument-id "CB", :accidental "doublesharp"})}
+          :solution (sorted-map 63 {:instrument-id "CB", :accidental "sharp"}
+                                64 {:instrument-id "HP", :accidental "doublesharp"})}
          (sut/reorder-solution
            62
            (sorted-map 62 {:instrument-id "HP", :accidental "natural"}
