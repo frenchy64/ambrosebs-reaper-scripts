@@ -7,7 +7,7 @@ git diff --cached --exit-code
 
 ./compile.clj
 
-if [ ! git diff --exit-code ]; then
+if ! git diff --exit-code ; then
   git add .
   git commit -m "regenerate"
 fi
