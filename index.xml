@@ -1,26 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="frenchy64-reaper-scripts" commit="d714175528469abb9dbf56b6b5356f3b00f94d8e">
-  <category name="Example">
-    <reapack name="frenchy64_Hello world.lua" type="script" desc="frenchy64's Hello world">
-      <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
-{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
-\widowctrl\hyphauto
-
-{\pard \ql \f0 \sa180 \li0 \fi0 This is an example of a package file. It installs itself as a ReaScript that does nothing but show "Hello World!" in REAPER's scripting console.\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 Packages may also include additional files specified using the @provides tag.\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 This text is the documentation shown when using ReaPack's "About this package" feature. {\field{\*\fldinst{HYPERLINK "https://commonmark.org/"}}{\fldrslt{\ul
-Markdown
-}}}
- {\i formatting} is supported.\par}
-}
-]]></description>
-      </metadata>
-      <version name="1.0" author="frenchy64" time="2022-07-31T23:30:32Z">
-        <source main="main">https://github.com/frenchy64/frenchy64-reaper-scripts/raw/e5ff7751c46076653c22ab89b8eae84d89db1176/Example/frenchy64_Hello%20world.lua</source>
-      </version>
-    </reapack>
-  </category>
+<index version="1" name="frenchy64-reaper-scripts" commit="5dbda7687f0b26d97db1397adf962071d5091059">
   <category name="MIDI Editor">
     <reapack name="ambrosebs_Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone.lua" type="script" desc="Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone">
       <metadata>
@@ -50,10 +29,13 @@ Markdown
       <version name="1.5" author="frenchy64" time="2023-03-09T22:00:34Z">
         <source main="midi_editor">https://github.com/frenchy64/frenchy64-reaper-scripts/raw/d714175528469abb9dbf56b6b5356f3b00f94d8e/MIDI%20Editor/ambrosebs_Go%20forward%204%20bars%20in%20Notation,%20otherwise%20decrease%20pitch%20cursor%20one%20semitone.lua</source>
       </version>
+      <version name="1.6" author="Ambrose Bonnaire-Sergeant" time="2023-03-09T22:24:21Z">
+        <source main="midi_editor">https://github.com/frenchy64/ambrosebs-reaper-scripts/raw/5dbda7687f0b26d97db1397adf962071d5091059/MIDI%20Editor/ambrosebs_Go%20forward%204%20bars%20in%20Notation,%20otherwise%20decrease%20pitch%20cursor%20one%20semitone.lua</source>
+      </version>
     </reapack>
     <reapack name="ambrosebs_Inherit first accidentals.lua" type="script">
       <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
 \widowctrl\hyphauto
 
@@ -77,8 +59,8 @@ Markdown
 Packaging Documentation
 }}}
  on reapack-index's wiki.\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 The URL to import in ReaPack is {\field{\*\fldinst{HYPERLINK "https://github.com/frenchy64/frenchy64-reaper-scripts/raw/main/index.xml"}}{\fldrslt{\ul
-https://github.com/frenchy64/frenchy64-reaper-scripts/raw/main/index.xml
+{\pard \ql \f0 \sa180 \li0 \fi0 The URL to import in ReaPack is {\field{\*\fldinst{HYPERLINK "https://github.com/frenchy64/ambrosebs-reaper-scripts/raw/main/index.xml"}}{\fldrslt{\ul
+https://github.com/frenchy64/ambrosebs-reaper-scripts/raw/main/index.xml
 }}}
 .\par}
 }
