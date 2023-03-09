@@ -4,5 +4,5 @@
 
 (defn infer-notation-mappings [spec]
   {:pre [(notation-spec? spec)]}
-  (find-solutions (:root spec)
-                  (:notation-map spec)))
+  (solve/find-solution (:root spec)
+                       (:notation-map spec)))

@@ -13,7 +13,7 @@
 
 (defn str->str-join-expr [s]
   {:pre [(string? s)]}
-  (list 'str/join "\n" (str/split-lines s)))
+  (pprint (list 'th/join-lines (str/split-lines s))))
 
 (defn join-lines [ss]
   (str/join "\n" ss))
