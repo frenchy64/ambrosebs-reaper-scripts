@@ -143,8 +143,12 @@
           {60 "HP"}
           {61 "HP"}
           {62 "HP"}]
-         (sut/possible-allocations-for-staff-position [{58 "CB"}] 58 60 ["HP"])))
+         (sut/possible-allocations-for-staff-position [{58 "CB"}] 58 60 ["HP"])
+         (sut/possible-allocations-for-staff-position [{58 "CB" 60 "K1"} {58 "CB" 61 "K1"}] 58 60 ["HP"])))
   (is (= [{60 "HP"}
           {61 "HP"}
           {62 "HP"}]
-         (sut/possible-allocations-for-staff-position [{58 "CB" 59 "K1"}] 58 60 ["HP"]))))
+         (sut/possible-allocations-for-staff-position [{58 "CB" 59 "K1"}] 58 60 ["HP"])
+         (sut/possible-allocations-for-staff-position [{58 "CB" 59 "K1" 60 "K2"}
+                                                       {58 "CB" 59 "K1" 61 "K2"}]
+                                                      58 60 ["HP"]))))
