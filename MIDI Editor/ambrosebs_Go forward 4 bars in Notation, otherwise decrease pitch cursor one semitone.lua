@@ -1,6 +1,6 @@
 -- @description Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone (match file name without extension and author)
 -- @author frenchy64
--- @version 1.2
+-- @version 1.3
 -- @about
 --    Intended to be assigned to the Down arrow in the MIDI Editor, this action simulates pressing Down
 --    in musical notation software such as Dorico by guessing how many bars the music
@@ -43,5 +43,6 @@ end
 
 GoDown()
 
-package.path = debug.getinfo(1,"S").source:match[[^@?(.+[\/]).+-]] .. package.path
-require("fennel").install().dofile("MIDI Editor/ambrosebs_Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone.fnl")
+-- https://forum.cockos.com/showpost.php?p=1836976&postcount=6
+p = debug.getinfo(1,"S").source:match[[^@?(.+[\/]).+-]]
+dofile(p .. "fennel").install().dofile(p .. "MIDI Editor/ambrosebs_Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone.fnl")
