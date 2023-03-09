@@ -59,8 +59,8 @@
          (group-by sut/c-major-midi-number? (range 0 12)))))
 
 (deftest accidental-relative-to
-  (is (thrown? Exception (sut/accidental-relative-to 60 57)))
-  (is (thrown? Exception (sut/accidental-relative-to 60 63)))
+  (is (thrown? AssertionError (sut/accidental-relative-to 60 57)))
+  (is (thrown? AssertionError (sut/accidental-relative-to 60 63)))
   (is (= ["doubleflat" "flat" "natural" "sharp" "doublesharp"]
          (mapv #(sut/accidental-relative-to 60 %) (range 58 63)))))
 
