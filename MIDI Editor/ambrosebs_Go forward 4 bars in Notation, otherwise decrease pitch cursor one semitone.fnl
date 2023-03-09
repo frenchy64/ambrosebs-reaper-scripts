@@ -10,7 +10,7 @@
 (fn in-musical-notation? [editor]
   (= 2 (reaper.MIDIEditor_GetMode editor)))
 
-(when debug-mode (reaper.ShowConsoleMsg "Running\n"))
+(when debug-mode (reaper.ShowConsoleMsg "Running test\n"))
 
 (fn go-down []
   (let [editor (reaper.MIDIEditor_GetActive)]
