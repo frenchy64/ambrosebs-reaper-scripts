@@ -81,14 +81,15 @@
            62 "CB"}
           {61 "HP"
            62 "CB"}]
-         (sut/possible-allocations-for-staff-position 60 60 ["HP" "CB"])))
+         (sut/possible-allocations-for-staff-position nil 60 60 ["HP" "CB"])
+         (sut/possible-allocations-for-staff-position [{60 "K1"} {61 "K1"}] 60 60 ["HP" "CB"])))
   ;; root allows all respellings
   (is (= [{58 "HP"}
           {59 "HP"}
           {60 "HP"}
           {61 "HP"}
           {62 "HP"}]
-         (sut/possible-allocations-for-staff-position 58 60 ["HP"])))
+         (sut/possible-allocations-for-staff-position nil 58 60 ["HP"])))
   (is (= [{58 "HP"
            59 "CB"}
           {58 "HP"
@@ -109,7 +110,7 @@
            62 "CB"}
           {61 "HP"
            62 "CB"}]
-         (sut/possible-allocations-for-staff-position 58 60 ["HP" "CB"])))
+         (sut/possible-allocations-for-staff-position nil 58 60 ["HP" "CB"])))
   (is (= [{58 "HP"
            59 "CB"
            60 "K1"
@@ -130,10 +131,20 @@
            60 "CB"
            61 "K1"
            62 "K2"}]
-         (sut/possible-allocations-for-staff-position 58 60 ["HP" "CB" "K1" "K2"])))
+         (sut/possible-allocations-for-staff-position nil 58 60 ["HP" "CB" "K1" "K2"])))
   (is (= [{58 "HP"
            59 "CB"
            60 "K1"
            61 "K2"
            62 "T5"}]
-         (sut/possible-allocations-for-staff-position 58 60 ["HP" "CB" "K1" "K2" "T5"]))))
+         (sut/possible-allocations-for-staff-position nil 58 60 ["HP" "CB" "K1" "K2" "T5"])))
+  ;; trim states based on previous allocations
+  (is (= [{59 "HP"}
+          {60 "HP"}
+          {61 "HP"}
+          {62 "HP"}]
+         (sut/possible-allocations-for-staff-position [{58 "CB"}] 58 60 ["HP"])))
+  (is (= [{60 "HP"}
+          {61 "HP"}
+          {62 "HP"}]
+         (sut/possible-allocations-for-staff-position [{58 "CB" 59 "K1"}] 58 60 ["HP"]))))
