@@ -1,4 +1,4 @@
--- @author frenchy64
+-- @author Ambrose Bonnaire-Sergeant
 -- @version 1.0
 -- @about
 --    Ensure every note in a MIDI item shares the same accidentals (inherited from the first 

@@ -1,5 +1,5 @@
 -- @noindex
--- @author frenchy64
+-- @author Ambrose Bonnaire-Sergeant
 -- @version 1.0
 -- @about
 --    Intended to be assigned to the Down arrow in the MIDI Editor, this action simulates pressing Down

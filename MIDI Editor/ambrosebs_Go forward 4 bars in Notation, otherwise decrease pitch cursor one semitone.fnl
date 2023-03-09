@@ -1,5 +1,5 @@
 ;; @description Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone
-;; @author frenchy64
+;; @author Ambrose Bonnaire-Sergeant
 ;; @version 1.5
 ;; @about
 ;;    Intended to be assigned to the Down arrow in the MIDI Editor, this action simulates pressing Down

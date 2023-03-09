@@ -19,7 +19,14 @@
     (spit lua
           (str/join "\n"
                     [(fnl-header-as-lua fnl)
-                     (format "-- compiled from '%s'" fnl)
+                     (format "-- compiled from https://github.com/frenchy64/ambrosebs-reaper-scripts/blob/%s/%s"
+                             (-> (tasks/shell {:out :string} "git rev-parse --short HEAD")
+                                 :out
+                                 str/trim)
+                             ;;FIXME url encode
+                             (-> fnl
+                                 (str/replace " " "%20")
+                                 (str/replace "," "%2C")))
                      (slurp lua)]))))
 
 (compile-reapack-fnl-script
