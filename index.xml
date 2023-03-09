@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="frenchy64-reaper-scripts" commit="39d3a8c6810d5c4bbc690c632412aea4ba261ada">
+<index version="1" name="frenchy64-reaper-scripts" commit="e4ce96d81c256235fdeb49c8dcaa55b3e89ef995">
   <category name="Example">
     <reapack name="frenchy64_Hello world.lua" type="script" desc="frenchy64's Hello world">
       <metadata>
@@ -22,9 +22,9 @@ Markdown
     </reapack>
   </category>
   <category name="MIDI Editor">
-    <reapack name="ambrosebs_Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone.lua" type="script" desc="Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone (match file name without extension and author)">
+    <reapack name="ambrosebs_Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone.lua" type="script" desc="Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone">
       <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
 \widowctrl\hyphauto
 
@@ -64,11 +64,11 @@ Markdown
     </reapack>
   </category>
   <metadata>
-    <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+    <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
 \widowctrl\hyphauto
 
-{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs36 ReaPack Repository Template\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel0 \b \fs36 ReaPack Repository Template\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 reapack-index looks for package files in subfolders. The folder tree represents the package categories shown in ReaPack.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 Each package file is expected to begin with a metadata header. See {\field{\*\fldinst{HYPERLINK "https://github.com/cfillion/reapack-index/wiki/Packaging-Documentation"}}{\fldrslt{\ul
 Packaging Documentation
