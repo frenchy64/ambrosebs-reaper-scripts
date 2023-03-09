@@ -1,6 +1,7 @@
 (ns reascript-test.drum-notation.solve-test
   (:require [clojure.test :refer [deftest is testing]]
             [reascript-test.drum-notation.solve :as sut]
+            [reascript-test.drum-notation.rep :refer :all]
             [reascript-test.drum-notation.guitar-pro8 :as gp8]
             [reascript-test.drum-notation.pretty :refer [pretty-solution]]
             [reascript-test.drum-notation.test-helpers :as th]))
@@ -14,6 +15,67 @@
   (is (= (sorted-set 60 61 62)
          (sut/enharmonic-midi-numbers 60 60)))
   (is (thrown? AssertionError (sut/enharmonic-midi-numbers 61 60))))
+
+(deftest possible-allocations-test
+  (is (= [[{62 "HP", 63 "CB"} {62 "HP", 64 "CB"} {63 "HP", 64 "CB"}]
+          [{62 "K2"} {63 "K2"} {64 "K2"} {65 "K2"} {66 "K2"}]]
+         (sut/possible-allocations (midi-coord->number (:root gp8/drum-notation-map1))
+                                   (into (sorted-map)
+                                         (select-keys (coord-str-constraints->midi-number-constraints (:notation-map gp8/drum-notation-map1))
+                                                      (range 62 65))))))
+  (is (= [[{62 "HP", 63 "CB"} {62 "HP", 64 "CB"} {63 "HP", 64 "CB"}]
+          [{62 "K2"} {63 "K2"} {64 "K2"} {65 "K2"} {66 "K2"}]
+          [{63 "K1"} {64 "K1"} {65 "K1"} {66 "K1"} {67 "K1"}]]
+         (sut/possible-allocations (midi-coord->number (:root gp8/drum-notation-map1))
+                                   (into (sorted-map)
+                                         (select-keys (coord-str-constraints->midi-number-constraints (:notation-map gp8/drum-notation-map1))
+                                                      (range 62 66))))))
+  (is (= [[{62 "HP", 63 "CB"} {62 "HP", 64 "CB"} {63 "HP", 64 "CB"}]
+          [{62 "K2"} {63 "K2"} {64 "K2"} {65 "K2"} {66 "K2"}]
+          [{63 "K1"} {64 "K1"} {65 "K1"} {66 "K1"} {67 "K1"}]
+          [{65 "T5"} {66 "T5"} {67 "T5"} {68 "T5"} {69 "T5"}]
+          [{67 "T4"} {68 "T4"} {69 "T4"} {70 "T4"} {71 "T4"}]
+          [{69 "T3"} {70 "T3"} {71 "T3"} {72 "T3"} {73 "T3"}]
+          [{70 "RS", 71 "SC", 72 "SS"}
+           {70 "RS", 71 "SC", 73 "SS"}
+           {70 "RS", 71 "SC", 74 "SS"}
+           {70 "RS", 72 "SC", 73 "SS"}
+           {70 "RS", 72 "SC", 74 "SS"}
+           {70 "RS", 73 "SC", 74 "SS"}
+           {71 "RS", 72 "SC", 73 "SS"}
+           {71 "RS", 72 "SC", 74 "SS"}
+           {71 "RS", 73 "SC", 74 "SS"}
+           {72 "RS", 73 "SC", 74 "SS"}]
+          [{72 "T2"} {73 "T2"} {74 "T2"} {75 "T2"} {76 "T2"}]
+          [{74 "T1"} {75 "T1"} {76 "T1"} {77 "T1"} {78 "T1"}]
+          [{75 "RM", 76 "RB", 77 "RE"}
+           {75 "RM", 76 "RB", 78 "RE"}
+           {75 "RM", 76 "RB", 79 "RE"}
+           {75 "RM", 77 "RB", 78 "RE"}
+           {75 "RM", 77 "RB", 79 "RE"}
+           {75 "RM", 78 "RB", 79 "RE"}
+           {76 "RM", 77 "RB", 78 "RE"}
+           {76 "RM", 77 "RB", 79 "RE"}
+           {76 "RM", 78 "RB", 79 "RE"}
+           {77 "RM", 78 "RB", 79 "RE"}]
+          [{77 "HC", 78 "HH", 79 "HO", 80 "C2"}
+           {77 "HC", 78 "HH", 79 "HO", 81 "C2"}
+           {77 "HC", 78 "HH", 80 "HO", 81 "C2"}
+           {77 "HC", 79 "HH", 80 "HO", 81 "C2"}
+           {78 "HC", 79 "HH", 80 "HO", 81 "C2"}]
+          [{79 "C1", 80 "SP"}
+           {79 "C1", 81 "SP"}
+           {79 "C1", 82 "SP"}
+           {79 "C1", 83 "SP"}
+           {80 "C1", 81 "SP"}
+           {80 "C1", 82 "SP"}
+           {80 "C1", 83 "SP"}
+           {81 "C1", 82 "SP"}
+           {81 "C1", 83 "SP"}
+           {82 "C1", 83 "SP"}]
+          [{81 "CH"} {82 "CH"} {83 "CH"} {84 "CH"} {85 "CH"}]]
+         (sut/possible-allocations (midi-coord->number (:root gp8/drum-notation-map1))
+                                   (coord-str-constraints->midi-number-constraints (:notation-map gp8/drum-notation-map1))))))
 
 (deftest find-solutions-test
   (is (= [{62 {:instrument-id "HP", :accidental "natural"}, 63 {:instrument-id "CB", :accidental "sharp"}}

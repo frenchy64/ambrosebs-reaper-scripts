@@ -33,15 +33,30 @@
          (vector? instrument-ids)
          (apply distinct? instrument-ids)]
    :post [(every? allocation? %)]}
-  (let [impossible-allocations (when (seq previous-allocations)
+  (let [;; heuristic: trim states that contain allocations that are impossible based on the previous note's possible allocations
+        impossible-allocations (when (seq previous-allocations)
                                  (not-empty (apply set/intersection (map (comp set keys) previous-allocations))))]
+    ;; heuristic: try and pack notes to the left first
     (into [] (keep (fn [ns]
                      (when (or (not impossible-allocations)
                                (empty? (set/intersection (set ns) impossible-allocations)))
                        (zipmap ns instrument-ids))))
+          ;; heuristic: trim states where two instruments are interchanged for no reason
           (comb/combinations
             (vec (enharmonic-midi-numbers root notated))
             (count instrument-ids)))))
+
+(defn possible-allocations
+  [root num-cs]
+  {:pre [(midi-number? root)
+         (midi-number-constraints? num-cs)]
+   :post [(vector? %)
+          (every? (every-pred vector? #(every? allocation? %))
+                  %)]}
+  (reduce (fn [acc [n is]]
+            (conj acc
+                  (possible-allocations-for-staff-position (peek acc) root n is)))
+          [] num-cs))
 
 (defn find-solutions [root-coord str-cs]
   {:pre [(midi-coord? root-coord)
@@ -49,26 +64,12 @@
   (let [root-num (midi-coord->number root-coord)
         num-cs (coord-str-constraints->midi-number-constraints str-cs)
         instrument-set (into #{} cat (vals num-cs))
-        _ (prn {:instrument-set instrument-set})
-        instrument->allowed-midi-numbers (into {} (map (fn [[n is]]
-                                                         (zipmap is (repeat
-                                                                      {:notated-number n
-                                                                       :allowed-midi-numbers (enharmonic-midi-numbers root-num n)}))))
-                                               num-cs)
-        ;; heuristic: try and pack notes to the left first (handled by `possible-allocations-for-staff-position`)
-        ;; heuristic: trim states where two instruments are interchanged for no reason (handled by `possible-allocations-for-staff-position`)
-        ;; heuristic: trim states that contain allocations that impossible relative to the previous note's allocation
-        possible-states (reduce (fn [acc [n is]]
-                                  (conj acc
-                                        (possible-allocations-for-staff-position
-                                          (peek acc)
-                                          root-num
-                                          n
-                                          is)))
-                                []
-                                num-cs)
-        _ (prn possible-states)
+        instrument->notated-num (into {} (map (fn [[n is]]
+                                                (zipmap is (repeat n))))
+                                      num-cs)
+        possible-states (possible-allocations root-num num-cs)
         all-states (apply comb/cartesian-product possible-states)
+        _ (clojure.pprint/pprint possible-states)
         all-solutions (keep (fn [state]
                               (when (apply distinct? (mapcat keys state))
                                 (into (sorted-map)
@@ -81,7 +82,7 @@
                                                             {midi-num
                                                              {:instrument-id instrument-id
                                                               :accidental (accidental-relative-to
-                                                                            (get-in instrument->allowed-midi-numbers [instrument-id :notated-number])
+                                                                            (instrument->notated-num instrument-id)
                                                                             midi-num)}})))))
                                       state)))
                             all-states)]
