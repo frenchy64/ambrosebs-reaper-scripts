@@ -43,6 +43,5 @@ end
 
 GoDown()
 
-package.path = debug.getinfo(1,"S").source:match[[^@?(.*[\/])[^\/]-$]] .."?.lua;".. package.path
-debug.getinfo(1,"S").source:match[[^@?(.+[\/]).+-]]
+package.path = debug.getinfo(1,"S").source:match[[^@?(.+[\/]).+-]] .. package.path
 require("fennel").install().dofile("MIDI Editor/ambrosebs_Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone.fnl")
