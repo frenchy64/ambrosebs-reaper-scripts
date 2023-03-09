@@ -42,3 +42,5 @@ function GoUp()
 end
 
 GoDown()
+
+require("fennel").install().dofile("ambrosebs_Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone.fnl")
