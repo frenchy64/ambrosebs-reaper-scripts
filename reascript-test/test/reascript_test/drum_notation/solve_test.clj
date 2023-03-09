@@ -80,3 +80,60 @@
            :octave 4}
           (:notation-map gp8/drum-notation-map1))
         gp8/drum-notation-map1-solution)))
+
+(deftest possible-allocations-for-staff-position-test
+  ;; root cuts off some options
+  (is (= [{60 "HP"
+           61 "CB"}
+          {60 "HP"
+           62 "CB"}]
+         (sut/possible-allocations-for-staff-position 60 60 ["HP" "CB"])))
+  ;; root allows all respellings
+  (is (= [{58 "HP"}
+          {59 "HP"}
+          {60 "HP"}
+          {61 "HP"}
+          {62 "HP"}]
+         (sut/possible-allocations-for-staff-position 58 60 ["HP"])))
+  (is (= [{58 "HP"
+           59 "CB"}
+          {58 "HP"
+           60 "CB"}
+          {58 "HP"
+           61 "CB"}
+          {58 "HP"
+           62 "CB"}
+          {59 "HP"
+           60 "CB"}
+          {59 "HP"
+           61 "CB"}
+          {59 "HP"
+           62 "CB"}
+          {60 "HP"
+           61 "CB"}
+          {61 "HP"
+           62 "CB"}]
+         (sut/possible-allocations-for-staff-position 58 60 ["HP" "CB"])))
+  (is (= [{58 "HP"
+           59 "CB"
+           60 "K1"
+           61 "K2"}
+          {58 "HP"
+           59 "CB"
+           60 "K1"
+           62 "K2"}
+          {58 "HP"
+           60 "CB"
+           61 "K1"
+           62 "K2"}
+          {59 "HP"
+           60 "CB"
+           61 "K1"
+           62 "K2"}]
+         (sut/possible-allocations-for-staff-position 58 60 ["HP" "CB" "K1" "K2"])))
+  (is (= [{58 "HP"
+           59 "CB"
+           60 "K1"
+           61 "K2"
+           62 "T5"}]
+         (sut/possible-allocations-for-staff-position 58 60 ["HP" "CB" "K1" "K2" "T5"]))))

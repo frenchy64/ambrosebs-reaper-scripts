@@ -115,6 +115,8 @@
                      parse-midi-coord)
                (keys m))
        (every? (every-pred vector?
+                           ;; up to 5 instruments on one staff line
+                           #(<= 1 (count %) 5)
                            #(every? instrument-id? %))
                (vals m))))
 

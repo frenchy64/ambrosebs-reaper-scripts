@@ -2,16 +2,20 @@
   (:require [reascript-test.drum-notation.rep :refer :all]
             [clojure.math.combinatorics :as comb]))
 
+
 (defn enharmonic-midi-numbers
   "Return the possible midi numbers representing enharmonic
   respellings for the given C major note."
-  [root n]
+  [root notated]
   {:pre [(midi-number? root)
-         (<= root n)
-         (c-major-midi-number? n)]}
+         ;;TODO what does the root-num mean? is it the lowest note
+         ;; than can be written on the staff, the lowest note allocatable
+         ;; to an instrument, or both?
+         (<= root notated)
+         (c-major-midi-number? notated)]}
   (into (sorted-set)
-        (range (max root (- n 2))
-               (+ n 3))))
+        (range (max root (- notated 2))
+               (+ notated 3))))
 
 (defn solution-score [soln]
   {:pre [(solution? soln)]}
@@ -25,7 +29,20 @@
                      ("doubleflat" "doublesharp") 2))))
        (apply +)))
 
-;; 
+(defn possible-allocations-for-staff-position
+  [root notated instrument-ids]
+  {:pre [(midi-number? root)
+         (c-major-midi-number? notated)
+         (<= root notated) ;;TODO see note in enharmonic-midi-numbers
+         (every? instrument-id? instrument-ids)
+         (vector? instrument-ids)
+         (apply distinct? instrument-ids)]}
+  (let [allowed-nums (enharmonic-midi-numbers root notated)]
+    (comb/combinations
+      (map )
+      (count instrument-ids))
+    ))
+
 (defn find-solutions [root-coord str-cs]
   {:pre [(midi-coord? root-coord)
          (notation-constraints? str-cs)]}
@@ -36,7 +53,14 @@
                                                                       {:notated-number n
                                                                        :allowed-midi-numbers (enharmonic-midi-numbers root-num n)}))))
                                                num-cs)
+        possible-states (into [] (mapcat (fn [[n is]]
+                                           (possible-allocations-for-staff-position root-num
+                                                                                    n
+                                                                                    is)))
+                              num-cs)
         max-midi-number (apply max (mapcat :allowed-midi-numbers (vals instrument->allowed-midi-numbers)))
+        ;; heuristic: try and pack notes to the left first
+        ;; heuristic: trim states where two instruments are interchanged for no reason
         all-states (apply comb/cartesian-product
                           (map (fn [[id {:keys [allowed-midi-numbers]}]]
                                  {:pre [(instrument-id? id)
