@@ -3,9 +3,9 @@
             [clojure.set :as set]))
 
 (defn reorder-solution
-  [root-num solution from to]
+  [solution from to]
   {:pre [(solution? solution)
-         ((every-pred midi-number?) root-num from to)]
+         ((every-pred midi-number?) from to)]
    :post [(solution-or-error? %)]}
   (let [from-info (solution from)]
     (if-not from-info

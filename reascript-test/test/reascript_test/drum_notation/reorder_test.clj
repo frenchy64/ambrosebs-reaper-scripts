@@ -11,12 +11,10 @@
           :solution (sorted-map 62 {:instrument-id "CB", :accidental "natural"}
                                 63 {:instrument-id "HP", :accidental "sharp"})}
          (sut/reorder-solution
-           62
            (sorted-map 62 {:instrument-id "HP", :accidental "natural"}
                        63 {:instrument-id "CB", :accidental "sharp"})
            62 63)
          (sut/reorder-solution
-           62
            (sorted-map 62 {:instrument-id "HP", :accidental "natural"}
                        63 {:instrument-id "CB", :accidental "sharp"})
            63 62)))
@@ -24,7 +22,6 @@
           :solution (sorted-map 63 {:instrument-id "CB", :accidental "sharp"}
                                 64 {:instrument-id "HP", :accidental "doublesharp"})}
          (sut/reorder-solution
-           62
            (sorted-map 62 {:instrument-id "HP", :accidental "natural"}
                        63 {:instrument-id "CB", :accidental "sharp"})
            62 64))))
