@@ -2,8 +2,13 @@
 
 set -xe
 
-git diff --exit-code
-git diff --cached --exit-code
+if git diff --exit-code ; then
+  echo "ERROR: Unchecked changes"
+  exit 1
+fi
+if git diff --cached --exit-code ; then
+  echo "ERROR: Uncommitted changes"
+fi
 
 ./compile.clj
 
