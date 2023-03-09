@@ -1,3 +1,5 @@
+-- @noindex
+
 -- TODO suggest (or provide constrait for) middle for Virtual MIDI keyboard
 notation_name = "D5 Enharmonic Drum Notation"
 root = "D4"
