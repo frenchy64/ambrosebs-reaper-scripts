@@ -1,12 +1,12 @@
 #!/bin/bash
 
-set -xe
+set -e
 
-if git diff --exit-code ; then
+if ! git diff --exit-code ; then
   echo "ERROR: Unchecked changes"
   exit 1
 fi
-if git diff --cached --exit-code ; then
+if ! git diff --cached --exit-code ; then
   echo "ERROR: Uncommitted changes"
 fi
 
