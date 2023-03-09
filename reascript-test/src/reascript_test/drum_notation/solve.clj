@@ -35,14 +35,14 @@
          (apply distinct? instrument-ids)]
    :post [(every? allocation? %)]}
   (let [;; heuristic: trim states that contain allocations that are impossible based on the previous note's possible allocations
-        impossible-allocations (when (seq previous-allocations)
+        impossible-allocations (if (seq previous-allocations)
                                  ;; TODO if the NEXT allocation is very sparse, then don't bother adding doublesharp, it's probably useless
                                  (let []
-                                   (not-empty
-                                     (-> ;; if the previous allocation always chooses a particular midi note, cull allocations that include that note
-                                         (apply set/intersection (map (comp set keys) previous-allocations))
-                                         ))))
-        possible-midi-nums (enharmonic-midi-numbers root notated)
+                                   (-> ;; if the previous allocation always chooses a particular midi note, cull allocations that include that note
+                                       (apply set/intersection (map (comp set keys) previous-allocations))
+                                       ))
+                                 #{})
+        possible-midi-nums (remove impossible-allocations (enharmonic-midi-numbers root notated))
         n-instruments (count instrument-ids)]
     ;; heuristic: try and pack notes to the left first
     (cond
@@ -53,7 +53,7 @@
       :else
       (if-some [always-available (let [previous-min (apply min (mapcat keys previous-allocations))]
                                    (when (= 1 n-instruments)
-                                     (some #(when (and (<= previous-min %)
+                                     (some #(when (and (< previous-min %)
                                                        (not-any? (fn [allocation]
                                                                    (allocation %))
                                                                  previous-allocations))
@@ -62,9 +62,7 @@
         ;; choose left-most slot that's always available and not less than the minimum of the previous allocation
         [{always-available (first instrument-ids)}]
         (into [] (keep (fn [ns]
-                         (when (or (not impossible-allocations)
-                                   (empty? (set/intersection (set ns) impossible-allocations)))
-                           (zipmap ns instrument-ids))))
+                         (zipmap ns instrument-ids)))
               ;; heuristic: trim states where two instruments are interchanged for no reason
               (comb/combinations
                 possible-midi-nums
