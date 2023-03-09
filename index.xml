@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="frenchy64-reaper-scripts" commit="5dbda7687f0b26d97db1397adf962071d5091059">
+<index version="1" name="ambrosebs-reaper-scripts" commit="5dbda7687f0b26d97db1397adf962071d5091059">
   <category name="MIDI Editor">
     <reapack name="ambrosebs_Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone.lua" type="script" desc="Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone">
       <metadata>
@@ -43,7 +43,7 @@
 }
 ]]></description>
       </metadata>
-      <version name="1.0" author="frenchy64" time="2023-03-07T08:30:01Z">
+      <version name="1.0" author="ambrosebs" time="2023-03-07T08:30:01Z">
         <source main="midi_editor">https://github.com/frenchy64/frenchy64-reaper-scripts/raw/2571f0bde8e95531fb2bc7ceccc0ddff5a4df4af/MIDI%20Editor/ambrosebs_Inherit%20first%20accidentals.lua</source>
       </version>
     </reapack>
