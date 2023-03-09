@@ -50,6 +50,7 @@
                  {:midi-name "D"
                   :octave 4}
                  {"D4" ["HP", "CB"]}))))
+  ;;FIXME this is wrong. missing HP
   (is (= {62 {:instrument-id "K2", :accidental "doubleflat"}
           63 {:instrument-id "K1", :accidental "doubleflat"}
           65 {:instrument-id "T5", :accidental "doubleflat"}
