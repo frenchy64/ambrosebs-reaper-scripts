@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="frenchy64-reaper-scripts" commit="fbd88fe7f44026f54f2e810d3954a391435d9ffe">
+<index version="1" name="frenchy64-reaper-scripts" commit="39d3a8c6810d5c4bbc690c632412aea4ba261ada">
   <category name="Example">
     <reapack name="frenchy64_Hello world.lua" type="script" desc="frenchy64's Hello world">
       <metadata>
@@ -40,6 +40,12 @@ Markdown
       </version>
       <version name="1.2" author="frenchy64" time="2023-03-09T15:45:25Z">
         <source main="midi_editor">https://github.com/frenchy64/frenchy64-reaper-scripts/raw/ef6d950f91b868b4ed500e0ff016e21af904d95f/MIDI%20Editor/ambrosebs_Go%20forward%204%20bars%20in%20Notation,%20otherwise%20decrease%20pitch%20cursor%20one%20semitone.lua</source>
+      </version>
+      <version name="1.3" author="frenchy64" time="2023-03-09T15:53:04Z">
+        <source main="midi_editor">https://github.com/frenchy64/frenchy64-reaper-scripts/raw/634050cf643a728cb7b8bb65f7117ee41c25da2b/MIDI%20Editor/ambrosebs_Go%20forward%204%20bars%20in%20Notation,%20otherwise%20decrease%20pitch%20cursor%20one%20semitone.lua</source>
+      </version>
+      <version name="1.4" author="frenchy64" time="2023-03-09T16:57:06Z">
+        <source main="midi_editor">https://github.com/frenchy64/frenchy64-reaper-scripts/raw/39d3a8c6810d5c4bbc690c632412aea4ba261ada/MIDI%20Editor/ambrosebs_Go%20forward%204%20bars%20in%20Notation,%20otherwise%20decrease%20pitch%20cursor%20one%20semitone.lua</source>
       </version>
     </reapack>
     <reapack name="ambrosebs_Inherit first accidentals.lua" type="script">
