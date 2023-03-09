@@ -12,10 +12,11 @@
          ;; than can be written on the staff, the lowest note allocatable
          ;; to an instrument, or both?
          (<= root notated)
-         (c-major-midi-number? notated)]}
-  (into (sorted-set)
-        (range (max root (- notated 2))
-               (+ notated 3))))
+         (c-major-midi-number? notated)]
+   :post [(vector? %)
+          (every? midi-number? %)]}
+  (vec (range (max root (- notated 2))
+              (+ notated 3))))
 
 (defn allocation? [v]
   (and (map? v)
@@ -35,16 +36,30 @@
    :post [(every? allocation? %)]}
   (let [;; heuristic: trim states that contain allocations that are impossible based on the previous note's possible allocations
         impossible-allocations (when (seq previous-allocations)
-                                 (not-empty (apply set/intersection (map (comp set keys) previous-allocations))))]
+                                 (let []
+                                   (not-empty
+                                     (-> ;; if the previous allocation always chooses a particular midi note, cull allocations that include that note
+                                         (apply set/intersection (map (comp set keys) previous-allocations))
+                                         ;; TODO if the NEXT allocation is very sparse, then don't bother adding doublesharp, it's probably useless
+                                         ;; if the previous allocation 
+                                         (into
+                                           )))))
+        possible-midi-nums (enharmonic-midi-numbers root notated)
+        n-instruments (count instrument-ids)]
     ;; heuristic: try and pack notes to the left first
-    (into [] (keep (fn [ns]
-                     (when (or (not impossible-allocations)
-                               (empty? (set/intersection (set ns) impossible-allocations)))
-                       (zipmap ns instrument-ids))))
-          ;; heuristic: trim states where two instruments are interchanged for no reason
-          (comb/combinations
-            (vec (enharmonic-midi-numbers root notated))
-            (count instrument-ids)))))
+    (if (empty? previous-allocations)
+      ;; pack initial allocation to the left (if they fit at all)
+      (cond-> [] 
+        (<= n-instruments (count possible-midi-nums))
+        (conj (zipmap possible-midi-nums instrument-ids)))
+      (into [] (keep (fn [ns]
+                       (when (or (not impossible-allocations)
+                                 (empty? (set/intersection (set ns) impossible-allocations)))
+                         (zipmap ns instrument-ids))))
+            ;; heuristic: trim states where two instruments are interchanged for no reason
+            (comb/combinations
+              possible-midi-nums
+              n-instruments)))))
 
 (defn possible-allocations
   [root num-cs]
@@ -69,7 +84,6 @@
                                       num-cs)
         possible-states (possible-allocations root-num num-cs)
         all-states (apply comb/cartesian-product possible-states)
-        _ (clojure.pprint/pprint possible-states)
         all-solutions (keep (fn [state]
                               (when (apply distinct? (mapcat keys state))
                                 (into (sorted-map)

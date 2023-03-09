@@ -7,33 +7,38 @@
             [reascript-test.drum-notation.test-helpers :as th]))
 
 (deftest enharmonic-midi-numbers
-  (is (= (sorted-set 58 59 60 61 62)
+  (is (= [58 59 60 61 62]
          (sut/enharmonic-midi-numbers 58 60)
          (sut/enharmonic-midi-numbers 0 60)))
-  (is (= (sorted-set 59 60 61 62)
+  (is (= [59 60 61 62]
          (sut/enharmonic-midi-numbers 59 60)))
-  (is (= (sorted-set 60 61 62)
+  (is (= [60 61 62]
          (sut/enharmonic-midi-numbers 60 60)))
   (is (thrown? AssertionError (sut/enharmonic-midi-numbers 61 60))))
 
 (deftest possible-allocations-test
-  (is (= [[{62 "HP", 63 "CB"} {62 "HP", 64 "CB"} {63 "HP", 64 "CB"}]
-          [{62 "K2"} {63 "K2"} {64 "K2"} {65 "K2"} {66 "K2"}]]
-         (sut/possible-allocations (midi-coord->number (:root gp8/drum-notation-map1))
+  (is (= [[{62 "HP", 63 "CB"}]]
+         (sut/possible-allocations 62
+                                   (sorted-map 62 ["HP" "CB"]))))
+  (is (= [[{62 "HP", 63 "CB"}]
+          [{64 "K2"} {65 "K2"} {66 "K2"}]]
+         (sut/possible-allocations 62
                                    (sorted-map 62 ["HP" "CB"]
-                                               ;; K2 shouldn't be allocated to 62, since
-                                               ;; {62 "HP" 63 "CB" 64 "K2"} and 
-                                               ;; {62 "K2" 63 "HP" 64 "CB"} are basically the same
                                                64 ["K2"]))))
-  (is (= [[{62 "HP", 63 "CB"} {62 "HP", 64 "CB"} {63 "HP", 64 "CB"}]
-          [{62 "K2"} {63 "K2"} {64 "K2"} {65 "K2"} {66 "K2"}]
+  (is (= [[{60 "L1", 61 "L2", 62 "HP", 63 "CB"}]
+          [{64 "K2"} {65 "K2"} {66 "K2"}]]
+         (sut/possible-allocations 60
+                                   (sorted-map 62 ["L1" "L2" "HP" "CB"]
+                                               64 ["K2"]))))
+  (is (= [[{62 "HP", 63 "CB"}]
+          [{64 "K2"} {65 "K2"} {66 "K2"}]
           [{63 "K1"} {64 "K1"} {65 "K1"} {66 "K1"} {67 "K1"}]]
          (sut/possible-allocations (midi-coord->number (:root gp8/drum-notation-map1))
                                    (into (sorted-map)
                                          (select-keys (coord-str-constraints->midi-number-constraints (:notation-map gp8/drum-notation-map1))
                                                       (range 62 66))))))
-  (is (= [[{62 "HP", 63 "CB"} {62 "HP", 64 "CB"} {63 "HP", 64 "CB"}]
-          [{62 "K2"} {63 "K2"} {64 "K2"} {65 "K2"} {66 "K2"}]
+  (is (= [[{62 "HP", 63 "CB"}]
+          [{64 "K2"} {65 "K2"} {66 "K2"}]
           [{63 "K1"} {64 "K1"} {65 "K1"} {66 "K1"} {67 "K1"}]
           [{65 "T5"} {66 "T5"} {67 "T5"} {68 "T5"} {69 "T5"}]
           [{67 "T4"} {68 "T4"} {69 "T4"} {70 "T4"} {71 "T4"}]
