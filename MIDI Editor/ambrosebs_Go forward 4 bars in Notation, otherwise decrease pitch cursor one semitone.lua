@@ -1,6 +1,6 @@
 -- @description Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone
 -- @author frenchy64
--- @version 1.4
+-- @version 1.5
 -- @about
 --    Intended to be assigned to the Down arrow in the MIDI Editor, this action simulates pressing Down
 --    in musical notation software such as Dorico by guessing how many bars the music
