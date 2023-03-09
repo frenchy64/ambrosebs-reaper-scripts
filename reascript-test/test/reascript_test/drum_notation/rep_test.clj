@@ -63,3 +63,15 @@
   (is (thrown? Exception (sut/accidental-relative-to 60 63)))
   (is (= ["doubleflat" "flat" "natural" "sharp" "doublesharp"]
          (mapv #(sut/accidental-relative-to 60 %) (range 58 63)))))
+
+(deftest notated-midi-num-for-test
+  (is (= 60 (sut/notated-midi-num-for 58 "doubleflat")))
+  (is (= 59 (sut/notated-midi-num-for 59 "natural")))
+  (is (= 60 (sut/notated-midi-num-for 59 "flat")))
+  (is (= 60 (sut/notated-midi-num-for 60 "natural")))
+  (is (= 60 (sut/notated-midi-num-for 61 "sharp")))
+  (is (= 60 (sut/notated-midi-num-for 62 "doublesharp")))
+  (is (= 62 (sut/notated-midi-num-for 62 "natural")))
+  (is (thrown? AssertionError (sut/notated-midi-num-for 0 "flat")))
+  (is (thrown? AssertionError (sut/notated-midi-num-for 61 "natural")))
+  (is (thrown? AssertionError (sut/notated-midi-num-for 127 "flat"))))

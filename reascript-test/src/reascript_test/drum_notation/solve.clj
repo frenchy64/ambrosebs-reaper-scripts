@@ -17,17 +17,6 @@
   (vec (range (max root (- notated 2))
               (+ notated 3))))
 
-(defn solution-or-error? [m]
-  (and (map? m)
-       (case (:type m)
-         :solution (solution? (:solution m))
-         :error (let [{:keys [instrument-clashes message]} m]
-                  (and (string? message)
-                       (set? instrument-clashes)
-                       (seq instrument-clashes)
-                       (every? instrument-id? instrument-clashes)))
-         false)))
-
 (defn find-solution [root-coord str-cs]
   {:pre [(midi-coord? root-coord)
          (notation-constraints? str-cs)]
@@ -48,14 +37,14 @@
                                  root-num)]
         (if-not (midi-number? next-free-midi-num)
           {:type :error
-           :instrument-clashes #{id}
+           :data {:instrument-clashes #{id}}
            :message "Could not fit instrument into MIDI range"}
           (let [allocated-midi-num (some #(when (<= next-free-midi-num %)
                                             %)
                                          (enharmonic-midi-numbers root-num notated-num))]
             (if-not allocated-midi-num
               {:type :error
-               :instrument-clashes #{id (-> solution rseq first val :instrument-id)}
+               :data {:instrument-clashes #{id (-> solution rseq first val :instrument-id)}}
                :message "Insufficient room for instruments"})
             (let [solution (assoc solution allocated-midi-num
                                   {:instrument-id id

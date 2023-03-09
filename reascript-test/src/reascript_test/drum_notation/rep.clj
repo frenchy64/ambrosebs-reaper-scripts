@@ -1,5 +1,6 @@
 (ns reascript-test.drum-notation.rep
   (:require [clojure.data :as data]
+            [clojure.set :as set]
             [clojure.string :as str]))
 
 (def midi-names ["C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A" "A#" "B"])
@@ -149,13 +150,34 @@
                 v}))
         cs))
 
+(def accidental->semitones
+  {"doubleflat" -2
+   "flat" -1 
+   "natural" 0 
+   "sharp" 1 
+   "doublesharp" 2})
+
+(def semitones->accidental
+  (set/map-invert accidental->semitones))
+
 (defn accidental-relative-to [note respell]
   {:pre [(c-major-midi-number? note)
          (midi-number? respell)]
    :post [(reaper-accidental? %)]}
-  (case (- respell note)
-    -2 "doubleflat"
-    -1 "flat"
-    0 "natural"
-    1 "sharp"
-    2 "doublesharp"))
+  (semitones->accidental (- respell note)))
+
+(defn notated-midi-num-for [midi-num accidental]
+  {:pre [(midi-number? midi-num)
+         (reaper-accidental? accidental)]
+   :post [(c-major-midi-number? %)]}
+  (- midi-num (accidental->semitones accidental)))
+
+(defn solution-or-error? [m]
+  (and (map? m)
+       (case (:type m)
+         :solution (and (= 2 (count m))
+                        (solution? (:solution m)))
+         :error (and (string? (:message m))
+                     (map? (:data m))
+                     (= 3 (count m)))
+         false)))

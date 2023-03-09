@@ -3,6 +3,7 @@
             [reascript-test.drum-notation.solve :as solve]))
 
 (defn infer-notation-mappings [spec]
-  {:pre [(notation-spec? spec)]}
+  {:pre [(notation-spec? spec)]
+   :post [(solution-or-error? %)]}
   (solve/find-solution (:root spec)
                        (:notation-map spec)))
