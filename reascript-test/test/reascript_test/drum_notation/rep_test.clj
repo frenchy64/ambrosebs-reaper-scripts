@@ -75,3 +75,9 @@
   (is (thrown? AssertionError (sut/notated-midi-num-for 0 "flat")))
   (is (thrown? AssertionError (sut/notated-midi-num-for 61 "natural")))
   (is (thrown? AssertionError (sut/notated-midi-num-for 127 "flat"))))
+
+(deftest enharmonically-respellable?-test
+  (is (= {true [58 59 60 61 62]
+          false [55 56 57 63 64 65]}
+         (group-by #(sut/enharmonically-respellable? 60 %)
+                   (range 55 66)))))

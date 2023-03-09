@@ -15,8 +15,7 @@
       (let [from-notated (notated-midi-num-for from (:accidental from-info))
             to-info (solution to)]
         (if-not to-info
-          (if-not (some #(= (+ % to) from-notated)
-                        (vals accidental->semitones))
+          (if-not (enharmonically-respellable? from-notated to)
             {:type :error
              :data {:from from-notated :to to}
              :message "Cannot move note outside of its staff line"}

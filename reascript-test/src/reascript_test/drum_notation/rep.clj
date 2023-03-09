@@ -181,3 +181,11 @@
                      (map? (:data m))
                      (= 3 (count m)))
          false)))
+
+(defn enharmonically-respellable?
+  [notated-num candidate]
+  {:pre [((every-pred midi-number?) notated-num candidate)]
+   :post [(boolean? %)]}
+  (boolean
+    (some #(= (+ % candidate) notated-num)
+          (vals accidental->semitones))))
