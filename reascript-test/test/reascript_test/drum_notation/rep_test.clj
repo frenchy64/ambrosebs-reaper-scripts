@@ -47,3 +47,19 @@
           81 ["C1" "SP"]
           83 ["CH"]}
         (sut/coord-str-constraints->midi-number-constraints (:notation-map gp8/drum-notation-map1)))))
+
+(deftest c-major-midi-name?-test
+  (is (= {true ["C" "D" "E" "F" "G" "A" "B"]
+          false ["C#" "D#" "F#" "G#" "A#"]}
+        (group-by sut/c-major-midi-name? sut/midi-names))))
+
+(deftest c-major-midi-number?-test
+  (is (= {true [0 2 4 5 7 9 11]
+          false [1 3 6 8 10]}
+         (group-by sut/c-major-midi-number? (range 0 12)))))
+
+(deftest accidental-relative-to
+  (is (thrown? Exception (sut/accidental-relative-to 60 57)))
+  (is (thrown? Exception (sut/accidental-relative-to 60 63)))
+  (is (= ["doubleflat" "flat" "natural" "sharp" "doublesharp"]
+         (mapv #(sut/accidental-relative-to 60 %) (range 58 63)))))

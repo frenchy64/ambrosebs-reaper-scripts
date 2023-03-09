@@ -7,6 +7,9 @@
 (def midi-name->pos (into {} (map-indexed (fn [i m] {m i})) midi-names))
 (defn midi-name? [n]
   (contains? midi-names-set n))
+(defn c-major-midi-name? [n]
+  {:pre [(midi-name? n)]}
+  (= 1 (count n)))
 
 (assert (apply distinct? midi-names))
 (assert (= 12 (count midi-names)))
@@ -62,6 +65,10 @@
                 (+ lowest-midi-octave
                    (quot n (count midi-names)))))
 
+(defn c-major-midi-number? [n]
+  {:pre [(midi-number? n)]}
+  (-> n midi-number->coord :midi-name c-major-midi-name?))
+
 ;; 0 => C-1
 ;; 12 => C-1
 ;; 24 => C-1
@@ -95,6 +102,7 @@
 (defn midi-number-constraints? [m]
   (and (map? m)
        (sorted? m)
+       ;;TODO assert C major midi number
        (every? midi-number? (keys m))
        (every? (every-pred vector?
                            #(every? instrument-id? %))
@@ -102,7 +110,10 @@
 
 (defn notation-constraints? [m]
   (and (map? m)
-       (every? parse-midi-coord (keys m))
+       (every? (comp c-major-midi-name?
+                     :midi-name
+                     parse-midi-coord)
+               (keys m))
        (every? (every-pred vector?
                            #(every? instrument-id? %))
                (vals m))))
@@ -132,7 +143,17 @@
    :post [(midi-number-constraints? %)]}
   (into (sorted-map)
         (map (fn [[midi-coord-str v]]
-               (prn midi-coord-str)
                {(-> midi-coord-str parse-midi-coord midi-coord->number)
                 v}))
         cs))
+
+(defn accidental-relative-to [note respell]
+  {:pre [(c-major-midi-number? note)
+         (midi-number? respell)]
+   :post [(reaper-accidental? %)]}
+  (case (- respell note)
+    -2 "doubleflat"
+    -1 "flat"
+    0 "natural"
+    1 "sharp"
+    2 "doublesharp"))

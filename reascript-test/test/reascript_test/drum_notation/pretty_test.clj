@@ -1,19 +1,9 @@
 (ns reascript-test.drum-notation.pretty-test
-  (:require [clojure.data :as data]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
             [clojure.test :refer [deftest is]]
             [reascript-test.drum-notation.guitar-pro8 :as gp8]
-            [reascript-test.drum-notation.pretty :as sut]))
-
-(defmacro is-string= [s1 s2]
-  `(let [s1# ~s1
-         s2# ~s2]
-     (is (= s1# s2#)
-         (pr-str (data/diff (str/split-lines s1#)
-                            (str/split-lines s2#))))))
-
-(defn- str->str-join-expr [s]
-  (list 'str/join "\n" (str/split-lines s)))
+            [reascript-test.drum-notation.pretty :as sut]
+            [reascript-test.drum-notation.test-helpers :refer :all]))
 
 (def example-piano-ascii
   (str/join "\n"
