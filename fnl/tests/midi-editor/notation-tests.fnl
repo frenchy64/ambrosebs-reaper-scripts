@@ -1,18 +1,25 @@
 (require-macros :init-macros)
 
-(deftest vararg-test
-  (testing "vararg detection"
-    (let [foo (fn [...]
-                (assert-eq 3 (select "#" ...))
-                (assert-ne 4 (select "#" ...))
-                (assert-is (= 3 (select "#" ...)))
-                (assert-not (= 4 (select "#" ...))))]
-      (foo nil nil nil)))
-  (testing "vararg comes from macro"
-    (macro foo [...]
-      `((fn [...] ,...) nil nil nil))
-    (foo
-     (assert-eq 3 (select "#" ...))
-     (assert-ne 4 (select "#" ...))
-     (assert-is (= 3 (select "#" ...)))
-     (assert-not (= 4 (select "#" ...))))))
+(local sut (require :midi-editor/notation))
+
+(fn make-editor [R]
+  {})
+
+(fn make-R [R]
+  {:MIDIEditor_GetActive (fn [] (assert nil ":MIDIEditor_GetActive"))
+   :MIDIEditor_GetMode (fn [editor] (assert nil ":MIDIEditor_GetMode"))
+   :ShowConsoleMsg (fn [...] (assert nil ":ShowConsoleMsg"))
+   :MIDIEditor_OnCommand (fn [editor id] (assert nil ":MIDIEditor_OnCommand"))})
+
+(fn stub [R]
+  (local notation (require :midi-editor/notation))
+  (notation.set-reaper! R)
+  notation)
+
+(deftest in-musical-notation?-test
+  (each [mode expected (pairs {0 false 1 false 2 true -1 false})]
+    (let [n (stub
+              (doto (make-R)
+                    (tset "MIDIEditor_GetMode" (fn [editor] mode))))]
+      (assert-eq expected (n.in-musical-notation? (make-editor))
+                 (.. mode " " (tostring expected))))))

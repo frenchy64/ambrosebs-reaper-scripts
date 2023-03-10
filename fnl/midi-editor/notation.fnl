@@ -41,12 +41,9 @@
    :ShowConsoleMsg (fn [...])
    :MIDIEditor_OnCommand (fn [editor id])})
 
-(fn stub-reaper! []
-  (set-reaper! R-stub))
-
 ; (local n (require "midi-editor/notation"))
 {: set-reaper!
  : init
  : go-up
  : go-down
- : stub-reaper!}
+ : in-musical-notation?}
