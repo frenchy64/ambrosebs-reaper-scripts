@@ -42,6 +42,7 @@
                              (-> (tasks/shell {:out :string} "git rev-parse --short HEAD")
                                  :out
                                  str/trim)
+                             "/fnl/"
                              (str/replace (url-encode fnl) "+" "%20"))
                      (slurp lua)]))))
 
