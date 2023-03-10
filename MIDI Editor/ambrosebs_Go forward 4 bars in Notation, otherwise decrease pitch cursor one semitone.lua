@@ -6,7 +6,7 @@
 --    in musical notation software such as Dorico by guessing how many bars the music
 --    is zoomed by. If in a different MIDI editor mode, decreases the pitch cursor,
 --    which goes "down" in that view.
--- compiled from https://github.com/frenchy64/ambrosebs-reaper-scripts/blob/2f8374d/midi-editor%2Fnotation.fnl
+-- compiled from https://github.com/frenchy64/ambrosebs-reaper-scripts/blob/cfa00c5/midi-editor%2Fnotation.fnl
 local R = _G.reaper
 local function set_reaper_21(r)
   R = r
