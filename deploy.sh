@@ -10,7 +10,9 @@ if ! git diff --cached --exit-code ; then
   echo "ERROR: Uncommitted changes"
 fi
 
+cd fnl
 ./compile.clj
+cd -
 
 if ! git diff --exit-code ; then
   git add .

@@ -6,34 +6,30 @@
 --    in musical notation software such as Dorico by guessing how many bars the music
 --    is zoomed by. If in a different MIDI editor mode, decreases the pitch cursor,
 --    which goes "down" in that view.
--- compiled from https://github.com/frenchy64/ambrosebs-reaper-scripts/blob/faa7c68/MIDI%20Editor%2Fambrosebs_Go%20forward%204%20bars%20in%20Notation%2C%20otherwise%20decrease%20pitch%20cursor%20one%20semitone.fnl
-local function in_musical_notation_3f(reaper, editor)
-  return (2 == reaper.MIDIEditor_GetMode(editor))
+-- compiled from https://github.com/frenchy64/ambrosebs-reaper-scripts/blob/2f8374d/midi-editor%2Fnotation.fnl
+local R = _G.reaper
+local function set_reaper_21(r)
+  R = r
+  return r
 end
-if __fnl_global__debug_2dmode then
-  reaper.ShowConsoleMsg("Running test\n")
-else
+local function in_musical_notation_3f(editor)
+  return (2 == R.MIDIEditor_GetMode(editor))
 end
-local function go_down(reaper)
-  local editor = reaper.MIDIEditor_GetActive()
+local function go_dir(notation, other)
+  local editor = R.MIDIEditor_GetActive()
   if in_musical_notation_3f(editor) then
     for i = 1, 4 do
-      reaper.MIDIEditor_OnCommand(editor, 40682)
+      R.MIDIEditor_OnCommand(editor, notation)
     end
     return nil
   else
-    return reaper.MIDIEditor_OnCommand(editor, 40050)
+    return R.MIDIEditor_OnCommand(editor, other)
   end
 end
-local function go_up(reaper)
-  local editor = reaper.MIDIEditor_GetActive()
-  if in_musical_notation_3f(editor) then
-    for i = 1, 4 do
-      reaper.MIDIEditor_OnCommand(editor, 40683)
-    end
-    return nil
-  else
-    return reaper.MIDIEditor_OnCommand(editor, 40049)
-  end
+local function go_down()
+  return go_dir(40682, 40050)
 end
-return go_down({})
+local function go_up()
+  return go_dir(40683, 40049)
+end
+return {["set-reaper!"] = set_reaper_21, ["go-up"] = go_up, ["go-down"] = go_down, ["in-musical-notation?"] = in_musical_notation_3f}
