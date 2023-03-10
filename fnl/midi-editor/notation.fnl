@@ -18,31 +18,20 @@
 (fn in-musical-notation? [editor]
   (= 2 (R.MIDIEditor_GetMode editor)))
 
-(fn go-down []
+(fn go-dir [notation other]
   (let [editor (R.MIDIEditor_GetActive)]
     (if (in-musical-notation? editor)
-      (for [i 1 4] (R.MIDIEditor_OnCommand editor 40682))
-      (R.MIDIEditor_OnCommand editor 40050))))
+      (for [i 1 4] (R.MIDIEditor_OnCommand editor notation))
+      (R.MIDIEditor_OnCommand editor other))))
+
+(fn go-down []
+  (go-dir 40682 40050))
 
 (fn go-up []
-  (let [editor (R.MIDIEditor_GetActive)]
-    (if (in-musical-notation? editor)
-      (for [i 1 4] (R.MIDIEditor_OnCommand editor 40683))
-      (R.MIDIEditor_OnCommand editor 40049))))
-
-(fn init []
-  (set R _G.reaper)
-  (go-down))
-
-(local R-stub
-  {:MIDIEditor_GetActive (fn [] {})
-   :MIDIEditor_GetMode (fn [editor] 2)
-   :ShowConsoleMsg (fn [...])
-   :MIDIEditor_OnCommand (fn [editor id])})
+  (go-dir 40683 40049))
 
 ; (local n (require "midi-editor/notation"))
 {: set-reaper!
- : init
  : go-up
  : go-down
  : in-musical-notation?}
