@@ -2,8 +2,7 @@
 
 (require '[babashka.process :as p :refer [process]]
          '[babashka.tasks :as tasks]
-         '[clojure.string :as str]
-         '[org.httpkit.client :refer [url-encode]])
+         '[clojure.string :as str])
 
 (defn fnl-header-as-lua [fnl]
   (->> (slurp fnl)
@@ -42,8 +41,7 @@
                              (-> (tasks/shell {:out :string} "git rev-parse --short HEAD")
                                  :out
                                  str/trim)
-                             "/fnl/"
-                             (str/replace (url-encode fnl) "+" "%20"))
+                             (str "fnl/" fnl))
                      (slurp lua)]))))
 
 (compile-reapack-fnl-script
