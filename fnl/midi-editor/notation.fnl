@@ -19,7 +19,6 @@
   (= 2 (R.MIDIEditor_GetMode editor)))
 
 (fn go-down []
-  (print R)
   (let [editor (R.MIDIEditor_GetActive)]
     (if (in-musical-notation? editor)
       (for [i 1 4] (R.MIDIEditor_OnCommand editor 40682))
