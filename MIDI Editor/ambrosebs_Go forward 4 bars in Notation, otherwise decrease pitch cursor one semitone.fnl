@@ -7,21 +7,25 @@
 ;;    is zoomed by. If in a different MIDI editor mode, decreases the pitch cursor,
 ;;    which goes "down" in that view.
 
-(fn in-musical-notation? [editor]
-  (= 2 (reaper.MIDIEditor_GetMode editor)))
+(global R {})
 
-(when debug-mode (reaper.ShowConsoleMsg "Running test\n"))
+(fn in-musical-notation? [editor]
+  (= 2 (R.MIDIEditor_GetMode editor)))
+
+(when _G.debug-mode (R.ShowConsoleMsg "Running test\n"))
 
 (fn go-down []
-  (let [editor (reaper.MIDIEditor_GetActive)]
+  (let [editor (R.MIDIEditor_GetActive)]
     (if (in-musical-notation? editor)
-      (for [i 1 4] (reaper.MIDIEditor_OnCommand editor 40682))
-      (reaper.MIDIEditor_OnCommand editor 40050))))
+      (for [i 1 4] (R.MIDIEditor_OnCommand editor 40682))
+      (R.MIDIEditor_OnCommand editor 40050))))
 
-(fn go-up []
+(fn go-up [reaper]
   (let [editor (reaper.MIDIEditor_GetActive)]
     (if (in-musical-notation? editor)
       (for [i 1 4] (reaper.MIDIEditor_OnCommand editor 40683))
       (reaper.MIDIEditor_OnCommand editor 40049))))
 
-(go-down)
+(fn init []
+  (set reaper reaper)
+  (go-down))
