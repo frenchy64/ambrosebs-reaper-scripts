@@ -1,0 +1,1 @@
+./bin/runner tests/midi-editor/notation-tests.fnl
