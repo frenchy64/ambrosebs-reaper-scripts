@@ -24,19 +24,24 @@
       (assert-eq expected (n.in-musical-notation? (make-editor))
                  (.. mode " " (tostring expected))))))
 
-(deftest go-down-test
-  (each [mode expected (pairs {0 [40050]
-                               1 [40050]
-                               2 [40682 40682 40682 40682]
-                               -1 [40050]})]
-    (let [commands []]
-      (var R nil)
-      (set R (doto (make-R)
-                   (tset "MIDIEditor_GetActive" (fn [] (make-editor R)))
-                   (tset "MIDIEditor_GetMode" (fn [editor] mode))
-                   (tset "MIDIEditor_OnCommand" (fn [editor command]
-                                                  (table.insert commands command)))))
-      (let [n (stub R)]
-        (n.go-down)
-        (assert-eq expected commands
-                   (.. "Mode: " mode))))))
+(deftest go-down+up-test
+  (each [method cases (pairs {"go-down" {0 [40050]
+                                         1 [40050]
+                                         2 [40682 40682 40682 40682]
+                                         -1 [40050]}
+                              "go-up" {0 [40049]
+                                       1 [40049]
+                                       2 [40683 40683 40683 40683]
+                                       -1 [40049]}})]
+    (each [mode expected (pairs cases)]
+      (let [commands []]
+        (var R nil)
+        (set R (doto (make-R)
+                     (tset "MIDIEditor_GetActive" (fn [] (make-editor R)))
+                     (tset "MIDIEditor_GetMode" (fn [editor] mode))
+                     (tset "MIDIEditor_OnCommand" (fn [editor command]
+                                                    (table.insert commands command)))))
+        (let [n (stub R)]
+          ((. n method))
+          (assert-eq expected commands
+                     (.. "Method: " method ", " "Mode: " mode)))))))
