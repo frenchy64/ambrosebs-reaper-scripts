@@ -1,5 +1,5 @@
 (require-macros :fennel-test)
-(local json (require :json.lua/json))
+(local json (require :json-lua/json))
 (lambda slurp-json [file]
   (match (io.open file)
     ;; when io.open succeeds, it will return a file, but if it fails it will
