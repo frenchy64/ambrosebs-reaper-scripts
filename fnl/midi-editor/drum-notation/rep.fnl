@@ -81,15 +81,18 @@
   (assert (midi-number? n) (.. "c-major-midi-number?: " (type n)))
   (-> n midi-number->coord (. :midi-name) c-major-midi-name?))
 
-;   ;; 0 => C-1
-;   ;; 12 => C-1
-;   ;; 24 => C-1
-;   (defn midi-coord->number [{:keys [midi-name octave] :as c}]
-;     {:pre [(midi-coord? c)]
-;      :post [(midi-number? %)]}
-;     (+ (midi-name->pos midi-name)
-;        (* 12 (inc octave))))
-;   
+;; 0 => C-1
+;; 12 => C-1
+;; 24 => C-1
+(fn midi-coord->number [c]
+  (assert (midi-coord? c) (.. "midi-coord->number: " (type c)))
+  (let [{: midi-name : octave} c]
+    (let [res (+ (. midi-name->pos midi-name)
+                 -1
+                 (* 12 (+ octave 1)))]
+      (assert (midi-number? res))
+      res)))
+
 ;   ;; TODO assert alphanumeric, no unicode
 ;   (defn instrument-id? [id]
 ;     (and (string? id)
@@ -205,6 +208,7 @@
  : ->midi-coord
  : c-major-midi-name?
  : c-major-midi-number?
+ : midi-coord->number
  : midi-coord-str
  : midi-name?
  : midi-names

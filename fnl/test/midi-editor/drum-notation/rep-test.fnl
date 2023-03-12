@@ -29,14 +29,14 @@
   (assert-eq {:midi-name "C#" :octave 0} (sut.parse-midi-coord "C#0"))
   (assert-eq {:midi-name "C" :octave 4} (sut.parse-midi-coord "C4")))
 
-;(deftest midi-coord->number-test
-;  (is (= 0 (sut/midi-coord->number {:midi-name "C" :octave -1})))
-;  (is (= 1 (sut/midi-coord->number {:midi-name "C#" :octave -1})))
-;  (is (= 12 (sut/midi-coord->number {:midi-name "C" :octave 0})))
-;  (is (= 35 (sut/midi-coord->number {:midi-name "B" :octave 1})))
-;  (is (= 36 (sut/midi-coord->number {:midi-name "C" :octave 2})))
-;  (is (= 127 (sut/midi-coord->number {:midi-name "G" :octave 9}))))
-;
+(deftest midi-coord->number-test
+  (assert-eq 0 (sut.midi-coord->number {:midi-name "C" :octave -1}))
+  (assert-eq 1 (sut.midi-coord->number {:midi-name "C#" :octave -1}))
+  (assert-eq 12 (sut.midi-coord->number {:midi-name "C" :octave 0}))
+  (assert-eq 35 (sut.midi-coord->number {:midi-name "B" :octave 1}))
+  (assert-eq 36 (sut.midi-coord->number {:midi-name "C" :octave 2}))
+  (assert-eq 127 (sut.midi-coord->number {:midi-name "G" :octave 9})))
+
 ;(deftest coord-str-constraints->midi-number-constraints-test
 ;  (is (= {62 ["HP" "CB"]
 ;          64 ["K2"]
