@@ -23,13 +23,18 @@
   (assert (rep.notation-constraints? str-cs) "find-solution")
   (let [root-num (rep.midi-coord->number root-coord)
         num-cs (rep.coord-str-constraints->midi-number-constraints str-cs)
-        ;;TODO sort num-cs (?)
-        instrument->notated-num (do
-                                  (var h [])
-                                  (each [n is (pairs num-cs)]
-                                        (each [_ i (ipairs is)]
-                                              (table.insert h [i n])))
-                                  h)
+        instrument->notated-num (let [ordered-cs (do (var a [])
+                                                     (each [n (pairs num-cs)]
+                                                           (table.insert a n))
+                                                     (table.sort a)
+                                                     a)]
+                                  (var a [])
+                                  (each [_ n (ipairs ordered-cs)]
+                                        (let [is (. num-cs n)]
+                                          (assert is)
+                                          (each [_ i (ipairs is)]
+                                                (table.insert a [i n]))))
+                                  a)
         solution {}
         doloop (lambda doloop [instrument->notated-num-idx
                                next-free-midi-num]
@@ -55,13 +60,14 @@
                           :message "Insufficient room for instruments"})
                        (let [_ (tset solution allocated-midi-num
                                      {:instrument-id id
-                                      :accidental (rep.accidental-relative-to notated-num allocated-midi-num)})]
+                                      :accidental (rep.accidental-relative-to notated-num allocated-midi-num)})
+                             instrument->notated-num-idx (+ 1 instrument->notated-num-idx)]
                          (if (not (= nil (. instrument->notated-num instrument->notated-num-idx)))
-                           (doloop (+ 1 instrument->notated-num-idx)
+                           (doloop instrument->notated-num-idx
                                    (+ 1 next-free-midi-num))
                            {:type :solution
                             :solution solution}))))))
-        res (doloop 0 root-num)]
+        res (doloop 1 root-num)]
     (assert (rep.solution-or-error? res))
     res))
 
