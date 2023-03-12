@@ -1,0 +1,24 @@
+{
+  "midi-editor.drum-notation.solve/find-solution" : [ {
+    "id" : "small",
+    "result" : {
+      "type" : "solution",
+      "solution" : {
+        "62" : {
+          "instrument-id" : "HP",
+          "accidental" : "natural"
+        },
+        "63" : {
+          "instrument-id" : "CB",
+          "accidental" : "sharp"
+        }
+      }
+    },
+    "args" : [ {
+      "midi-name" : "D",
+      "octave" : 4
+    }, {
+      "D4" : [ "HP", "CB" ]
+    } ]
+  } ]
+}

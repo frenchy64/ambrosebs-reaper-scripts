@@ -3,4 +3,7 @@ set -e
 cd cljlib
 make
 cd ..
+cd ../common
+./gen-test-cases.clj
+cd ../fnl
 ./fennel-test/runner test/midi-editor/notation-tests.fnl test/midi-editor/drum-notation/rep-test.fnl test/midi-editor/drum-notation/solve-test.fnl

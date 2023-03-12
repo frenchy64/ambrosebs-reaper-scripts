@@ -4,7 +4,7 @@
 (local rep (require :midi-editor/drum-notation/rep))
 (local gp8 (require :midi-editor/drum-notation/guitar-pro8))
 (local sut (require :midi-editor/drum-notation/solve))
-(local th (require :midi-editor/drum-notation/test-helpers))
+(local th (require :test/midi-editor/drum-notation/test-helpers))
 
 ;(ns reascript-test.drum-notation.solve-test
 ;  (:require [clojure.test :refer [deftest is testing]]
@@ -34,7 +34,6 @@
                {:midi-name "D"
                 :octave 4}
                {"C5" ["RS" "SC" "SS"]}))
-
 
   (assert-eq {:type :solution
               :solution {62 {:instrument-id "HP" :accidental "natural"} 63 {:instrument-id "CB" :accidental "sharp"}}}
