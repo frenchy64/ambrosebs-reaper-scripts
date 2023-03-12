@@ -55,17 +55,20 @@
   (let [{: midi-name : octave} v]
     (.. midi-name octave)))
 
-;   (defn parse-midi-coord [s]
-;     {:pre [(string? s)]
-;      :post [(midi-coord? %)]}
-;     (let [trailing (Integer/parseInt (str (nth s (dec (count s)))))
-;           negative? (= \- (nth s (- (count s) 2)))
-;           octave (cond-> trailing
-;                    negative? -)
-;           nme (subs s 0 (cond-> (dec (count s))
-;                           negative? dec))]
-;       (->midi-coord nme octave)))
-;   
+(fn parse-midi-coord [s]
+  (assert (= :string (type s)))
+  (let [trailing (tonumber (string.sub s (length s) (length s)))
+        negative? (= "-" (string.sub s (- (length s) 1) (- (length s) 1)))
+        octave (if negative?
+                 (- trailing)
+                 trailing)
+        nme (string.sub s 1 (if negative?
+                              (- (length s) 2)
+                              (- (length s) 1)))
+        res (->midi-coord nme octave)]
+    (assert (midi-coord? res))
+    res))
+
 (fn midi-number->coord [n]
   (assert (midi-number? n) (.. "midi-number->coord: " n " " (type n)))
   (let [res (->midi-coord (. midi-names (+ 1 (% n (length midi-names))))
@@ -73,7 +76,7 @@
                              (// n (length midi-names))))]
     (assert (midi-coord? res))
     res))
-;   
+
 ;   (defn c-major-midi-number? [n]
 ;     {:pre [(midi-number? n)]}
 ;     (-> n midi-number->coord :midi-name c-major-midi-name?))
@@ -204,4 +207,5 @@
  : midi-name?
  : ->midi-coord
  : c-major-midi-name?
- : midi-coord-str}
+ : midi-coord-str
+ : parse-midi-coord}
