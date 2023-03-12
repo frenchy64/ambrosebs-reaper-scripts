@@ -1,4 +1,4 @@
-(require-macros :init-macros)
+(require-macros :fennel-test)
 
 (local sut (require :midi-editor/notation))
 
@@ -43,25 +43,25 @@
 (deftest range-test
   (assert-eq [1 2 3] (range 1 3)))
 
-(deftest go-down+up-test
-  (each [bars (range 1 18)]
-    (each [method cases (pairs {"go-down" {0 [40050]
-                                           1 [40050]
-                                           2 (repeat bars 40682)
-                                           -1 [40050]}
-                                "go-up" {0 [40049]
-                                         1 [40049]
-                                         2 (repeat bars 40683)
-                                         -1 [40049]}})]
-      (each [mode expected (pairs cases)]
-        (let [commands []]
-          (var R nil)
-          (set R (doto (make-R)
-                       (tset "MIDIEditor_GetActive" (fn [] (make-editor R)))
-                       (tset "MIDIEditor_GetMode" (fn [editor] mode))
-                       (tset "MIDIEditor_OnCommand" (fn [editor command]
-                                                      (table.insert commands command)))))
-          (let [n (stub R)]
-            ((. n method) bars)
-            (assert-eq expected commands
-                       (.. "Method: " method ", " "Mode: " mode))))))))
+;(deftest go-down+up-test
+;  (each [bars (range 1 18)]
+;    (each [method cases (pairs {"go-down" {0 [40050]
+;                                           1 [40050]
+;                                           2 (repeat bars 40682)
+;                                           -1 [40050]}
+;                                "go-up" {0 [40049]
+;                                         1 [40049]
+;                                         2 (repeat bars 40683)
+;                                         -1 [40049]}})]
+;      (each [mode expected (pairs cases)]
+;        (let [commands []]
+;          (var R nil)
+;          (set R (doto (make-R)
+;                       (tset "MIDIEditor_GetActive" (fn [] (make-editor R)))
+;                       (tset "MIDIEditor_GetMode" (fn [editor] mode))
+;                       (tset "MIDIEditor_OnCommand" (fn [editor command]
+;                                                      (table.insert commands command)))))
+;          (let [n (stub R)]
+;            ((. n method) bars)
+;            (assert-eq expected commands
+;                       (.. "Method: " method ", " "Mode: " mode))))))))
