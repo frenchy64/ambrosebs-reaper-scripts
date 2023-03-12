@@ -18,43 +18,54 @@
     (table.insert ns i))
   ns)
 
-;(defn find-solution [root-coord str-cs]
-;  {:pre [(midi-coord? root-coord)
-;         (notation-constraints? str-cs)]
-;   :post [(solution-or-error? %)]}
-;  (let [root-num (midi-coord->number root-coord)
-;        num-cs (coord-str-constraints->midi-number-constraints str-cs)
-;        instrument->notated-num (mapcat (fn [[n is]]
-;                                          (map vector is (repeat n)))
-;                                        num-cs)]
-;    (loop [solution (sorted-map)
-;           [[id notated-num] & instrument->notated-num] instrument->notated-num]
-;      (when (seq solution)
-;        (assert (solution? solution) (pr-str solution)))
-;      (assert (instrument-id? id) (pr-str id))
-;      (assert (midi-number? notated-num))
-;      (let [next-free-midi-num (if (seq solution)
-;                                 (-> solution rseq first key inc)
-;                                 root-num)]
-;        (if-not (midi-number? next-free-midi-num)
-;          {:type :error
-;           :data {:instrument-clashes #{id}}
-;           :message "Could not fit instrument into MIDI range"}
-;          (let [allocated-midi-num (some #(when (<= next-free-midi-num %)
-;                                            %)
-;                                         (enharmonic-midi-numbers root-num notated-num))]
-;            (if-not allocated-midi-num
-;              {:type :error
-;               :data {:instrument-clashes #{id (-> solution rseq first val :instrument-id)}}
-;               :message "Insufficient room for instruments"})
-;            (let [solution (assoc solution allocated-midi-num
-;                                  {:instrument-id id
-;                                   :accidental (accidental-relative-to notated-num allocated-midi-num)})]
-;              (if instrument->notated-num
-;                (recur solution instrument->notated-num)
-;                {:type :solution
-;                 :solution solution}))))))))
+(lambda find-solution [root-coord str-cs]
+  (assert (rep.midi-coord? root-coord) "find-solution")
+  (assert (rep.notation-constraints? str-cs) "find-solution")
+  (let [root-num (rep.midi-coord->number root-coord)
+        num-cs (rep.coord-str-constraints->midi-number-constraints str-cs)
+        ;;TODO sort num-cs (?)
+        instrument->notated-num (do
+                                  (var h [])
+                                  (each [n is (pairs num-cs)]
+                                        (each [_ i (ipairs is)]
+                                              (table.insert h [i n])))
+                                  h)
+        solution {}
+        doloop (lambda doloop [instrument->notated-num-idx
+                               next-free-midi-num]
+                 (let [[id notated-num] (. instrument->notated-num instrument->notated-num-idx)
+                       _ (assert (rep.instrument-id? id) id)
+                       _ (assert (rep.midi-number? notated-num))]
+                   (if (not (rep.midi-number? next-free-midi-num))
+                     {:type :error
+                      :data {:instrument-clashes [id]}
+                      :message "Could not fit instrument into MIDI range"}
+                     (let [allocated-midi-num (do
+                                                (var allocated-midi-num nil)
+                                                (each [_ n (ipairs (enharmonic-midi-numbers root-num notated-num))]
+                                                      (set allocated-midi-num (or allocated-midi-num
+                                                                                  (if (<= next-free-midi-num n)
+                                                                                    n
+                                                                                    nil))))
+                                                allocated-midi-num)]
+                       (if (not allocated-midi-num)
+                         {:type :error
+                          :data {:instrument-clashes [id ;(-> solution rseq first val :instrument-id) ;TODO
+                                                      ]}
+                          :message "Insufficient room for instruments"})
+                       (let [_ (tset solution allocated-midi-num
+                                     {:instrument-id id
+                                      :accidental (rep.accidental-relative-to notated-num allocated-midi-num)})]
+                         (if (not (= nil (. instrument->notated-num instrument->notated-num-idx)))
+                           (doloop (+ 1 instrument->notated-num-idx)
+                                   (+ 1 next-free-midi-num))
+                           {:type :solution
+                            :solution solution}))))))
+        res (doloop 0 root-num)]
+    (assert (rep.solution-or-error? res))
+    res))
 
 {
  : enharmonic-midi-numbers
+ : find-solution
 }

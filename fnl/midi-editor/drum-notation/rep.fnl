@@ -211,16 +211,14 @@
     (assert (c-major-midi-number? res))
     res))
 
-;   (defn solution-or-error? [m]
-;     (and (map? m)
-;          (case (:type m)
-;            :solution (and (= 2 (count m))
-;                           (solution? (:solution m)))
-;            :error (and (string? (:message m))
-;                        (map? (:data m))
-;                        (= 3 (count m)))
-;            false)))
-;   
+(lambda solution-or-error? [m]
+  (and (= :table (type m))
+       (match (. m :type)
+         :solution (solution? (. m :solution))
+         :error (and (= :string (type (. m :message)))
+                     (= :table (type (. m :data))))
+         _ false)))
+
 (lambda enharmonically-respellable?
   [notated-num candidate]
   (assert (midi-number? notated-num) "enharmonically-respellable?")
@@ -243,6 +241,7 @@
  : instruments-map?
  : midi-coord->number
  : midi-coord-str
+ : midi-coord?
  : midi-name?
  : midi-names
  : midi-number->coord
@@ -252,6 +251,7 @@
  : notation-spec?
  : parse-midi-coord
  : reaper-accidental?
+ : solution-or-error?
  : solution?
  ;: midi-name->pos
  }
