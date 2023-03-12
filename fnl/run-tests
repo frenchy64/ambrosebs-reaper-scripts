@@ -3,4 +3,4 @@ set -e
 cd cljlib
 make
 cd ..
-./fennel-test/runner test/midi-editor/notation-tests.fnl test/midi-editor/drum-notation/rep-test.fnl
+./fennel-test/runner test/midi-editor/notation-tests.fnl test/midi-editor/drum-notation/rep-test.fnl test/midi-editor/drum-notation/solve-test.fnl

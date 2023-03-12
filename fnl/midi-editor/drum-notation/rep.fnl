@@ -246,6 +246,7 @@
  : midi-name?
  : midi-names
  : midi-number->coord
+ : midi-number?
  : notated-midi-num-for
  : notation-constraints?
  : notation-spec?

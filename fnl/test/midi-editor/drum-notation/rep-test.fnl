@@ -83,3 +83,8 @@
               false [55 56 57 63 64 65]}
              (clj.group-by #(sut.enharmonically-respellable? 60 $)
                            (clj.range 55 66))))
+
+(deftest midi-number?-test
+  (assert-eq true (sut.midi-number? 0))
+  (assert-eq true (sut.midi-number? 0))
+  (assert-eq false (sut.midi-number? -1)))
