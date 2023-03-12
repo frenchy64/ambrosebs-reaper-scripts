@@ -1,20 +1,27 @@
-
 (local midi-names ["C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A" "A#" "B"])
-(local midi-names-set (set midi-names))
-;(local midi-name->pos (into {} (map-indexed (fn [i m] {m i})) midi-names))
+(local midi-names-set
+  (let [h {}]
+    (each [_ v (ipairs midi-names)]
+      (tset h v v))
+    h))
+(local midi-name->pos
+  (let [h {}]
+    (each [k v (ipairs midi-names)]
+      (tset h v k))
+    h))
 (fn midi-name? [n]
   (not (= nil (. midi-names-set n))))
 (fn c-major-midi-name? [n]
   {:pre [(midi-name? n)]}
-  (= 1 (count n)))
+  (= 1 (length n)))
 
-(assert (apply distinct? midi-names))
-(assert (= 12 (count midi-names)))
+;(assert (apply distinct? midi-names))
+(assert (= 12 (length midi-names)) (length midi-names))
 
 ;   ;; 0 => C-1
 ;   (def lowest-midi-name (first midi-names))
-;   (def lowest-midi-octave -1)
-;   (def highest-midi-octave 9)
+(local lowest-midi-octave -1)
+(local highest-midi-octave 9)
 ;   (def lowest-midi-note 0)
 ;   (def highest-midi-note 127)
 ;   
@@ -22,28 +29,30 @@
 ;     (and (nat-int? n)
 ;          (<= lowest-midi-note n highest-midi-note)))
 ;   
-;   (defn midi-octave? [o]
-;     (<= lowest-midi-octave
-;         o
-;         highest-midi-octave))
-;   
-;   (defn midi-coord? [{:keys [midi-name octave] :as v}]
-;     (and (map v)
-;          (= 2 (count v))
-;          (midi-name? midi-name)
-;          (midi-octave? octave)))
-;   
-;   (defn ->midi-coord [midi-name octave]
-;     {:pre [(midi-name? midi-name)
-;            (midi-octave? octave)]
-;      :post [(midi-coord? %)]}
-;     {:midi-name midi-name
-;      :octave octave})
-;   
-;   (defn midi-coord-str [{:keys [midi-name octave] :as v}]
-;     {:pre [(midi-coord? v)]}
-;     (str midi-name octave))
-;   
+(fn midi-octave? [o]
+  (and (<= lowest-midi-octave o)
+       (<= o highest-midi-octave)))
+
+(fn midi-coord? [v]
+  (and (= :table (type v))
+       (let [{: midi-name : octave} v]
+         (and ;(= 2 (count v))
+              (midi-name? midi-name)
+              (midi-octave? octave)))))
+   
+(fn ->midi-coord [midi-name octave]
+  (assert (midi-name? midi-name) midi-name)
+  (assert (midi-octave? octave) octave)
+  (let [res {: midi-name
+             : octave}]
+    (assert (midi-coord? res) res)
+    res))
+
+(fn midi-coord-str [v]
+  (assert (midi-coord? v))
+  (let [{: midi-name : octave} v]
+    (.. midi-name octave)))
+
 ;   (defn parse-midi-coord [s]
 ;     {:pre [(string? s)]
 ;      :post [(midi-coord? %)]}
@@ -189,4 +198,6 @@
 {: midi-names
  ;: midi-name->pos
  : midi-name?
- : c-major-midi-name?}
+ : ->midi-coord
+ : c-major-midi-name?
+ : midi-coord-str}
