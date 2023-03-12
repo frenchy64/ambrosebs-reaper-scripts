@@ -71,20 +71,21 @@
   (assert-eq ["doubleflat" "flat" "natural" "sharp" "doublesharp"]
              (clj.mapv #(sut.accidental-relative-to 60 $) (clj.range 58 63))))
 
-;(deftest notated-midi-num-for-test
-;  (is (= 60 (sut/notated-midi-num-for 58 "doubleflat")))
-;  (is (= 59 (sut/notated-midi-num-for 59 "natural")))
-;  (is (= 60 (sut/notated-midi-num-for 59 "flat")))
-;  (is (= 60 (sut/notated-midi-num-for 60 "natural")))
-;  (is (= 60 (sut/notated-midi-num-for 61 "sharp")))
-;  (is (= 60 (sut/notated-midi-num-for 62 "doublesharp")))
-;  (is (= 62 (sut/notated-midi-num-for 62 "natural")))
-;  (is (thrown? AssertionError (sut/notated-midi-num-for 0 "flat")))
-;  (is (thrown? AssertionError (sut/notated-midi-num-for 61 "natural")))
-;  (is (thrown? AssertionError (sut/notated-midi-num-for 127 "flat"))))
-;
-;(deftest enharmonically-respellable?-test
-;  (is (= {true [58 59 60 61 62]
-;          false [55 56 57 63 64 65]}
-;         (group-by #(sut/enharmonically-respellable? 60 %)
-;                   (range 55 66)))))
+(deftest notated-midi-num-for-test
+  (assert-eq 60 (sut.notated-midi-num-for 58 "doubleflat"))
+  (assert-eq 59 (sut.notated-midi-num-for 59 "natural"))
+  (assert-eq 60 (sut.notated-midi-num-for 59 "flat"))
+  (assert-eq 60 (sut.notated-midi-num-for 60 "natural"))
+  (assert-eq 60 (sut.notated-midi-num-for 61 "sharp"))
+  (assert-eq 60 (sut.notated-midi-num-for 62 "doublesharp"))
+  (assert-eq 62 (sut.notated-midi-num-for 62 "natural"))
+  ;(is (thrown? AssertionError (sut/notated-midi-num-for 0 "flat")))
+  ;(is (thrown? AssertionError (sut/notated-midi-num-for 61 "natural")))
+  ;(is (thrown? AssertionError (sut/notated-midi-num-for 127 "flat")))
+  )
+
+(deftest enharmonically-respellable?-test
+  (assert-eq {true [58 59 60 61 62]
+              false [55 56 57 63 64 65]}
+             (clj.group-by #(sut.enharmonically-respellable? 60 $)
+                           (clj.range 55 66))))

@@ -203,13 +203,14 @@
   (let [res (. semitones->accidental (- respell note))]
     (assert (reaper-accidental? res))
     res))
-;   
-;   (defn notated-midi-num-for [midi-num accidental]
-;     {:pre [(midi-number? midi-num)
-;            (reaper-accidental? accidental)]
-;      :post [(c-major-midi-number? %)]}
-;     (- midi-num (accidental->semitones accidental)))
-;   
+
+(lambda notated-midi-num-for [midi-num accidental]
+  (assert (midi-number? midi-num) "notated-midi-num-for")
+  (assert (reaper-accidental? accidental) "notated-midi-num-for")
+  (let [res (- midi-num (. accidental->semitones accidental))]
+    (assert (c-major-midi-number? res))
+    res))
+
 ;   (defn solution-or-error? [m]
 ;     (and (map? m)
 ;          (case (:type m)
@@ -220,18 +221,24 @@
 ;                        (= 3 (count m)))
 ;            false)))
 ;   
-;   (defn enharmonically-respellable?
-;     [notated-num candidate]
-;     {:pre [((every-pred midi-number?) notated-num candidate)]
-;      :post [(boolean? %)]}
-;     (boolean
-;       (some #(= (+ % candidate) notated-num)
-;             (vals accidental->semitones))))
+(lambda enharmonically-respellable?
+  [notated-num candidate]
+  (assert (midi-number? notated-num) "enharmonically-respellable?")
+  (assert (midi-number? candidate) "enharmonically-respellable?")
+  (var respellable? false)
+  (each [_ v (pairs accidental->semitones)]
+    (set respellable? (or respellable?
+                          (= (+ v candidate) notated-num))))
+  (assert (= :boolean (type respellable?)))
+  respellable?)
 
 {
  : ->midi-coord
+ : accidental-relative-to
  : c-major-midi-name?
  : c-major-midi-number?
+ : coord-str-constraints->midi-number-constraints
+ : enharmonically-respellable?
  : instrument-id?
  : instruments-map?
  : midi-coord->number
@@ -239,12 +246,11 @@
  : midi-name?
  : midi-names
  : midi-number->coord
- : notation-spec?
+ : notated-midi-num-for
  : notation-constraints?
+ : notation-spec?
  : parse-midi-coord
  : reaper-accidental?
  : solution?
  ;: midi-name->pos
- : coord-str-constraints->midi-number-constraints
- : accidental-relative-to
  }
