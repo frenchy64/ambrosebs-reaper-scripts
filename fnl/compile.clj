@@ -2,7 +2,12 @@
 
 (require '[babashka.process :as p :refer [process]]
          '[babashka.tasks :as tasks]
-         '[clojure.string :as str])
+         '[clojure.string :as str]
+         '[selmer.parser :as sp :refer [render render-file]])
+
+(sp/cache-off!)
+
+(defn expand-template [fnl ])
 
 (defn fnl-header-as-lua [fnl]
   (->> (slurp fnl)

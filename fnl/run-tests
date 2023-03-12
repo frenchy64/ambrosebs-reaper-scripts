@@ -1,0 +1,1 @@
+./fennel-test/runner test/midi-editor/notation-tests.fnl

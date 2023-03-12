@@ -18,17 +18,17 @@
 (fn in-musical-notation? [editor]
   (= 2 (R.MIDIEditor_GetMode editor)))
 
-(fn go-dir [notation other]
+(fn go-dir [notation other bars]
   (let [editor (R.MIDIEditor_GetActive)]
     (if (in-musical-notation? editor)
-      (for [i 1 4] (R.MIDIEditor_OnCommand editor notation))
+      (for [i 1 bars] (R.MIDIEditor_OnCommand editor notation))
       (R.MIDIEditor_OnCommand editor other))))
 
-(fn go-down []
-  (go-dir 40682 40050))
+(fn go-down [bars]
+  (go-dir 40682 40050 bars))
 
-(fn go-up []
-  (go-dir 40683 40049))
+(fn go-up [bars]
+  (go-dir 40683 40049 bars))
 
 ; (local n (require "midi-editor/notation"))
 {: set-reaper!
