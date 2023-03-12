@@ -65,12 +65,12 @@
               false [1 3 6 8 10]}
              (clj.group-by sut.c-major-midi-number? (clj.range 0 12))))
 
-;(deftest accidental-relative-to
-;  (is (thrown? AssertionError (sut/accidental-relative-to 60 57)))
-;  (is (thrown? AssertionError (sut/accidental-relative-to 60 63)))
-;  (is (= ["doubleflat" "flat" "natural" "sharp" "doublesharp"]
-;         (mapv #(sut/accidental-relative-to 60 %) (range 58 63)))))
-;
+(deftest accidental-relative-to
+  ;(is (thrown? AssertionError (sut/accidental-relative-to 60 57)))
+  ;(is (thrown? AssertionError (sut/accidental-relative-to 60 63)))
+  (assert-eq ["doubleflat" "flat" "natural" "sharp" "doublesharp"]
+             (clj.mapv #(sut.accidental-relative-to 60 $) (clj.range 58 63))))
+
 ;(deftest notated-midi-num-for-test
 ;  (is (= 60 (sut/notated-midi-num-for 58 "doubleflat")))
 ;  (is (= 59 (sut/notated-midi-num-for 59 "natural")))

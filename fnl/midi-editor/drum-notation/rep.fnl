@@ -183,21 +183,26 @@
   (assert (midi-number-constraints? res))
   res)
 
-;   (def accidental->semitones
-;     {"doubleflat" -2
-;      "flat" -1 
-;      "natural" 0 
-;      "sharp" 1 
-;      "doublesharp" 2})
-;   
-;   (def semitones->accidental
-;     (set/map-invert accidental->semitones))
-;   
-;   (defn accidental-relative-to [note respell]
-;     {:pre [(c-major-midi-number? note)
-;            (midi-number? respell)]
-;      :post [(reaper-accidental? %)]}
-;     (semitones->accidental (- respell note)))
+(local accidental->semitones
+  {"doubleflat" -2
+   "flat" -1 
+   "natural" 0 
+   "sharp" 1 
+   "doublesharp" 2})
+
+(local semitones->accidental
+  (do
+    (var h {})
+    (each [k v (pairs accidental->semitones)]
+      (tset h v k))
+    h))
+
+(lambda accidental-relative-to [note respell]
+  (assert (c-major-midi-number? note) "accidental-relative-to")
+  (assert (midi-number? respell) "accidental-relative-to")
+  (let [res (. semitones->accidental (- respell note))]
+    (assert (reaper-accidental? res))
+    res))
 ;   
 ;   (defn notated-midi-num-for [midi-num accidental]
 ;     {:pre [(midi-number? midi-num)
@@ -241,4 +246,5 @@
  : solution?
  ;: midi-name->pos
  : coord-str-constraints->midi-number-constraints
+ : accidental-relative-to
  }
