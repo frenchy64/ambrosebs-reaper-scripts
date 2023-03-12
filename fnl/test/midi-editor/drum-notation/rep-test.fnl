@@ -3,12 +3,6 @@
 (import-macros cljm :cljlib)
 (local sut (require :midi-editor/drum-notation/rep))
 (local gp8 (require :midi-editor/drum-notation/guitar-pro8))
-;(ns reascript-test.drum-notation.rep-test
-;  (:require [clojure.test :refer [deftest is testing]]
-;            [clojure.data :as data]
-;            [clojure.string :as str]
-;            [reascript-test.drum-notation.guitar-pro8 :as gp8]
-;            [reascript-test.drum-notation.rep :as sut]))
 
 (deftest midi-coord-str-test
   (assert-eq "C-1" (sut.midi-coord-str (sut.->midi-coord "C" -1)))
