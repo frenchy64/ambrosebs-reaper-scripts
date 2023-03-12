@@ -9,9 +9,9 @@
     (each [k v (ipairs midi-names)]
       (tset h v k))
     h))
-(fn midi-name? [n]
+(lambda midi-name? [n]
   (not (= nil (. midi-names-set n))))
-(fn c-major-midi-name? [n]
+(lambda c-major-midi-name? [n]
   (assert (midi-name? n) (.. "c-major-midi-name?: " n (type n)))
   (= 1 (length n)))
 
@@ -25,24 +25,24 @@
 (local lowest-midi-note 0)
 (local highest-midi-note 127)
 
-(fn midi-number? [n]
+(lambda midi-number? [n]
   (and (= :number (type n))
        (= n (math.floor n))
        (<= lowest-midi-note n)
        (<= n highest-midi-note)))
 
-(fn midi-octave? [o]
+(lambda midi-octave? [o]
   (and (<= lowest-midi-octave o)
        (<= o highest-midi-octave)))
 
-(fn midi-coord? [v]
+(lambda midi-coord? [v]
   (and (= :table (type v))
        (let [{: midi-name : octave} v]
          (and ;(= 2 (count v))
               (midi-name? midi-name)
               (midi-octave? octave)))))
    
-(fn ->midi-coord [midi-name octave]
+(lambda ->midi-coord [midi-name octave]
   (assert (midi-name? midi-name) midi-name)
   (assert (midi-octave? octave) octave)
   (let [res {: midi-name
@@ -50,12 +50,12 @@
     (assert (midi-coord? res) res)
     res))
 
-(fn midi-coord-str [v]
+(lambda midi-coord-str [v]
   (assert (midi-coord? v))
   (let [{: midi-name : octave} v]
     (.. midi-name octave)))
 
-(fn parse-midi-coord [s]
+(lambda parse-midi-coord [s]
   (assert (= :string (type s)))
   (let [trailing (tonumber (string.sub s (length s) (length s)))
         negative? (= "-" (string.sub s (- (length s) 1) (- (length s) 1)))
@@ -69,7 +69,7 @@
     (assert (midi-coord? res))
     res))
 
-(fn midi-number->coord [n]
+(lambda midi-number->coord [n]
   (assert (midi-number? n) (.. "midi-number->coord: " n " " (type n)))
   (let [res (->midi-coord (. midi-names (+ 1 (% n (length midi-names))))
                           (+ lowest-midi-octave
@@ -77,14 +77,14 @@
     (assert (midi-coord? res))
     res))
 
-(fn c-major-midi-number? [n]
+(lambda c-major-midi-number? [n]
   (assert (midi-number? n) (.. "c-major-midi-number?: " (type n)))
   (-> n midi-number->coord (. :midi-name) c-major-midi-name?))
 
 ;; 0 => C-1
 ;; 12 => C-1
 ;; 24 => C-1
-(fn midi-coord->number [c]
+(lambda midi-coord->number [c]
   (assert (midi-coord? c) (.. "midi-coord->number: " (type c)))
   (let [{: midi-name : octave} c]
     (let [res (+ (. midi-name->pos midi-name)
@@ -93,77 +93,96 @@
       (assert (midi-number? res))
       res)))
 
-;   ;; TODO assert alphanumeric, no unicode
-;   (defn instrument-id? [id]
-;     (and (string? id)
-;          (= 2 (count id))))
-;   
-;   (def reaper-accidental->string
-;     {"flat" "♭"
-;      "doubleflat" "𝄫"
-;      "natural" "♮"
-;      "sharp" "♯"
-;      "doublesharp" "𝄪"})
-;   
-;   (defn reaper-accidental? [r]
-;     (contains? reaper-accidental->string r))
-;   
-;   (defn instruments-map? [m]
-;     (and (map? m)
-;          (every? instrument-id? (keys m))
-;          (every? (every-pred map? (comp string? :name))
-;                  (vals m))))
-;   
-;   (defn midi-number-constraints? [m]
-;     (and (map? m)
-;          (sorted? m)
-;          ;;TODO assert C major midi number
-;          (every? midi-number? (keys m))
-;          (every? (every-pred vector?
-;                              #(every? instrument-id? %))
-;                  (vals m))))
-;   
-;   (defn notation-constraints? [m]
-;     (and (map? m)
-;          (every? (comp c-major-midi-name?
-;                        :midi-name
-;                        parse-midi-coord)
-;                  (keys m))
-;          (every? (every-pred vector?
-;                              ;; up to 5 instruments on one staff line
-;                              #(<= 1 (count %) 5)
-;                              #(every? instrument-id? %))
-;                  (vals m))))
-;   
-;   (defn notation-spec? [m]
-;     (and (map? m)
-;          (string? (:name m))
-;          (midi-coord? (:root m))
-;          (instruments-map? (:instruments m))
-;          (notation-constraints? (:notation-map m))))
-;   
-;   (defn solution? [m]
-;     (and (map? m)
-;          (sorted? m)
-;          (pos? (count m))
-;          (every? midi-number? (keys m))
-;          (apply distinct? (map :instrument-id (vals m)))
-;          ;; TODO stronger consistency check by combining midi note number + accidental
-;          ;(apply distinct? (map :printed-note (vals m)))
-;          (every? (every-pred map?
-;                              (comp instrument-id? :instrument-id)
-;                              (comp reaper-accidental? :accidental))
-;                  (vals m))))
-;   
-;   (defn coord-str-constraints->midi-number-constraints [cs]
-;     {:pre [(notation-constraints? cs)]
-;      :post [(midi-number-constraints? %)]}
-;     (into (sorted-map)
-;           (map (fn [[midi-coord-str v]]
-;                  {(-> midi-coord-str parse-midi-coord midi-coord->number)
-;                   v}))
-;           cs))
-;   
+;; TODO assert alphanumeric, no unicode
+(lambda instrument-id? [id]
+  (and (= :string (type id))
+       (= 2 (length id))))
+
+(local reaper-accidental->string
+  {"flat" "♭"
+   "doubleflat" "𝄫"
+   "natural" "♮"
+   "sharp" "♯"
+   "doublesharp" "𝄪"})
+   
+(lambda reaper-accidental? [r]
+  (not (= nil (. reaper-accidental->string r))))
+
+(lambda ievery? [i-pred m]
+  (and (= :table (type m))
+       (do (var good? true)
+         (each [_ i (ipairs m)]
+           (set good? (and good?
+                           (i-pred i))))
+         good?)))
+
+(lambda every-kv? [k-pred v-pred m]
+  (and (= :table (type m))
+       (do
+         (var good? true)
+         (each [k v (pairs m)]
+           (set good? (and good?
+                           (k-pred k)
+                           (v-pred v))))
+         good?)))
+   
+(lambda instruments-map? [m]
+  (every-kv? instrument-id?
+             (lambda [v]
+               (and (= :table (type v))
+                    (= :string (type (. v :name)))))
+             m))
+
+(lambda midi-number-constraints? [m]
+  (and ;(sorted? m)
+       ;;TODO assert C major midi number
+       (every-kv? midi-number?
+                  (lambda [v]
+                    (ievery? instrument-id? v))
+                  m)))
+
+(lambda notation-constraints? [m]
+  (every-kv? (lambda [k]
+               (-> k parse-midi-coord (. :midi-name) c-major-midi-name?))
+             (lambda [v]
+               (and (ievery? instrument-id? v)
+                    (<= 1 (length v) 5)))
+             m))
+
+(lambda notation-spec? [m]
+  (and (= :table (type m))
+       (= :string (type (. m :name)))
+       (midi-coord? (. m :root))
+       (instruments-map? (. m :instruments))
+       (notation-constraints? (. m :notation-map))))
+
+(lambda solution? [m]
+  (and (every-kv? midi-number?
+                  (lambda [v]
+                    (and (= :table (type v))
+                         (instrument-id? (. v :instrument-id))
+                         (reaper-accidental? (. v :accidental))))
+                  m)
+       ;(sorted? m) ;;FIXME
+       (do
+         (var len 0)
+         (each [_ (pairs m)]
+           (set len (+ 1 len)))
+         (> len 0))
+       ;(apply distinct? (map :instrument-id (vals m)))
+       ;; TODO stronger consistency check by combining midi note number + accidental
+       ;(apply distinct? (map :printed-note (vals m)))
+       ))
+
+(lambda coord-str-constraints->midi-number-constraints [cs]
+  (assert (notation-constraints? cs) "coord-str-constraints->midi-number-constraints: " (type cs))
+  (var res {})
+  (each [midi-coord-str v (pairs cs)]
+    (tset res (-> midi-coord-str parse-midi-coord midi-coord->number)
+          v))
+  (assert (midi-number-constraints? res))
+  res)
+
 ;   (def accidental->semitones
 ;     {"doubleflat" -2
 ;      "flat" -1 
@@ -208,11 +227,18 @@
  : ->midi-coord
  : c-major-midi-name?
  : c-major-midi-number?
+ : instrument-id?
+ : instruments-map?
  : midi-coord->number
  : midi-coord-str
  : midi-name?
  : midi-names
  : midi-number->coord
+ : notation-spec?
+ : notation-constraints?
  : parse-midi-coord
+ : reaper-accidental?
+ : solution?
  ;: midi-name->pos
+ : coord-str-constraints->midi-number-constraints
  }
