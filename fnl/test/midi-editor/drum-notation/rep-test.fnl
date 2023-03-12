@@ -14,15 +14,16 @@
   (assert-eq "C0" (sut.midi-coord-str (sut.->midi-coord "C" 0)))
   (assert-eq "G9" (sut.midi-coord-str (sut.->midi-coord "G" 9))))
 
-;(deftest midi-number->coord-test
-;  (is (= "C-1" (sut/midi-coord-str (sut/midi-number->coord 0))))
-;  (is (= "C0" (sut/midi-coord-str (sut/midi-number->coord 12))))
-;  (is (= "C1" (sut/midi-coord-str (sut/midi-number->coord 24))))
-;  (is (= "B1" (sut/midi-coord-str (sut/midi-number->coord 35))))
-;  (is (= "G9" (sut/midi-coord-str (sut/midi-number->coord 127))))
-;  (is (thrown? AssertionError (sut/midi-coord-str (sut/midi-number->coord -1))))
-;  (is (thrown? AssertionError (sut/midi-coord-str (sut/midi-number->coord 128)))))
-;
+(deftest midi-number->coord-test
+  (assert-eq "C-1" (sut.midi-coord-str (sut.midi-number->coord 0)))
+  (assert-eq "C0" (sut.midi-coord-str (sut.midi-number->coord 12)))
+  (assert-eq "C1" (sut.midi-coord-str (sut.midi-number->coord 24)))
+  (assert-eq "B1" (sut.midi-coord-str (sut.midi-number->coord 35)))
+  (assert-eq "G9" (sut.midi-coord-str (sut.midi-number->coord 127)))
+  ;(is (thrown? AssertionError (sut/midi-coord-str (sut/midi-number->coord -1))))
+  ;(is (thrown? AssertionError (sut/midi-coord-str (sut/midi-number->coord 128))))
+  )
+
 ;(deftest parse-midi-coord-test
 ;  (is (= {:midi-name "C" :octave -1} (sut/parse-midi-coord "C-1")))
 ;  (is (= {:midi-name "C#" :octave 0} (sut/parse-midi-coord "C#0")))

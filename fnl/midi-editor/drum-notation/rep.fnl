@@ -12,23 +12,25 @@
 (fn midi-name? [n]
   (not (= nil (. midi-names-set n))))
 (fn c-major-midi-name? [n]
-  {:pre [(midi-name? n)]}
+  (assert (midi-name? n) (.. "c-major-midi-name?: " n (type n)))
   (= 1 (length n)))
 
 ;(assert (apply distinct? midi-names))
 (assert (= 12 (length midi-names)) (length midi-names))
 
-;   ;; 0 => C-1
-;   (def lowest-midi-name (first midi-names))
+;; 0 => C-1
+(local lowest-midi-name (. midi-names 1))
 (local lowest-midi-octave -1)
 (local highest-midi-octave 9)
-;   (def lowest-midi-note 0)
-;   (def highest-midi-note 127)
-;   
-;   (defn midi-number? [n]
-;     (and (nat-int? n)
-;          (<= lowest-midi-note n highest-midi-note)))
-;   
+(local lowest-midi-note 0)
+(local highest-midi-note 127)
+
+(fn midi-number? [n]
+  (and (= :number (type n))
+       (= n (math.floor n))
+       (<= lowest-midi-note n)
+       (<= n highest-midi-note)))
+
 (fn midi-octave? [o]
   (and (<= lowest-midi-octave o)
        (<= o highest-midi-octave)))
@@ -64,12 +66,13 @@
 ;                           negative? dec))]
 ;       (->midi-coord nme octave)))
 ;   
-;   (defn midi-number->coord [n]
-;     {:pre [(midi-number? n)]
-;      :post [(midi-coord? %)]}
-;     (->midi-coord (nth midi-names (mod n (count midi-names)))
-;                   (+ lowest-midi-octave
-;                      (quot n (count midi-names)))))
+(fn midi-number->coord [n]
+  (assert (midi-number? n) (.. "midi-number->coord: " n " " (type n)))
+  (let [res (->midi-coord (. midi-names (+ 1 (% n (length midi-names))))
+                          (+ lowest-midi-octave
+                             (// n (length midi-names))))]
+    (assert (midi-coord? res))
+    res))
 ;   
 ;   (defn c-major-midi-number? [n]
 ;     {:pre [(midi-number? n)]}
@@ -197,6 +200,7 @@
 
 {: midi-names
  ;: midi-name->pos
+ : midi-number->coord
  : midi-name?
  : ->midi-coord
  : c-major-midi-name?
