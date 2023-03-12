@@ -77,10 +77,10 @@
     (assert (midi-coord? res))
     res))
 
-;   (defn c-major-midi-number? [n]
-;     {:pre [(midi-number? n)]}
-;     (-> n midi-number->coord :midi-name c-major-midi-name?))
-;   
+(fn c-major-midi-number? [n]
+  (assert (midi-number? n) (.. "c-major-midi-number?: " (type n)))
+  (-> n midi-number->coord (. :midi-name) c-major-midi-name?))
+
 ;   ;; 0 => C-1
 ;   ;; 12 => C-1
 ;   ;; 24 => C-1
@@ -201,11 +201,14 @@
 ;       (some #(= (+ % candidate) notated-num)
 ;             (vals accidental->semitones))))
 
-{: midi-names
- ;: midi-name->pos
- : midi-number->coord
- : midi-name?
+{
  : ->midi-coord
  : c-major-midi-name?
+ : c-major-midi-number?
  : midi-coord-str
- : parse-midi-coord}
+ : midi-name?
+ : midi-names
+ : midi-number->coord
+ : parse-midi-coord
+ ;: midi-name->pos
+ }

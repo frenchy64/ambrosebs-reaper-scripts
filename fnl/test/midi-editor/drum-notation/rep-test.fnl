@@ -58,11 +58,11 @@
               false ["C#" "D#" "F#" "G#" "A#"]}
              (clj.group-by sut.c-major-midi-name? sut.midi-names)))
 
-;(deftest c-major-midi-number?-test
-;  (is (= {true [0 2 4 5 7 9 11]
-;          false [1 3 6 8 10]}
-;         (group-by sut/c-major-midi-number? (range 0 12)))))
-;
+(deftest c-major-midi-number?-test
+  (assert-eq {true [0 2 4 5 7 9 11]
+              false [1 3 6 8 10]}
+             (clj.group-by sut.c-major-midi-number? (clj.range 0 12))))
+
 ;(deftest accidental-relative-to
 ;  (is (thrown? AssertionError (sut/accidental-relative-to 60 57)))
 ;  (is (thrown? AssertionError (sut/accidental-relative-to 60 63)))
