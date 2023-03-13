@@ -1,0 +1,2 @@
+cd clj && ./run-tests
+cd fnl && ./run-tests

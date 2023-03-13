@@ -1,7 +1,2 @@
 #!/bin/bash
-
-set -e
-cd fnl
-./run-tests
-cd ../clj
-./run-tests
+parallel -j 2 :::: parallel/list-of-test-commands.txt
