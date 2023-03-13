@@ -20,4 +20,4 @@
   (let [{:keys [fail error]} test-results]
     (+ fail error)))
 
-(System/exit (max 1 failures-and-errors))
+(System/exit (min 1 failures-and-errors))
