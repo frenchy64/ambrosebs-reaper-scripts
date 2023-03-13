@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+cd fnl
+./run-tests
+cd ../clj
+./run-tests

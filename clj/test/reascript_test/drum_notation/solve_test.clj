@@ -6,61 +6,6 @@
             [reascript-test.drum-notation.pretty :refer [pretty-solution]]
             [reascript-test.drum-notation.test-helpers :as th]))
 
-;; debug fennel failure
-(comment
-  (clojure.pprint/pprint (mapv #(update % :solution (partial into (sorted-map))) (clojure.data/diff {:solution {62 {:accidental "natural" :instrument-id "HP"} 63 {:accidental "sharp" :instrument-id "CB"} 64 {:accidental "natural" :instrument-id "K2"} 65 {:accidental "natural" :instrument-id "K1"} 66 {:accidental "flat" :instrument-id "T5"} 67 {:accidental "doubleflat" :instrument-id "T4"} 69 {:accidental "doubleflat" :instrument-id "T3"} 70 {:accidental "doubleflat" :instrument-id "RS"} 71 {:accidental "flat" :instrument-id "SC"} 72 {:accidental "natural" :instrument-id "SS"} 73 {:accidental "flat" :instrument-id "T2"} 74 {:accidental "doubleflat" :instrument-id "T1"} 75 {:accidental "doubleflat" :instrument-id "RM"} 76 {:accidental "flat" :instrument-id "RB"} 77 {:accidental "natural" :instrument-id "RE"} 78 {:accidental "flat" :instrument-id "HC"} 79 {:accidental "natural" :instrument-id "HH"} 80 {:accidental "sharp" :instrument-id "HO"} 81 {:accidental "doublesharp" :instrument-id "C2"} 82 {:accidental "sharp" :instrument-id "C1"} 83 {:accidental "doublesharp" :instrument-id "SP"} 84 {:accidental "sharp" :instrument-id "CH"}} :type "solution"}
-  {:solution {62 {:accidental "natural" :instrument-id "HP"} 63 {:accidental "sharp" :instrument-id "CB"} 64 {:accidental "natural" :instrument-id "K2"} 65 {:accidental "natural" :instrument-id "K1"} 66 {:accidental "flat" :instrument-id "T5"} 67 {:accidental "doubleflat" :instrument-id "T4"} 69 {:accidental "doubleflat" :instrument-id "T3"} 70 {:accidental "doubleflat" :instrument-id "SC"} 71 {:accidental "flat" :instrument-id "SS"} 72 {:accidental "doubleflat" :instrument-id "T2"} 74 {:accidental "doubleflat" :instrument-id "T1"} 75 {:accidental "doubleflat" :instrument-id "RB"} 76 {:accidental "flat" :instrument-id "RE"} 77 {:accidental "doubleflat" :instrument-id "HC"} 78 {:accidental "flat" :instrument-id "HH"} 79 {:accidental "natural" :instrument-id "HO"} 80 {:accidental "sharp" :instrument-id "C2"} 81 {:accidental "natural" :instrument-id "C1"} 82 {:accidental "sharp" :instrument-id "SP"} 83 {:accidental "natural" :instrument-id "CH"}} :type "solution"})))
-;=[{:solution
-;=  {70 {:instrument-id "RS"},
-;=   71 {:instrument-id "SC"},
-;=   72 {:instrument-id "SS", :accidental "natural"},
-;=   73 {:accidental "flat", :instrument-id "T2"},
-;=   75 {:instrument-id "RM"},
-;=   76 {:instrument-id "RB"},
-;=   77 {:instrument-id "RE", :accidental "natural"},
-;=   78 {:instrument-id "HC"},
-;=   79 {:instrument-id "HH"},
-;=   80 {:instrument-id "HO"},
-;=   81 {:instrument-id "C2", :accidental "doublesharp"},
-;=   82 {:instrument-id "C1"},
-;=   83 {:instrument-id "SP", :accidental "doublesharp"},
-;=   84 {:accidental "sharp", :instrument-id "CH"}}}
-;= {:solution
-;=  {70 {:instrument-id "SC"},
-;=   71 {:instrument-id "SS"},
-;=   72 {:instrument-id "T2", :accidental "doubleflat"},
-;=   75 {:instrument-id "RB"},
-;=   76 {:instrument-id "RE"},
-;=   77 {:instrument-id "HC", :accidental "doubleflat"},
-;=   78 {:instrument-id "HH"},
-;=   79 {:instrument-id "HO"},
-;=   80 {:instrument-id "C2"},
-;=   81 {:instrument-id "C1", :accidental "natural"},
-;=   82 {:instrument-id "SP"},
-;=   83 {:instrument-id "CH", :accidental "natural"}}}
-;= {:type "solution",
-;=  :solution
-;=  {62 {:accidental "natural", :instrument-id "HP"},
-;=   63 {:accidental "sharp", :instrument-id "CB"},
-;=   64 {:accidental "natural", :instrument-id "K2"},
-;=   65 {:accidental "natural", :instrument-id "K1"},
-;=   66 {:accidental "flat", :instrument-id "T5"},
-;=   67 {:accidental "doubleflat", :instrument-id "T4"},
-;=   69 {:accidental "doubleflat", :instrument-id "T3"},
-;=   70 {:accidental "doubleflat"},
-;=   71 {:accidental "flat"},
-;=   74 {:accidental "doubleflat", :instrument-id "T1"},
-;=   75 {:accidental "doubleflat"},
-;=   76 {:accidental "flat"},
-;=   78 {:accidental "flat"},
-;=   79 {:accidental "natural"},
-;=   80 {:accidental "sharp"},
-;=   82 {:accidental "sharp"}}}]
-
-
-
-  )
-
 (deftest enharmonic-midi-numbers
   (is (= [58 59 60 61 62]
          (sut/enharmonic-midi-numbers 58 60)
