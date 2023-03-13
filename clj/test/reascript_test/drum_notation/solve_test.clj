@@ -1,5 +1,6 @@
 (ns reascript-test.drum-notation.solve-test
   (:require [clojure.test :refer [deftest is testing]]
+            [clojure.walk :as walk]
             [reascript-test.drum-notation.solve :as sut]
             [reascript-test.drum-notation.rep :refer :all]
             [reascript-test.drum-notation.guitar-pro8 :as gp8]
@@ -17,6 +18,23 @@
   (is (thrown? AssertionError (sut/enharmonic-midi-numbers 61 60))))
 
 (deftest find-solution-test
+  (th/test-common-cases
+    "midi-editor.drum-notation.solve/find-solution"
+    sut/find-solution
+    :coerce-result #(-> %
+                        (update-keys keyword)
+                        (update :type keyword)
+                        (as-> result
+                          (cond-> result
+                            (= :error (:type result)) (update :instrument-clashes set)
+                            (= :solution (:type result)) (update :solution (fn [solution]
+                                                                             (into (sorted-map)
+                                                                                   (map (fn [[k v]]
+                                                                                          [(Integer/parseInt k)
+                                                                                           (update-keys v keyword)]))
+                                                                                   solution))))))
+    :coerce-args #(-> %
+                      (update 0 (fn [root-coord] (-> root-coord walk/keywordize-keys)))))
   (is (= {:type :solution
           :solution {62 {:instrument-id "HP", :accidental "natural"}, 63 {:instrument-id "CB", :accidental "sharp"}}}
          (sut/find-solution
