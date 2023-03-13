@@ -1,6 +1,6 @@
 (require-macros :fennel-test)
 
-(local sut (require :midi-editor/notation))
+(local sut (require :midi-editor.notation))
 
 (fn make-editor [R]
   {})
@@ -12,7 +12,7 @@
    :MIDIEditor_OnCommand (fn [editor id] (assert nil ":MIDIEditor_OnCommand"))})
 
 (fn stub [R]
-  (local notation (require :midi-editor/notation))
+  (local notation (require :midi-editor.notation))
   (notation.set-reaper! R)
   notation)
 

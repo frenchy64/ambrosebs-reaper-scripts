@@ -1,5 +1,5 @@
 (require-macros :fennel-test)
-(local sut (require :test/midi-editor/drum-notation/test-helpers))
+(local sut (require :test.midi-editor.drum-notation.test-helpers))
 (deftest deep-coerce-keys-test
   (assert-eq {12 :a}
              (sut.deep-coerce-keys

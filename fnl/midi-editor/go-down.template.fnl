@@ -8,5 +8,5 @@
 ;;    When the zoom level is changed, a different script will be needed.
 ;;    If in a different MIDI editor mode, decreases the pitch cursor, which goes "down" in that view.
 
-(local notation (require :midi-editor/notation))
+(local notation (require :midi-editor.notation))
 (notation.go-down {◊bars◊})

@@ -1,8 +1,8 @@
 (require-macros :fennel-test)
 (local clj (require :cljlib))
 (import-macros cljm :cljlib)
-(local sut (require :midi-editor/drum-notation/rep))
-(local gp8 (require :midi-editor/drum-notation/guitar-pro8))
+(local sut (require :midi-editor.drum-notation.rep))
+(local gp8 (require :midi-editor.drum-notation.guitar-pro8))
 
 (deftest midi-coord-str-test
   (assert-eq "C-1" (sut.midi-coord-str (sut.->midi-coord "C" -1)))

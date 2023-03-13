@@ -9,5 +9,5 @@
 ;;    This script will move the Notation time cursor forward that many bars for the currently selected instrument.
 ;;    In other MIDI editor modes, this script decreases the pitch cursor, which goes "down" in that view.
 
-(local notation (require :midi-editor/notation))
+(local notation (require :midi-editor.notation))
 (notation.go-down {◊bars◊})

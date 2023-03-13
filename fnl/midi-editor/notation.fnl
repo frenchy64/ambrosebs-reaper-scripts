@@ -30,7 +30,6 @@
 (fn go-up [bars]
   (go-dir 40683 40049 bars))
 
-; (local n (require "midi-editor/notation"))
 {: set-reaper!
  : go-up
  : go-down

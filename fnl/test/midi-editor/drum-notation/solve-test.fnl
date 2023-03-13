@@ -1,10 +1,10 @@
 (require-macros :fennel-test)
 (local clj (require :cljlib))
 (import-macros cljm :cljlib)
-(local rep (require :midi-editor/drum-notation/rep))
-(local gp8 (require :midi-editor/drum-notation/guitar-pro8))
-(local sut (require :midi-editor/drum-notation/solve))
-(local th (require :test/midi-editor/drum-notation/test-helpers))
+(local rep (require :midi-editor.drum-notation.rep))
+(local gp8 (require :midi-editor.drum-notation.guitar-pro8))
+(local sut (require :midi-editor.drum-notation.solve))
+(local th (require :test.midi-editor.drum-notation.test-helpers))
 
 ;(ns reascript-test.drum-notation.solve-test
 ;  (:require [clojure.test :refer [deftest is testing]]

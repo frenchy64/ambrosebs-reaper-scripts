@@ -7,5 +7,5 @@
 ;;    Use this script if there are {◊bars◊} bar{◊bars|pluralize◊} per line in Notation view at the current zoom.
 ;;    In other MIDI editor modes, this script decreases the pitch cursor, which goes "down" in that view.
 
-(local notation (require :midi-editor/notation))
+(local notation (require :midi-editor.notation))
 (notation.go-down {◊bars◊})

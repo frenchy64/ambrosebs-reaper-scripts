@@ -1,4 +1,4 @@
-(local rep (require :midi-editor/drum-notation/rep))
+(local rep (require :midi-editor.drum-notation.rep))
 
 (lambda enharmonic-midi-numbers
   ;"Return the possible midi numbers representing enharmonic
