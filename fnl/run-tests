@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
-cd cljlib
-FENNEL=../fennel make
-cd ..
+#cd cljlib
+#FENNEL=../fennel make
+#cd ..
 cd ../common
 ./gen-test-cases.clj
 cd ../fnl
 # override fennel command
-PATH=.:$PATH ./fennel-test/runner test/midi-editor/notation-tests.fnl test/midi-editor/drum-notation/rep-test.fnl test/midi-editor/drum-notation/solve-test.fnl test/midi-editor/drum-notation/test-helpers-test.fnl
+FENNEL_PATH="cljlib/?/init.fnl;$FENNEL_PATH" LUA_PATH="cljlib/?/init.lua;json-lua/?.lua;$LUA_PATH" PATH=.:$PATH ./fennel-test/runner test/midi-editor/notation-tests.fnl test/midi-editor/drum-notation/rep-test.fnl test/midi-editor/drum-notation/solve-test.fnl test/midi-editor/drum-notation/test-helpers-test.fnl

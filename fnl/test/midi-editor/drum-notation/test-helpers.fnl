@@ -1,6 +1,6 @@
 (require-macros :fennel-test)
 (local clj (require :cljlib))
-(local json (require :json-lua/json))
+(local json (require :json))
 (local fennel (require :fennel))
 
 (lambda deep-coerce-keys [t]
