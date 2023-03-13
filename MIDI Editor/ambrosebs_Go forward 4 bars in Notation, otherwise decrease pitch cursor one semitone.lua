@@ -6,7 +6,7 @@
 --    in musical notation software such as Dorico by guessing how many bars the music
 --    is zoomed by. If in a different MIDI editor mode, decreases the pitch cursor,
 --    which goes "down" in that view.
--- compiled from https://github.com/frenchy64/ambrosebs-reaper-scripts/blob/9f0f81d/fnl/midi-editor/notation.fnl
+-- compiled from https://github.com/frenchy64/ambrosebs-reaper-scripts/blob/a3f863d/fnl/midi-editor/notation.fnl
 local R = _G.reaper
 local function set_reaper_21(r)
   R = r
@@ -15,10 +15,10 @@ end
 local function in_musical_notation_3f(editor)
   return (2 == R.MIDIEditor_GetMode(editor))
 end
-local function go_dir(notation, other)
+local function go_dir(notation, other, bars)
   local editor = R.MIDIEditor_GetActive()
   if in_musical_notation_3f(editor) then
-    for i = 1, 4 do
+    for i = 1, bars do
       R.MIDIEditor_OnCommand(editor, notation)
     end
     return nil
@@ -26,10 +26,10 @@ local function go_dir(notation, other)
     return R.MIDIEditor_OnCommand(editor, other)
   end
 end
-local function go_down()
-  return go_dir(40682, 40050)
+local function go_down(bars)
+  return go_dir(40682, 40050, bars)
 end
-local function go_up()
-  return go_dir(40683, 40049)
+local function go_up(bars)
+  return go_dir(40683, 40049, bars)
 end
 return {["set-reaper!"] = set_reaper_21, ["go-up"] = go_up, ["go-down"] = go_down, ["in-musical-notation?"] = in_musical_notation_3f}
