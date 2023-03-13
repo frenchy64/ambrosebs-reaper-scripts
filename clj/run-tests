@@ -2,7 +2,8 @@
 
 set -e
 
-../common/gen-test-cases.clj
-cd ../clj
+cd ../common
+./gen-test-cases.clj
+cd -
 #lein test
 ./bb-test-runner.clj

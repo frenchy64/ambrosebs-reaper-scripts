@@ -20,5 +20,5 @@
   (assert (every? :result cases))
   (assert (every? (comp vector? :args) cases)))
 
-(spit "test-cases.json"
+(spit "../generated/test-cases.json"
       (json/generate-string test-cases {:pretty true}))

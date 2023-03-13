@@ -24,7 +24,7 @@
         j)
     (nil err-msg) (error (.. "Could not open file:" err-msg))))
 
-(local common-json (slurp-json "../common/test-cases.json"))
+(local common-json (slurp-json "../generated/test-cases.json"))
 (lambda test-common-cases [tests-id f]
   (let [cases (. common-json tests-id)]
     (assert cases (.. "Bad tests id: " tests-id))
