@@ -16,8 +16,9 @@
 (run-tests)
 
 (mapv #(fw/watch % (fn [event]
-                     (prn event)
-                     (run-tests))
+                     (if (#{:create :remove|rename} (:type event))
+                       (run-tests)
+                       (prn event)))
                  {:recursive true})
       ["clj" "fnl" "common"])
 
