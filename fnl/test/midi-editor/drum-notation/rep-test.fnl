@@ -88,3 +88,15 @@
   (assert-eq true (sut.midi-number? 0))
   (assert-eq true (sut.midi-number? 0))
   (assert-eq false (sut.midi-number? -1)))
+
+(deftest solution-or-error?-test
+  (assert-eq false
+             (sut.solution-or-error?
+               {:solution {:62 {:accidental "natural" :instrument-id "HP"}
+                           :63 {:accidental "sharp" :instrument-id "CB"}}
+                :type "solution"}))
+  (assert-eq true
+             (sut.solution-or-error?
+               {:solution {62 {:accidental "natural" :instrument-id "HP"}
+                           63 {:accidental "sharp" :instrument-id "CB"}}
+                :type "solution"})))

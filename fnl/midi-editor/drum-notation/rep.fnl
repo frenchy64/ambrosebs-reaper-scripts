@@ -28,12 +28,10 @@
 (lambda midi-number? [n]
   (and (= :number (type n))
        (= n (math.floor n))
-       (<= lowest-midi-note n)
-       (<= n highest-midi-note)))
+       (<= lowest-midi-note n highest-midi-note)))
 
 (lambda midi-octave? [o]
-  (and (<= lowest-midi-octave o)
-       (<= o highest-midi-octave)))
+  (<= lowest-midi-octave o highest-midi-octave))
 
 (lambda midi-coord? [v]
   (and (= :table (type v))

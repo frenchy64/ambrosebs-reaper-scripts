@@ -26,14 +26,17 @@
   )
 
 (deftest find-solution-test
+  (th.test-common-cases
+    :midi-editor.drum-notation.solve/find-solution
+    sut.find-solution)
   ;;TODO share test cases with json file
   ;;port me
-  (assert-eq {:type :solution
-              :solution {}}
-             (sut.find-solution
-               {:midi-name "D"
-                :octave 4}
-               {"C5" ["RS" "SC" "SS"]}))
+;  (assert-eq {:type :solution
+;              :solution {}}
+;             (sut.find-solution
+;               {:midi-name "D"
+;                :octave 4}
+;               {"C5" ["RS" "SC" "SS"]}))
 
   (assert-eq {:type :solution
               :solution {62 {:instrument-id "HP" :accidental "natural"} 63 {:instrument-id "CB" :accidental "sharp"}}}
@@ -55,34 +58,34 @@
 ;               {:midi-name "D"
 ;                :octave 4}
 ;               {"D4" ["HP" "CB"]})))))
-  (assert-eq {:type :solution
-              :solution
-              {62 {:instrument-id "HP" :accidental "natural"}
-               63 {:instrument-id "CB" :accidental "sharp"}
-               64 {:instrument-id "K2" :accidental "natural"}
-               65 {:instrument-id "K1" :accidental "natural"}
-               66 {:instrument-id "T5" :accidental "flat"}
-               67 {:instrument-id "T4" :accidental "doubleflat"}
-               69 {:instrument-id "T3" :accidental "doubleflat"}
-               70 {:instrument-id "RS" :accidental "doubleflat"}
-               71 {:instrument-id "SC" :accidental "flat"}
-               72 {:instrument-id "SS" :accidental "natural"}
-               73 {:instrument-id "T2" :accidental "flat"}
-               74 {:instrument-id "T1" :accidental "doubleflat"}
-               75 {:instrument-id "RM" :accidental "doubleflat"}
-               76 {:instrument-id "RB" :accidental "flat"}
-               77 {:instrument-id "RE" :accidental "natural"}
-               78 {:instrument-id "HC" :accidental "flat"}
-               79 {:instrument-id "HH" :accidental "natural"}
-               80 {:instrument-id "HO" :accidental "sharp"}
-               81 {:instrument-id "C2" :accidental "doublesharp"}
-               82 {:instrument-id "C1" :accidental "sharp"}
-               83 {:instrument-id "SP" :accidental "doublesharp"}
-               84 {:instrument-id "CH" :accidental "sharp"}}}
-             (sut.find-solution
-               {:midi-name "D"
-                :octave 4}
-               (. gp8.drum-notation-map1 :notation-map)))
+;  (assert-eq {:type :solution
+;              :solution
+;              {62 {:instrument-id "HP" :accidental "natural"}
+;               63 {:instrument-id "CB" :accidental "sharp"}
+;               64 {:instrument-id "K2" :accidental "natural"}
+;               65 {:instrument-id "K1" :accidental "natural"}
+;               66 {:instrument-id "T5" :accidental "flat"}
+;               67 {:instrument-id "T4" :accidental "doubleflat"}
+;               69 {:instrument-id "T3" :accidental "doubleflat"}
+;               70 {:instrument-id "RS" :accidental "doubleflat"}
+;               71 {:instrument-id "SC" :accidental "flat"}
+;               72 {:instrument-id "SS" :accidental "natural"}
+;               73 {:instrument-id "T2" :accidental "flat"}
+;               74 {:instrument-id "T1" :accidental "doubleflat"}
+;               75 {:instrument-id "RM" :accidental "doubleflat"}
+;               76 {:instrument-id "RB" :accidental "flat"}
+;               77 {:instrument-id "RE" :accidental "natural"}
+;               78 {:instrument-id "HC" :accidental "flat"}
+;               79 {:instrument-id "HH" :accidental "natural"}
+;               80 {:instrument-id "HO" :accidental "sharp"}
+;               81 {:instrument-id "C2" :accidental "doublesharp"}
+;               82 {:instrument-id "C1" :accidental "sharp"}
+;               83 {:instrument-id "SP" :accidental "doublesharp"}
+;               84 {:instrument-id "CH" :accidental "sharp"}}}
+;             (sut.find-solution
+;               {:midi-name "D"
+;                :octave 4}
+;               (. gp8.drum-notation-map1 :notation-map)))
 ; (is (= (th/join-lines
 ;          ["_C4__________________________C5__________________________C6__________________________"
 ;           "|  | |♮|♯|♮ |♮ |♭|𝄫| |𝄫|𝄫|♭ |♮ |♭|𝄫|𝄫|♭ |♮ |♭|♮|♯|𝄪|♯|𝄪 |♯ | | | |  |  | | | | | |  |"
