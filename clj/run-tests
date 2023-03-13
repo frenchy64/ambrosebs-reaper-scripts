@@ -4,4 +4,5 @@ set -e
 
 ../common/gen-test-cases.clj
 cd ../clj
-lein test
+#lein test
+./bb-test-runner.clj
