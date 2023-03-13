@@ -16,3 +16,13 @@ jobs:
       run:  gem install reapack-index
     - name: Validate packages
       run:  reapack-index --check
+    - name: Install Lua
+      uses: leafo/gh-actions-lua@v10
+      with:
+        luaVersion: "5.3"
+    - name: Install clojure tools
+      uses: DeLaGuardo/setup-clojure@10.2
+      with:
+        lein: 2.9.8
+        bb: 1.2.174
+    - run: ./run-tests
