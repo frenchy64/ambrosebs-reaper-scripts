@@ -19,4 +19,4 @@ if ! git diff --exit-code ; then
   git commit -m "regenerate"
 fi
 
-reapack-index --ignore fnl --commit "$@"
+reapack-index --commit "$@"
