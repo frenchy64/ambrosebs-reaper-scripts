@@ -1019,6 +1019,9 @@ B\149\014\006\163\204\018\220]'\029\016\017\169\220ٙ\133\183t\214-\029\189\014:
                                 :sameline [false false false]
                                 :single (- 1)}))
     (when (Im-gui.TreeNode ctx :Basic)
+      (var b1 nil)
+      (var b2 nil)
+      (var b4 nil)
       (set-forcibly! (rv b1)
                      (Im-gui.Selectable ctx "1. I am selectable"
                                         (. widgets.selectables.basic 1)))
@@ -1055,6 +1058,9 @@ B\149\014\006\163\204\018\220]'\029\016\017\169\220ٙ\133\183t\214-\029\189\014:
           (tset widgets.selectables.multiple i (not sel))))
       (Im-gui.TreePop ctx))
     (when (Im-gui.TreeNode ctx "Rendering more text into the same line")
+      (var s1 nil)
+      (var s2 nil)
+      (var s3 nil)
       (set-forcibly! (rv s1)
                      (Im-gui.Selectable ctx :main.c
                                         (. widgets.selectables.sameline 1)))
@@ -1081,6 +1087,7 @@ B\149\014\006\163\204\018\220]'\029\016\017\169\220ٙ\133\183t\214-\029\189\014:
                                     (Im-gui.TableFlags_Borders)))
         (each [i sel (ipairs widgets.selectables.columns)]
           (Im-gui.TableNextColumn ctx)
+          (var ci nil)
           (set-forcibly! (rv ci)
                          (Im-gui.Selectable ctx (: "Item %d" :format (- i 1))
                                             sel))
@@ -1094,6 +1101,7 @@ B\149\014\006\163\204\018\220]'\029\016\017\169\220ٙ\133\183t\214-\029\189\014:
         (each [i sel (ipairs widgets.selectables.columns)]
           (Im-gui.TableNextRow ctx)
           (Im-gui.TableNextColumn ctx)
+          (var ci nil)
           (set-forcibly! (rv ci)
                          (Im-gui.Selectable ctx (: "Item %d" :format (- i 1))
                                             sel
@@ -1144,6 +1152,7 @@ B\149\014\006\163\204\018\220]'\029\016\017\169\220ٙ\133\183t\214-\029\189\014:
           (Im-gui.PushStyleVar ctx (Im-gui.StyleVar_SelectableTextAlign)
                                align-x align-y)
           (local row (. widgets.selectables.align y))
+          (var rx nil)
           (set-forcibly! (rv rx)
                          (Im-gui.Selectable ctx name (. row x)
                                             (Im-gui.SelectableFlags_None) 80 80))
@@ -1188,6 +1197,11 @@ label:
                                       widgets.input.multiline.flags))
       (Im-gui.TreePop ctx))
     (when (Im-gui.TreeNode ctx "Filtered Text Input")
+      (var b1 nil)
+      (var b2 nil)
+      (var b3 nil)
+      (var b4 nil)
+      (var b5 nil)
       (set-forcibly! (rv b1)
                      (Im-gui.InputText ctx :default (. widgets.input.buf 1)))
       (tset widgets.input.buf 1 b1)
@@ -1293,11 +1307,13 @@ Disable logging.
       (local names [:Artichoke :Beetroot :Celery :Daikon])
       (each [n opened (ipairs widgets.tabs.opened)]
         (when (> n 1) (Im-gui.SameLine ctx))
+        (var on nil)
         (set-forcibly! (rv on) (Im-gui.Checkbox ctx (. names n) opened))
         (tset widgets.tabs.opened n on))
       (when (Im-gui.BeginTabBar ctx :MyTabBar widgets.tabs.flags1)
         (each [n opened (ipairs widgets.tabs.opened)]
           (when opened
+            (var on nil)
             (set-forcibly! (rv on)
                            (Im-gui.BeginTabItem ctx (. names n) true
                                                 (Im-gui.TabItemFlags_None)))
@@ -1799,6 +1815,14 @@ We don't have a getter to avoidencouraging you to persistently save values that 
     (local vec4d widgets.multi_component.vec4d)
     (local vec4i widgets.multi_component.vec4i)
     (Im-gui.SeparatorText ctx :2-wide)
+    (var vec4d1 nil)
+    (var vec4d2 nil)
+    (var vec4d3 nil)
+    (var vec4d4 nil)
+    (var vec4i1 nil)
+    (var vec4i2 nil)
+    (var vec4i3 nil)
+    (var vec4i4 nil)
     (set-forcibly! (rv vec4d1 vec4d2)
                    (Im-gui.InputDouble2 ctx "input double2" (. vec4d 1)
                                         (. vec4d 2)))
@@ -1939,6 +1963,7 @@ We don't have a getter to avoidencouraging you to persistently save values that 
                              (demo.HSV (/ (- i 1) 7) 0.7 0.5 1))
       (Im-gui.PushStyleColor ctx (Im-gui.Col_SliderGrab)
                              (demo.HSV (/ (- i 1) 7) 0.9 0.9 1))
+      (var vi nil)
       (set-forcibly! (rv vi) (Im-gui.VSliderDouble ctx "##v" 18 160 v 0 1 " "))
       (tset widgets.vsliders.values i vi)
       (when (or (Im-gui.IsItemActive ctx) (Im-gui.IsItemHovered ctx))
@@ -1971,6 +1996,7 @@ We don't have a getter to avoidencouraging you to persistently save values that 
       (when (> i 1) (Im-gui.SameLine ctx))
       (Im-gui.PushID ctx i)
       (Im-gui.PushStyleVar ctx (Im-gui.StyleVar_GrabMinSize) 40)
+      (var vi nil)
       (set-forcibly! (rv vi) (Im-gui.VSliderDouble ctx "##v" 40 160 v 0 1 "%.2f
 sec"))
       (tset widgets.vsliders.values i vi)
@@ -2113,6 +2139,7 @@ sec"))
       (set (rv widgets.query_item.b)
            (Im-gui.Checkbox ctx "ITEM: Checkbox" widgets.query_item.b)))
     (when (= item-type 4)
+      (var da41 nil)
       (set-forcibly! (rv da41)
                      (Im-gui.SliderDouble ctx "ITEM: SliderDouble"
                                           (. widgets.query_item.d4a 1) 0 1))
@@ -2125,12 +2152,16 @@ sec"))
            (Im-gui.InputTextMultiline ctx "ITEM: InputTextMultiline"
                                       widgets.query_item.str)))
     (when (= item-type 7)
+      (var d4a1 nil)
       (set-forcibly! (rv d4a1)
                      (Im-gui.InputDouble ctx "ITEM: InputDouble"
                                          (. widgets.query_item.d4a 1) 1))
       (tset widgets.query_item.d4a 1 d4a1))
     (when (= item-type 8)
       (local d4a widgets.query_item.d4a)
+      (var d4a1 nil)
+      (var d4a2 nil)
+      (var d4a3 nil)
       (set-forcibly! (rv d4a1 d4a2 d4a3)
                      (Im-gui.InputDouble3 ctx "ITEM: InputDouble3" (. d4a 1)
                                           (. d4a 2) (. d4a 3)))
@@ -2140,7 +2171,7 @@ sec"))
     (when (= item-type 9)
       (set (rv widgets.query_item.color)
            (Im-gui.ColorEdit4 ctx "ITEM: ColorEdit" widgets.query_item.color)))
-    (when (= item-type 10) (set rv (Im-gui-Selectable ctx "ITEM: Selectable")))
+    (when (= item-type 10) (set rv (Im-gui.Selectable ctx "ITEM: Selectable")))
     (when (= item-type 11) (set rv (Im-gui.MenuItem ctx "ITEM: MenuItem")))
     (when (= item-type 12) (set rv (Im-gui.TreeNode ctx "ITEM: TreeNode"))
       (when rv (Im-gui.TreePop ctx)))
@@ -6402,12 +6433,7 @@ Mouse Right: drag to scroll, click for context menu.")
   (Im-gui.End ctx)
   open)
 
-(local (public public-functions)
-       (values {} [:ShowDemoWindow :ShowStyleEditor :PushStyle :PopStyle]))
-
-(each [_ ___fn___ (ipairs public-functions)]
-  (tset public ___fn___ (fn [user-ctx ...] (set ctx user-ctx)
-                          ((. demo ___fn___) ...))))
-
-public
-
+(collect [_ f (ipairs [:ShowDemoWindow :ShowStyleEditor :PushStyle :PopStyle])]
+  f (fn [user-ctx ...]
+      (set ctx user-ctx)
+      ((. demo f) ...)))
