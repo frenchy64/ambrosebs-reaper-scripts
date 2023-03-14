@@ -8288,7 +8288,7 @@ package.preload["anticompiler"] = package.preload["anticompiler"] or function(..
   end
   local function compile(scope, ast, tail_3f)
     if os.getenv("DEBUG") then
-      print(ast.kind)
+      print(ast.kind, " ", (ast.line or "?"))
     else
     end
     local _236_ = ast.kind

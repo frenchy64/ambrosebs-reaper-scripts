@@ -1396,10 +1396,13 @@ function demo.ShowDemoWindowWidgets()
     -- The earlier is more flexible, as in real application your selection may be stored in many different ways
     -- and not necessarily inside a bool value (e.g. in flags within objects, as an external list, etc).
     if ImGui.TreeNode(ctx, 'Basic') then
-      rv,widgets.selectables.basic[1] = ImGui.Selectable(ctx, '1. I am selectable', widgets.selectables.basic[1])
-      rv,widgets.selectables.basic[2] = ImGui.Selectable(ctx, '2. I am selectable', widgets.selectables.basic[2])
+      rv,b1 = ImGui.Selectable(ctx, '1. I am selectable', widgets.selectables.basic[1])
+      widgets.selectables.basic[1] = b1
+      rv,b2 = ImGui.Selectable(ctx, '2. I am selectable', widgets.selectables.basic[2])
+      widgets.selectables.basic[2] = b2
       ImGui.Text(ctx, '(I am not selectable)')
-      rv,widgets.selectables.basic[4] = ImGui.Selectable(ctx, '4. I am selectable', widgets.selectables.basic[4])
+      rv,b4 = ImGui.Selectable(ctx, '4. I am selectable', widgets.selectables.basic[4])
+      widgets.selectables.basic[4] = b4
       if ImGui.Selectable(ctx, '5. I am double clickable', widgets.selectables.basic[5], ImGui.SelectableFlags_AllowDoubleClick()) then
         if ImGui.IsMouseDoubleClicked(ctx, 0) then
           widgets.selectables.basic[5] = not widgets.selectables.basic[5]
@@ -1433,16 +1436,20 @@ function demo.ShowDemoWindowWidgets()
     end
 
     if ImGui.TreeNode(ctx, 'Rendering more text into the same line') then
-      rv,widgets.selectables.sameline[1] = ImGui.Selectable(ctx, 'main.c',    widgets.selectables.sameline[1]); ImGui.SameLine(ctx, 300); ImGui.Text(ctx, ' 2,345 bytes')
-      rv,widgets.selectables.sameline[2] = ImGui.Selectable(ctx, 'Hello.cpp', widgets.selectables.sameline[2]); ImGui.SameLine(ctx, 300); ImGui.Text(ctx, '12,345 bytes')
-      rv,widgets.selectables.sameline[3] = ImGui.Selectable(ctx, 'Hello.h',   widgets.selectables.sameline[3]); ImGui.SameLine(ctx, 300); ImGui.Text(ctx, ' 2,345 bytes')
+      rv,s1 = ImGui.Selectable(ctx, 'main.c',    widgets.selectables.sameline[1]); ImGui.SameLine(ctx, 300); ImGui.Text(ctx, ' 2,345 bytes')
+      widgets.selectables.sameline[1] = s1
+      rv,s2 = ImGui.Selectable(ctx, 'Hello.cpp', widgets.selectables.sameline[2]); ImGui.SameLine(ctx, 300); ImGui.Text(ctx, '12,345 bytes')
+      widgets.selectables.sameline[2] = s2
+      rv,s3 = ImGui.Selectable(ctx, 'Hello.h',   widgets.selectables.sameline[3]); ImGui.SameLine(ctx, 300); ImGui.Text(ctx, ' 2,345 bytes')
+      widgets.selectables.sameline[3] = s3
       ImGui.TreePop(ctx)
     end
     if ImGui.TreeNode(ctx, 'In columns') then
       if ImGui.BeginTable(ctx, 'split1', 3, ImGui.TableFlags_Resizable() | ImGui.TableFlags_NoSavedSettings() | ImGui.TableFlags_Borders()) then
         for i,sel in ipairs(widgets.selectables.columns) do
           ImGui.TableNextColumn(ctx)
-          rv,widgets.selectables.columns[i] = ImGui.Selectable(ctx, ('Item %d'):format(i-1), sel)
+          rv,ci = ImGui.Selectable(ctx, ('Item %d'):format(i-1), sel)
+          widgets.selectables.columns[i] = ci
         end
         ImGui.EndTable(ctx)
       end
@@ -1451,7 +1458,8 @@ function demo.ShowDemoWindowWidgets()
         for i,sel in ipairs(widgets.selectables.columns) do
           ImGui.TableNextRow(ctx)
           ImGui.TableNextColumn(ctx)
-          rv,widgets.selectables.columns[i] = ImGui.Selectable(ctx, ('Item %d'):format(i-1), sel, ImGui.SelectableFlags_SpanAllColumns())
+          rv,ci = ImGui.Selectable(ctx, ('Item %d'):format(i-1), sel, ImGui.SelectableFlags_SpanAllColumns())
+          widgets.selectables.columns[i] = ci 
           ImGui.TableNextColumn(ctx)
           ImGui.Text(ctx, 'Some other contents')
           ImGui.TableNextColumn(ctx)
@@ -1516,7 +1524,8 @@ function demo.ShowDemoWindowWidgets()
           if x > 1 then ImGui.SameLine(ctx); end
           ImGui.PushStyleVar(ctx, ImGui.StyleVar_SelectableTextAlign(), align_x, align_y)
           local row = widgets.selectables.align[y]
-          rv,row[x] = ImGui.Selectable(ctx, name, row[x], ImGui.SelectableFlags_None(), 80, 80)
+          rv,rx = ImGui.Selectable(ctx, name, row[x], ImGui.SelectableFlags_None(), 80, 80)
+          row[x] = rx
           ImGui.PopStyleVar(ctx)
         end
       end
@@ -1571,11 +1580,16 @@ label:
       --     }
       -- };
 
-      rv,widgets.input.buf[1] = ImGui.InputText(ctx, 'default',     widgets.input.buf[1])
-      rv,widgets.input.buf[2] = ImGui.InputText(ctx, 'decimal',     widgets.input.buf[2], ImGui.InputTextFlags_CharsDecimal())
-      rv,widgets.input.buf[3] = ImGui.InputText(ctx, 'hexadecimal', widgets.input.buf[3], ImGui.InputTextFlags_CharsHexadecimal() | ImGui.InputTextFlags_CharsUppercase())
-      rv,widgets.input.buf[4] = ImGui.InputText(ctx, 'uppercase',   widgets.input.buf[4], ImGui.InputTextFlags_CharsUppercase())
-      rv,widgets.input.buf[5] = ImGui.InputText(ctx, 'no blank',    widgets.input.buf[5], ImGui.InputTextFlags_CharsNoBlank())
+      rv,b1 = ImGui.InputText(ctx, 'default',     widgets.input.buf[1])
+      widgets.input.buf[1] = b1
+      rv,b2 = ImGui.InputText(ctx, 'decimal',     widgets.input.buf[2], ImGui.InputTextFlags_CharsDecimal())
+      widgets.input.buf[2] = b2
+      rv,b3 = ImGui.InputText(ctx, 'hexadecimal', widgets.input.buf[3], ImGui.InputTextFlags_CharsHexadecimal() | ImGui.InputTextFlags_CharsUppercase())
+      widgets.input.buf[3] = b3
+      rv,b4 = ImGui.InputText(ctx, 'uppercase',   widgets.input.buf[4], ImGui.InputTextFlags_CharsUppercase())
+      widgets.input.buf[4] = b4
+      rv,b5 = ImGui.InputText(ctx, 'no blank',    widgets.input.buf[5], ImGui.InputTextFlags_CharsNoBlank())
+      widgets.input.buf[5] = b5
       -- static char buf6[64] = ""; ImGui.InputText("\"imgui\" letters", buf6, 64, ImGuiInputTextFlags_CallbackCharFilter, TextFilters::FilterImGuiLetters)
       ImGui.TreePop(ctx)
     end
@@ -1749,7 +1763,8 @@ label:
       local names = { 'Artichoke', 'Beetroot', 'Celery', 'Daikon' }
       for n,opened in ipairs(widgets.tabs.opened) do
         if n > 1 then ImGui.SameLine(ctx); end
-        rv,widgets.tabs.opened[n] = ImGui.Checkbox(ctx, names[n], opened)
+        rv,on = ImGui.Checkbox(ctx, names[n], opened)
+        widgets.tabs.opened[n] = on
       end
 
       -- Passing a bool* to BeginTabItem() is similar to passing one to Begin():
@@ -1757,7 +1772,8 @@ label:
       if ImGui.BeginTabBar(ctx, 'MyTabBar', widgets.tabs.flags1) then
         for n,opened in ipairs(widgets.tabs.opened) do
           if opened then
-            rv,widgets.tabs.opened[n] = ImGui.BeginTabItem(ctx, names[n], true, ImGui.TabItemFlags_None())
+            rv,on = ImGui.BeginTabItem(ctx, names[n], true, ImGui.TabItemFlags_None())
+            widgets.tabs.opened[n] = on
             if rv then
               ImGui.Text(ctx, ('This is the %s tab!'):format(names[n]))
               if n & 1 == 0 then
@@ -2362,28 +2378,82 @@ label:
     local vec4i = widgets.multi_component.vec4i
 
     ImGui.SeparatorText(ctx, '2-wide')
-    rv,vec4d[1],vec4d[2] = ImGui.InputDouble2(ctx, 'input double2', vec4d[1], vec4d[2])
-    rv,vec4d[1],vec4d[2] = ImGui.DragDouble2(ctx, 'drag double2', vec4d[1], vec4d[2], 0.01, 0.0, 1.0)
-    rv,vec4d[1],vec4d[2] = ImGui.SliderDouble2(ctx, 'slider double2', vec4d[1], vec4d[2], 0.0, 1.0)
-    rv,vec4i[1],vec4i[2] = ImGui.InputInt2(ctx, 'input int2', vec4i[1], vec4i[2])
-    rv,vec4i[1],vec4i[2] = ImGui.DragInt2(ctx, 'drag int2', vec4i[1], vec4i[2], 1, 0, 255)
-    rv,vec4i[1],vec4i[2] = ImGui.SliderInt2(ctx, 'slider int2', vec4i[1], vec4i[2], 0, 255)
+    rv,vec4d1,vec4d2 = ImGui.InputDouble2(ctx, 'input double2', vec4d[1], vec4d[2])
+    vec4d[1] = vec4d1
+    vec4d[2] = vec4d2
+    rv,vec4d1,vec4d2 = ImGui.DragDouble2(ctx, 'drag double2', vec4d[1], vec4d[2], 0.01, 0.0, 1.0)
+    vec4d[1] = vec4d1
+    vec4d[2] = vec4d2
+    rv,vec4d1,vec4d2 = ImGui.SliderDouble2(ctx, 'slider double2', vec4d[1], vec4d[2], 0.0, 1.0)
+    vec4d[1] = vec4d1
+    vec4d[2] = vec4d2
+    rv,vec4i1,vec4i2 = ImGui.InputInt2(ctx, 'input int2', vec4i[1], vec4i[2])
+    vec4i[1] = vec4i1
+    vec4i[2] = vec4i2
+    rv,vec4i1,vec4i2 = ImGui.DragInt2(ctx, 'drag int2', vec4i[1], vec4i[2], 1, 0, 255)
+    vec4i[1] = vec4i1
+    vec4i[2] = vec4i2
+    rv,vec4i1,vec4i2 = ImGui.SliderInt2(ctx, 'slider int2', vec4i[1], vec4i[2], 0, 255)
+    vec4i[1] = vec4i1
+    vec4i[2] = vec4i2
 
     ImGui.SeparatorText(ctx, '3-wide')
-    rv,vec4d[1],vec4d[2],vec4d[3] = ImGui.InputDouble3(ctx, 'input double3', vec4d[1], vec4d[2], vec4d[3])
-    rv,vec4d[1],vec4d[2],vec4d[3] = ImGui.DragDouble3(ctx, 'drag double3', vec4d[1], vec4d[2], vec4d[3], 0.01, 0.0, 1.0)
-    rv,vec4d[1],vec4d[2],vec4d[3] = ImGui.SliderDouble3(ctx, 'slider double3', vec4d[1], vec4d[2], vec4d[3], 0.0, 1.0)
-    rv,vec4i[1],vec4i[2],vec4i[3] = ImGui.InputInt3(ctx, 'input int3', vec4i[1], vec4i[2], vec4i[3])
-    rv,vec4i[1],vec4i[2],vec4i[3] = ImGui.DragInt3(ctx, 'drag int3', vec4i[1], vec4i[2], vec4i[3], 1, 0, 255)
-    rv,vec4i[1],vec4i[2],vec4i[3] = ImGui.SliderInt3(ctx, 'slider int3', vec4i[1], vec4i[2], vec4i[3], 0, 255)
+    rv,vec4d1,vec4d2,vec4d3 = ImGui.InputDouble3(ctx, 'input double3', vec4d[1], vec4d[2], vec4d[3])
+    vec4d[1] = vec4d1
+    vec4d[2] = vec4d2
+    vec4d[3] = vec4d3
+    rv,vec4d1,vec4d2,vec4d3 = ImGui.DragDouble3(ctx, 'drag double3', vec4d[1], vec4d[2], vec4d[3], 0.01, 0.0, 1.0)
+    vec4d[1] = vec4d1
+    vec4d[2] = vec4d2
+    vec4d[3] = vec4d3
+    rv,vec4d1,vec4d2,vec4d3 = ImGui.SliderDouble3(ctx, 'slider double3', vec4d[1], vec4d[2], vec4d[3], 0.0, 1.0)
+    vec4d[1] = vec4d1
+    vec4d[2] = vec4d2
+    vec4d[3] = vec4d3
+    rv,vec4i1,vec4i2,vec4i3 = ImGui.InputInt3(ctx, 'input int3', vec4i[1], vec4i[2], vec4i[3])
+    vec4i[1] = vec4i1
+    vec4i[2] = vec4i2
+    vec4i[3] = vec4i3
+    rv,vec4i1,vec4i2,vec4i3 = ImGui.DragInt3(ctx, 'drag int3', vec4i[1], vec4i[2], vec4i[3], 1, 0, 255)
+    vec4i[1] = vec4i1
+    vec4i[2] = vec4i2
+    vec4i[3] = vec4i3
+    rv,vec4i1,vec4i2,vec4i3 = ImGui.SliderInt3(ctx, 'slider int3', vec4i[1], vec4i[2], vec4i[3], 0, 255)
+    vec4i[1] = vec4i1
+    vec4i[2] = vec4i2
+    vec4i[3] = vec4i3
 
     ImGui.SeparatorText(ctx, '4-wide')
-    rv,vec4d[1],vec4d[2],vec4d[3],vec4d[4] = ImGui.InputDouble4(ctx, 'input double4', vec4d[1], vec4d[2], vec4d[3], vec4d[4])
-    rv,vec4d[1],vec4d[2],vec4d[3],vec4d[4] = ImGui.DragDouble4(ctx, 'drag double4', vec4d[1], vec4d[2], vec4d[3], vec4d[4], 0.01, 0.0, 1.0)
-    rv,vec4d[1],vec4d[2],vec4d[3],vec4d[4] = ImGui.SliderDouble4(ctx, 'slider double4', vec4d[1], vec4d[2], vec4d[3], vec4d[4], 0.0, 1.0)
-    rv,vec4i[1],vec4i[2],vec4i[3],vec4i[4] = ImGui.InputInt4(ctx, 'input int4', vec4i[1], vec4i[2], vec4i[3], vec4i[4])
-    rv,vec4i[1],vec4i[2],vec4i[3],vec4i[4] = ImGui.DragInt4(ctx, 'drag int4', vec4i[1], vec4i[2], vec4i[3], vec4i[4], 1, 0, 255)
-    rv,vec4i[1],vec4i[2],vec4i[3],vec4i[4] = ImGui.SliderInt4(ctx, 'slider int4', vec4i[1], vec4i[2], vec4i[3], vec4i[4], 0, 255)
+    rv,vec4d1,vec4d2,vec4d3,vec4d4 = ImGui.InputDouble4(ctx, 'input double4', vec4d[1], vec4d[2], vec4d[3], vec4d[4])
+    vec4d[1] = vec4d1
+    vec4d[2] = vec4d2
+    vec4d[3] = vec4d3
+    vec4d[4] = vec4d4
+    rv,vec4d1,vec4d2,vec4d3,vec4d4 = ImGui.DragDouble4(ctx, 'drag double4', vec4d[1], vec4d[2], vec4d[3], vec4d[4], 0.01, 0.0, 1.0)
+    vec4d[1] = vec4d1
+    vec4d[2] = vec4d2
+    vec4d[3] = vec4d3
+    vec4d[4] = vec4d4
+    rv,vec4d1,vec4d2,vec4d3,vec4d4 = ImGui.SliderDouble4(ctx, 'slider double4', vec4d[1], vec4d[2], vec4d[3], vec4d[4], 0.0, 1.0)
+    vec4d[1] = vec4d1
+    vec4d[2] = vec4d2
+    vec4d[3] = vec4d3
+    vec4d[4] = vec4d4
+    rv,vec4i1,vec4i2,vec4i3,vec4i4 = ImGui.InputInt4(ctx, 'input int4', vec4i[1], vec4i[2], vec4i[3], vec4i[4])
+    vec4i[1] = vec4i1
+    vec4i[2] = vec4i2
+    vec4i[3] = vec4i3
+    vec4i[4] = vec4i4
+    rv,vec4i1,vec4i2,vec4i3,vec4i4 = ImGui.DragInt4(ctx, 'drag int4', vec4i[1], vec4i[2], vec4i[3], vec4i[4], 1, 0, 255)
+    vec4i[1] = vec4i1
+    vec4i[2] = vec4i2
+    vec4i[3] = vec4i3
+    vec4i[4] = vec4i4
+    rv,vec4i1,vec4i2,vec4i3,vec4i4 = ImGui.SliderInt4(ctx, 'slider int4', vec4i[1], vec4i[2], vec4i[3], vec4i[4], 0, 255)
+    vec4i[1] = vec4i1
+    vec4i[2] = vec4i2
+    vec4i[3] = vec4i3
+    vec4i[4] = vec4i4
     ImGui.Spacing(ctx)
 
     ImGui.InputDoubleN(ctx, 'input reaper.array', widgets.multi_component.vec4a)
@@ -2416,7 +2486,8 @@ label:
       ImGui.PushStyleColor(ctx, ImGui.Col_FrameBgHovered(), demo.HSV((i-1) / 7.0, 0.6, 0.5, 1.0))
       ImGui.PushStyleColor(ctx, ImGui.Col_FrameBgActive(),  demo.HSV((i-1) / 7.0, 0.7, 0.5, 1.0))
       ImGui.PushStyleColor(ctx, ImGui.Col_SliderGrab(),     demo.HSV((i-1) / 7.0, 0.9, 0.9, 1.0))
-      rv,widgets.vsliders.values[i] = ImGui.VSliderDouble(ctx, '##v', 18, 160, v, 0.0, 1.0, ' ')
+      rv,vi = ImGui.VSliderDouble(ctx, '##v', 18, 160, v, 0.0, 1.0, ' ')
+      widgets.vsliders.values[i] = vi
       if ImGui.IsItemActive(ctx) or ImGui.IsItemHovered(ctx) then
         ImGui.SetTooltip(ctx, ('%.3f'):format(v))
       end
@@ -2454,7 +2525,8 @@ label:
       if i > 1 then ImGui.SameLine(ctx) end
       ImGui.PushID(ctx, i)
       ImGui.PushStyleVar(ctx, ImGui.StyleVar_GrabMinSize(), 40)
-      rv,widgets.vsliders.values[i] = ImGui.VSliderDouble(ctx, '##v', 40, 160, v, 0.0, 1.0, '%.2f\nsec')
+      rv,vi = ImGui.VSliderDouble(ctx, '##v', 40, 160, v, 0.0, 1.0, '%.2f\nsec')
+      widgets.vsliders.values[i] = vi
       ImGui.PopStyleVar(ctx)
       ImGui.PopID(ctx)
     end
@@ -2642,7 +2714,8 @@ label:
       rv,widgets.query_item.b = ImGui.Checkbox(ctx, 'ITEM: Checkbox', widgets.query_item.b)
     end
     if item_type == 4  then -- Testing basic item
-      rv,widgets.query_item.d4a[1] = ImGui.SliderDouble(ctx, 'ITEM: SliderDouble', widgets.query_item.d4a[1], 0.0, 1.0)
+      rv,da41 = ImGui.SliderDouble(ctx, 'ITEM: SliderDouble', widgets.query_item.d4a[1], 0.0, 1.0)
+      widgets.query_item.d4a[1] = da41
     end
     if item_type == 5  then -- Testing input text (which handles tabbing)
       rv,widgets.query_item.str = ImGui.InputText(ctx, 'ITEM: InputText', widgets.query_item.str)
@@ -2651,11 +2724,15 @@ label:
       rv,widgets.query_item.str = ImGui.InputTextMultiline(ctx, 'ITEM: InputTextMultiline', widgets.query_item.str)
     end
     if item_type == 7  then -- Testing +/- buttons on scalar input
-      rv,widgets.query_item.d4a[1] = ImGui.InputDouble(ctx, 'ITEM: InputDouble', widgets.query_item.d4a[1], 1.0)
+      rv,d4a1 = ImGui.InputDouble(ctx, 'ITEM: InputDouble', widgets.query_item.d4a[1], 1.0)
+      widgets.query_item.d4a[1] = d4a1
     end
     if item_type == 8  then -- Testing multi-component items (IsItemXXX flags are reported merged)
       local d4a = widgets.query_item.d4a
-      rv,d4a[1],d4a[2],d4a[3] = ImGui.InputDouble3(ctx, 'ITEM: InputDouble3', d4a[1], d4a[2], d4a[3])
+      rv,d4a1,d4a2,d4a3 = ImGui.InputDouble3(ctx, 'ITEM: InputDouble3', d4a[1], d4a[2], d4a[3])
+      d4a[1] = d4a1
+      d4a[2] = d4a2
+      d4a[3] = d4a3
     end
     if item_type == 9  then -- Testing multi-component items (IsItemXXX flags are reported merged)
       rv,widgets.query_item.color = ImGui.ColorEdit4(ctx, 'ITEM: ColorEdit', widgets.query_item.color)
@@ -3125,7 +3202,8 @@ function demo.ShowDemoWindowLayout()
     for i,sel in ipairs(layout.horizontal.selection) do
       if i > 1 then ImGui.SameLine(ctx) end
       ImGui.PushID(ctx, i)
-      rv,layout.horizontal.selection[i] = ImGui.ListBox(ctx, '', sel, items)
+      rv,si = ImGui.ListBox(ctx, '', sel, items)
+      layout.horizontal.selection[i] = si
       ImGui.PopID(ctx)
       --if ImGui.IsItemHovered(ctx) then ImGui.SetTooltip(ctx, ('ListBox %d hovered'):format(i)) end
     end
@@ -3644,9 +3722,11 @@ function demo.ShowDemoWindowLayout()
       }
     end
 
-    rv,layout.clipping.size[1],layout.clipping.size[2] =
+    rv,s1,s2 =
       ImGui.DragDouble2(ctx, 'size', layout.clipping.size[1], layout.clipping.size[2],
       0.5, 1.0, 200.0, "%.0f")
+    layout.clipping.size[1] = s1
+    layout.clipping.size[2] = s2
     ImGui.TextWrapped(ctx, '(Click and drag to scroll)')
 
     demo.HelpMarker(
@@ -3764,7 +3844,8 @@ function demo.ShowDemoWindowPopups()
     end
     if ImGui.BeginPopup(ctx, 'my_toggle_popup') then
       for i,fish in ipairs(names) do
-        rv,popups.popups.toggles[i] = ImGui.MenuItem(ctx, fish, '', popups.popups.toggles[i])
+        rv,ti = ImGui.MenuItem(ctx, fish, '', popups.popups.toggles[i])
+        popups.popups.toggles[i] = ti
       end
       if ImGui.BeginMenu(ctx, 'Sub-menu') then
         ImGui.MenuItem(ctx, 'Click me')
@@ -3782,7 +3863,8 @@ function demo.ShowDemoWindowPopups()
       end
       if ImGui.BeginPopup(ctx, 'another popup') then
         for i,fish in ipairs(names) do
-          rv,popups.popups.toggles[i] = ImGui.MenuItem(ctx, fish, '', popups.popups.toggles[i])
+          rv,ti = ImGui.MenuItem(ctx, fish, '', popups.popups.toggles[i])
+          popups.popups.toggles[i] = ti
         end
         if ImGui.BeginMenu(ctx, 'Sub-menu') then
           ImGui.MenuItem(ctx, 'Click me')
@@ -4601,9 +4683,11 @@ function demo.ShowDemoWindowTables()
     rv,tables.padding.flags2 = ImGui.CheckboxFlags(ctx, 'ImGuiTableFlags_RowBg', tables.padding.flags2, ImGui.TableFlags_RowBg())
     rv,tables.padding.flags2 = ImGui.CheckboxFlags(ctx, 'ImGuiTableFlags_Resizable', tables.padding.flags2, ImGui.TableFlags_Resizable())
     rv,tables.padding.show_widget_frame_bg = ImGui.Checkbox(ctx, 'show_widget_frame_bg', tables.padding.show_widget_frame_bg)
-    rv,tables.padding.cell_padding[1],tables.padding.cell_padding[2] =
+    rv,cp1,cp2 =
       ImGui.SliderDouble2(ctx, 'CellPadding', tables.padding.cell_padding[1],
       tables.padding.cell_padding[2], 0.0, 10.0, '%.0f')
+    tables.padding.cell_padding[1] = cp1
+    tables.padding.cell_padding[2] = cp2
     demo.PopStyleCompact()
 
     ImGui.PushStyleVar(ctx, ImGui.StyleVar_CellPadding(), table.unpack(tables.padding.cell_padding))
@@ -4615,7 +4699,8 @@ function demo.ShowDemoWindowTables()
         ImGui.TableNextColumn(ctx)
         ImGui.SetNextItemWidth(ctx, -FLT_MIN)
         ImGui.PushID(ctx, cell)
-        rv,tables.padding.text_bufs[cell] = ImGui.InputText(ctx, '##cell', tables.padding.text_bufs[cell])
+        rv,tbc = ImGui.InputText(ctx, '##cell', tables.padding.text_bufs[cell])
+        tables.padding.text_bufs[cell] = tbc
         ImGui.PopID(ctx)
       end
       if not tables.padding.show_widget_frame_bg then
@@ -5330,8 +5415,9 @@ function demo.ShowDemoWindowTables()
         local column_name = ImGui.TableGetColumnName(ctx, column) -- Retrieve name passed to TableSetupColumn()
         ImGui.PushID(ctx, column)
         ImGui.PushStyleVar(ctx, ImGui.StyleVar_FramePadding(), 0, 0)
-        rv,tables.headers.column_selected[column + 1] =
+        rv,cs1 =
           ImGui.Checkbox(ctx, '##checkall', tables.headers.column_selected[column + 1])
+        tables.headers.column_selected[column + 1] = cs1
         ImGui.PopStyleVar(ctx)
         ImGui.SameLine(ctx, 0.0, (ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemInnerSpacing())))
         ImGui.TableHeader(ctx, column_name)
@@ -5699,8 +5785,10 @@ function demo.ShowDemoWindowTables()
         rv,tables.advanced.show_headers = ImGui.Checkbox(ctx, 'show_headers', tables.advanced.show_headers)
         rv,tables.advanced.show_wrapped_text = ImGui.Checkbox(ctx, 'show_wrapped_text', tables.advanced.show_wrapped_text)
 
-        rv,tables.advanced.outer_size_value[1],tables.advanced.outer_size_value[2] =
+        rv,osv1,osv2 =
           ImGui.DragDouble2(ctx, '##OuterSize', table.unpack(tables.advanced.outer_size_value))
+        tables.advanced.outer_size_value[1] = osv1
+        tables.advanced.outer_size_value[2] = osv2
         ImGui.SameLine(ctx, 0.0, (ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemInnerSpacing())))
         rv,tables.advanced.outer_size_enabled = ImGui.Checkbox(ctx, 'outer_size', tables.advanced.outer_size_enabled)
         ImGui.SameLine(ctx)
@@ -6279,8 +6367,11 @@ function demo.ShowDemoWindowInputs()
       if ImGui.Button(ctx, 'Focus on Y') then focus_ahead = 1 end ImGui.SameLine(ctx)
       if ImGui.Button(ctx, 'Focus on Z') then focus_ahead = 2 end
       if focus_ahead ~= -1 then ImGui.SetKeyboardFocusHere(ctx, focus_ahead) end
-      rv,misc.focus.d3[1],misc.focus.d3[2],misc.focus.d3[3] =
+      rv,d31,d32,d33 =
         ImGui.SliderDouble3(ctx, 'Float3', misc.focus.d3[1], misc.focus.d3[2], misc.focus.d3[3], 0.0, 1.0)
+      misc.focus.d3[1] = d31
+      misc.focus.d3[2] = d32
+      misc.focus.d3[3] = d33
 
       ImGui.TextWrapped(ctx, 'NB: Cursor & selection are preserved when refocusing last used item in code.')
       ImGui.TreePop(ctx)
@@ -6457,7 +6548,8 @@ function demo.ShowStyleEditor()
   -- Simplified Settings (expose floating-pointer border sizes as boolean representing 0.0 or 1.0)
   local FrameRounding, GrabRounding = ImGui.StyleVar_FrameRounding(),
                                       ImGui.StyleVar_GrabRounding()
-  rv,app.style_editor.style.vars[FrameRounding] = ImGui.SliderDouble(ctx, 'FrameRounding', app.style_editor.style.vars[FrameRounding], 0.0, 12.0, '%.0f')
+  rv,vfr = ImGui.SliderDouble(ctx, 'FrameRounding', app.style_editor.style.vars[FrameRounding], 0.0, 12.0, '%.0f')
+  app.style_editor.style.vars[FrameRounding] = vfr
   if rv then
     app.style_editor.style.vars[GrabRounding] = app.style_editor.style.vars[FrameRounding] -- Make GrabRounding always the same value as FrameRounding
   end
@@ -6633,7 +6725,8 @@ function demo.ShowStyleEditor()
         for i, name in demo.EachEnum('Col') do
           if ImGui.TextFilter_PassFilter(app.style_editor.colors.filter.inst, name) then
             ImGui.PushID(ctx, i)
-            rv, app.style_editor.style.colors[i] = ImGui.ColorEdit4(ctx, '##color', app.style_editor.style.colors[i], ImGui.ColorEditFlags_AlphaBar() | app.style_editor.colors.alpha_flags)
+            rv,ci  = ImGui.ColorEdit4(ctx, '##color', app.style_editor.style.colors[i], ImGui.ColorEditFlags_AlphaBar() | app.style_editor.colors.alpha_flags)
+            app.style_editor.style.colors[i] = ci
             if app.style_editor.style.colors[i] ~= app.style_editor.ref.colors[i] then
               -- Tips: in a real user application, you may want to merge and use an icon font into the main font,
               -- so instead of "Save"/"Revert" you'd use icons!
@@ -6742,8 +6835,12 @@ function demo.ShowStyleEditor()
 --             HelpMarker("When drawing circle primitives with \"num_segments == 0\" tesselation will be calculated automatically.");
 
       local Alpha, DisabledAlpha = ImGui.StyleVar_Alpha(), ImGui.StyleVar_DisabledAlpha()
-      rv,app.style_editor.style.vars[Alpha] = ImGui.DragDouble(ctx, 'Global Alpha', app.style_editor.style.vars[Alpha], 0.005, 0.20, 1.0, '%.2f') -- Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
-      rv,app.style_editor.style.vars[DisabledAlpha] = ImGui.DragDouble(ctx, 'Disabled Alpha', app.style_editor.style.vars[DisabledAlpha], 0.005, 0.0, 1.0, '%.2f'); ImGui.SameLine(ctx); demo.HelpMarker('Additional alpha multiplier for disabled items (multiply over current value of Alpha).')
+      rv,vA = ImGui.DragDouble(ctx, 'Global Alpha', app.style_editor.style.vars[Alpha], 0.005, 0.20, 1.0, '%.2f') -- Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
+      app.style_editor.style.vars[Alpha] = vA
+      rv,vDA = ImGui.DragDouble(ctx, 'Disabled Alpha', app.style_editor.style.vars[DisabledAlpha], 0.005, 0.0, 1.0, '%.2f')
+      app.style_editor.style.vars[DisabledAlpha] = vDA
+      ImGui.SameLine(ctx)
+      demo.HelpMarker('Additional alpha multiplier for disabled items (multiply over current value of Alpha).')
       ImGui.PopItemWidth(ctx)
 
       ImGui.EndTabItem(ctx)
@@ -7499,11 +7596,13 @@ function demo.ShowPlaceholderObject(prefix, uid)
         ImGui.TableSetColumnIndex(ctx, 1)
         ImGui.SetNextItemWidth(ctx, -FLT_MIN)
         if i >= 5 then
-          rv,app.property_editor.placeholder_members[i] =
+          rv,pmi =
             ImGui.InputDouble(ctx, '##value', app.property_editor.placeholder_members[i], 1.0)
+          app.property_editor.placeholder_members[i] = pmi
         else
-          rv,app.property_editor.placeholder_members[i] =
+          rv,pmi =
             ImGui.DragDouble(ctx, '##value', app.property_editor.placeholder_members[i], 0.01)
+          app.property_editor.placeholder_members[i] = pmi
         end
       end
       ImGui.PopID(ctx)
