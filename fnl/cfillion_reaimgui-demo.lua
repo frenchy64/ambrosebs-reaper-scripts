@@ -1436,12 +1436,18 @@ function demo.ShowDemoWindowWidgets()
     end
 
     if ImGui.TreeNode(ctx, 'Rendering more text into the same line') then
-      rv,s1 = ImGui.Selectable(ctx, 'main.c',    widgets.selectables.sameline[1]); ImGui.SameLine(ctx, 300); ImGui.Text(ctx, ' 2,345 bytes')
+      rv,s1 = ImGui.Selectable(ctx, 'main.c',    widgets.selectables.sameline[1])
       widgets.selectables.sameline[1] = s1
-      rv,s2 = ImGui.Selectable(ctx, 'Hello.cpp', widgets.selectables.sameline[2]); ImGui.SameLine(ctx, 300); ImGui.Text(ctx, '12,345 bytes')
+      ImGui.SameLine(ctx, 300)
+      ImGui.Text(ctx, ' 2,345 bytes')
+      rv,s2 = ImGui.Selectable(ctx, 'Hello.cpp', widgets.selectables.sameline[2])
       widgets.selectables.sameline[2] = s2
-      rv,s3 = ImGui.Selectable(ctx, 'Hello.h',   widgets.selectables.sameline[3]); ImGui.SameLine(ctx, 300); ImGui.Text(ctx, ' 2,345 bytes')
+      ImGui.SameLine(ctx, 300)
+      ImGui.Text(ctx, '12,345 bytes')
+      rv,s3 = ImGui.Selectable(ctx, 'Hello.h',   widgets.selectables.sameline[3])
       widgets.selectables.sameline[3] = s3
+      ImGui.SameLine(ctx, 300)
+      ImGui.Text(ctx, ' 2,345 bytes')
       ImGui.TreePop(ctx)
     end
     if ImGui.TreeNode(ctx, 'In columns') then

@@ -1,3 +1,53 @@
+;; Lua/ReaImGui port of Dear ImGui's C++ demo code (v1.89.3)
+;;
+;;This file can be imported in other scripts to help during development:
+
+(comment
+(local demo
+       (dofile (.. (reaper.GetResourcePath)
+                   "/Scripts/ReaTeam Extensions/API/ReaImGui_Demo.lua")))
+
+(local ctx (reaper.ImGui_CreateContext "My script"))
+
+(fn loop []
+  (demo.PushStyle ctx)
+  (demo.ShowDemoWindow ctx)
+  (when (reaper.ImGui_Begin ctx "Dear ImGui Style Editor")
+    (demo.ShowStyleEditor ctx)
+    (reaper.ImGui_End ctx))
+  (demo.PopStyle ctx)
+  (reaper.defer loop))
+
+(reaper.defer loop)
+  )
+
+;; Index of this file:
+
+;; [SECTION] Helpers
+;; [SECTION] Demo Window / ShowDemoWindow()
+;; - ShowDemoWindow()
+;; - sub section: ShowDemoWindowWidgets()
+;; - sub section: ShowDemoWindowLayout()
+;; - sub section: ShowDemoWindowPopups()
+;; - sub section: ShowDemoWindowTables()
+;; - sub section: ShowDemoWindowInputs()
+;; [SECTION] Style Editor / ShowStyleEditor()
+;; [SECTION] User Guide / ShowUserGuide()
+;; [SECTION] Example App: Main Menu Bar / ShowExampleAppMainMenuBar()
+;; [SECTION] Example App: Debug Console / ShowExampleAppConsole()
+;; [SECTION] Example App: Debug Log / ShowExampleAppLog()
+;; [SECTION] Example App: Simple Layout / ShowExampleAppLayout()
+;; [SECTION] Example App: Property Editor / ShowExampleAppPropertyEditor()
+;; [SECTION] Example App: Long Text / ShowExampleAppLongText()
+;; [SECTION] Example App: Auto Resize / ShowExampleAppAutoResize()
+;; [SECTION] Example App: Constrained Resize / ShowExampleAppConstrainedResize()
+;; [SECTION] Example App: Simple overlay / ShowExampleAppSimpleOverlay()
+;; [SECTION] Example App: Fullscreen window / ShowExampleAppFullscreen()
+;; [SECTION] Example App: Manipulating window titles / ShowExampleAppWindowTitles()
+;; [SECTION] Example App: Custom Rendering using ImDrawList API / ShowExampleAppCustomRendering()
+;; [SECTION] Example App: Docking, DockSpace / ShowExampleAppDockSpace()
+;; [SECTION] Example App: Documents Handling / ShowExampleAppDocuments()
+
 (local Im-gui {})
 
 (each [name func (pairs reaper)]
@@ -58,7 +108,9 @@
 
 (local cache {})
 
-(fn demo.loop [] (demo.PushStyle) (set demo.open (demo.ShowDemoWindow true))
+(fn demo.loop []
+  (demo.PushStyle)
+  (set demo.open (demo.ShowDemoWindow true))
   (demo.PopStyle)
   (when demo.open (reaper.defer demo.loop)))
 
@@ -86,9 +138,10 @@
 
 (fn demo.round [n] (math.floor (+ n 0.5)))
 
-(fn demo.clamp [v mn mx] (when (< v mn) (lua "return mn"))
-  (when (> v mx) (lua "return mx"))
-  v)
+(fn demo.clamp [v mn mx]
+  (if (< v mn) mn
+    (> v mx) mx
+    v))
 
 (fn demo.Link [url]
   (when (not reaper.CF_ShellExecute) (Im-gui.Text ctx url) (lua "return "))
@@ -1056,21 +1109,21 @@ B\149\014\006\163\204\018\220]'\029\016\017\169\220ٙ\133\183t\214-\029\189\014:
       (set-forcibly! (rv s1)
                      (Im-gui.Selectable ctx :main.c
                                         (. widgets.selectables.sameline 1)))
+      (tset widgets.selectables.sameline 1 s1)
       (Im-gui.SameLine ctx 300)
       (Im-gui.Text ctx " 2,345 bytes")
-      (tset widgets.selectables.sameline 1 s1)
       (set-forcibly! (rv s2)
                      (Im-gui.Selectable ctx :Hello.cpp
                                         (. widgets.selectables.sameline 2)))
+      (tset widgets.selectables.sameline 2 s2)
       (Im-gui.SameLine ctx 300)
       (Im-gui.Text ctx "12,345 bytes")
-      (tset widgets.selectables.sameline 2 s2)
       (set-forcibly! (rv s3)
                      (Im-gui.Selectable ctx :Hello.h
                                         (. widgets.selectables.sameline 3)))
+      (tset widgets.selectables.sameline 3 s3)
       (Im-gui.SameLine ctx 300)
       (Im-gui.Text ctx " 2,345 bytes")
-      (tset widgets.selectables.sameline 3 s3)
       (Im-gui.TreePop ctx))
     (when (Im-gui.TreeNode ctx "In columns")
       (when (Im-gui.BeginTable ctx :split1 3
