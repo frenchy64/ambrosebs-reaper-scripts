@@ -2500,7 +2500,9 @@ We don't have a getter to avoidencouraging you to persistently save values that 
       ;; Note that the ImGuiHoveredFlags_XXX flags can be combined.
       ;; Because BulletText is an item itself and that would affect the output of IsItemXXX functions,
       ;; we query every state in a single call to avoid storing them and to simplify the code.
-      (ImGui.BulletText ctx (: "Return value = %s
+      (ImGui.BulletText
+        ctx
+        (: "Return value = %s
 IsItemFocused() = %s
 IsItemHovered() = %s
 IsItemHovered(_AllowWhenBlockedByPopup) = %s
@@ -2518,55 +2520,54 @@ IsItemClicked() = %s
 IsItemToggledOpen() = %s
 GetItemRectMin() = (%.1f, %.1f)
 GetItemRectMax() = (%.1f, %.1f)
-GetItemRectSize() = (%.1f, %.1f)" :format
-                             rv
-                          (ImGui.IsItemFocused ctx) (ImGui.IsItemHovered ctx)
-                          (ImGui.IsItemHovered ctx
-                                                (ImGui.HoveredFlags_AllowWhenBlockedByPopup))
-                          (ImGui.IsItemHovered ctx
-                                                (ImGui.HoveredFlags_AllowWhenBlockedByActiveItem))
-                          (ImGui.IsItemHovered ctx
-                                                (ImGui.HoveredFlags_AllowWhenOverlapped))
-                          (ImGui.IsItemHovered ctx
-                                                (ImGui.HoveredFlags_AllowWhenDisabled))
-                          (ImGui.IsItemHovered ctx
-                                                (ImGui.HoveredFlags_RectOnly))
-                          (ImGui.IsItemActive ctx) (ImGui.IsItemEdited ctx)
-                          (ImGui.IsItemActivated ctx)
-                          (ImGui.IsItemDeactivated ctx)
-                          (ImGui.IsItemDeactivatedAfterEdit ctx)
-                          (ImGui.IsItemVisible ctx) (ImGui.IsItemClicked ctx)
-                          (ImGui.IsItemToggledOpen ctx)
-                          (ImGui.GetItemRectMin ctx)
-                          (select 2 (ImGui.GetItemRectMin ctx))
-                          (ImGui.GetItemRectMax ctx)
-                          (select 2 (ImGui.GetItemRectMax ctx))
-                          (ImGui.GetItemRectSize ctx)
-                          (select 2 (ImGui.GetItemRectSize ctx))))
-    (ImGui.BulletText ctx (: "w/ Hovering Delay: None = %s, Fast = %s, Normal = %s"
-                              :format hovered-delay-none hovered-delay-short
-                              hovered-delay-normal)))
-    (when widgets.query_item.item_disabled (ImGui.EndDisabled ctx))
+GetItemRectSize() = (%.1f, %.1f)"
+           :format
+           rv
+           (ImGui.IsItemFocused ctx)
+           (ImGui.IsItemHovered ctx)
+           (ImGui.IsItemHovered ctx (ImGui.HoveredFlags_AllowWhenBlockedByPopup))
+           (ImGui.IsItemHovered ctx (ImGui.HoveredFlags_AllowWhenBlockedByActiveItem))
+           (ImGui.IsItemHovered ctx (ImGui.HoveredFlags_AllowWhenOverlapped))
+           (ImGui.IsItemHovered ctx (ImGui.HoveredFlags_AllowWhenDisabled))
+           (ImGui.IsItemHovered ctx (ImGui.HoveredFlags_RectOnly))
+           (ImGui.IsItemActive ctx)
+           (ImGui.IsItemEdited ctx)
+           (ImGui.IsItemActivated ctx)
+           (ImGui.IsItemDeactivated ctx)
+           (ImGui.IsItemDeactivatedAfterEdit ctx)
+           (ImGui.IsItemVisible ctx)
+           (ImGui.IsItemClicked ctx)
+           (ImGui.IsItemToggledOpen ctx)
+           (ImGui.GetItemRectMin ctx) (select 2 (ImGui.GetItemRectMin ctx))
+           (ImGui.GetItemRectMax ctx) (select 2 (ImGui.GetItemRectMax ctx))
+           (ImGui.GetItemRectSize ctx) (select 2 (ImGui.GetItemRectSize ctx))))
+      (ImGui.BulletText ctx (: "w/ Hovering Delay: None = %s, Fast = %s, Normal = %s"
+                               :format
+                               hovered-delay-none
+                               hovered-delay-short
+                               hovered-delay-normal)))
+
+    (when widgets.query_item.item_disabled
+      (ImGui.EndDisabled ctx))
+
     (ImGui.InputText ctx :unused "" (ImGui.InputTextFlags_ReadOnly))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "This widget is only here to be able to tab-out of the widgets above and see e.g. Deactivated() status.")
     (ImGui.TreePop ctx))
+
   (when (ImGui.TreeNode ctx "Querying Window Status (Focused/Hovered etc.)")
-    (when (not widgets.query_window)
-      (set widgets.query_window
-           {:embed_all_inside_a_child_window false :test_window false}))
-    (set (rv widgets.query_window.embed_all_inside_a_child_window)
-         (ImGui.Checkbox ctx
-                          "Embed everything inside a child window for testing _RootWindow flag."
-                          widgets.query_window.embed_all_inside_a_child_window))
-    (var visible true)
-    (when widgets.query_window.embed_all_inside_a_child_window
-      (set visible
-           (ImGui.BeginChild ctx :outer_child 0
-                              (* (ImGui.GetFontSize ctx) 20) true)))
-    (when visible
-      (ImGui.BulletText ctx
-                         (: "IsWindowFocused() = %s
+    (set-when-not widgets.query_window
+                  {:embed_all_inside_a_child_window false
+                   :test_window false})
+    (update-2nd widgets.query_window.embed_all_inside_a_child_window
+                (ImGui.Checkbox ctx "Embed everything inside a child window for testing _RootWindow flag." $))
+    (let [visible (or (not widgets.query_window.embed_all_inside_a_child_window)
+                      (ImGui.BeginChild ctx :outer_child 0 (* (ImGui.GetFontSize ctx) 20) true))] 
+      (when visible
+        ;; Testing IsWindowFocused() function with its various flags.
+        (ImGui.BulletText 
+          ctx
+          (: "IsWindowFocused() = %s
   IsWindowFocused(_ChildWindows) = %s
   IsWindowFocused(_ChildWindows|_NoPopupHierarchy) = %s
   IsWindowFocused(_ChildWindows|_DockHierarchy) = %s
@@ -2577,122 +2578,114 @@ GetItemRectSize() = (%.1f, %.1f)" :format
   IsWindowFocused(_RootWindow|_NoPopupHierarchy) = %s
   IsWindowFocused(_RootWindow|_DockHierarchy) = %s
   IsWindowFocused(_AnyWindow) = %s" :format
-                            (ImGui.IsWindowFocused ctx)
-                            (ImGui.IsWindowFocused ctx
-                                                    (ImGui.FocusedFlags_ChildWindows))
-                            (ImGui.IsWindowFocused ctx
-                                                    (bor (ImGui.FocusedFlags_ChildWindows)
-                                                         (ImGui.FocusedFlags_NoPopupHierarchy)))
-                            (ImGui.IsWindowFocused ctx
-                                                    (bor (ImGui.FocusedFlags_ChildWindows)
-                                                         (ImGui.FocusedFlags_DockHierarchy)))
-                            (ImGui.IsWindowFocused ctx
-                                                    (bor (ImGui.FocusedFlags_ChildWindows)
-                                                         (ImGui.FocusedFlags_RootWindow)))
-                            (ImGui.IsWindowFocused ctx
-                                                    (bor (ImGui.FocusedFlags_ChildWindows)
-                                                         (ImGui.FocusedFlags_RootWindow)
-                                                         (ImGui.FocusedFlags_NoPopupHierarchy)))
-                            (ImGui.IsWindowFocused ctx
-                                                    (bor (ImGui.FocusedFlags_ChildWindows)
-                                                         (ImGui.FocusedFlags_RootWindow)
-                                                         (ImGui.FocusedFlags_DockHierarchy)))
-                            (ImGui.IsWindowFocused ctx
-                                                    (ImGui.FocusedFlags_RootWindow))
-                            (ImGui.IsWindowFocused ctx
-                                                    (bor (ImGui.FocusedFlags_RootWindow)
-                                                         (ImGui.FocusedFlags_NoPopupHierarchy)))
-                            (ImGui.IsWindowFocused ctx
-                                                    (bor (ImGui.FocusedFlags_RootWindow)
-                                                         (ImGui.FocusedFlags_DockHierarchy)))
-                            (ImGui.IsWindowFocused ctx
-                                                    (ImGui.FocusedFlags_AnyWindow))))
-      (ImGui.BulletText ctx
-                         (: "IsWindowHovered() = %s
-  IsWindowHovered(_AllowWhenBlockedByPopup) = %s
-  IsWindowHovered(_AllowWhenBlockedByActiveItem) = %s
-  IsWindowHovered(_ChildWindows) = %s
-  IsWindowHovered(_ChildWindows|_NoPopupHierarchy) = %s
-  IsWindowHovered(_ChildWindows|_DockHierarchy) = %s
-  IsWindowHovered(_ChildWindows|_RootWindow) = %s
-  IsWindowHovered(_ChildWindows|_RootWindow|_NoPopupHierarchy) = %s
-  IsWindowHovered(_ChildWindows|_RootWindow|_DockHierarchy) = %s
-  IsWindowHovered(_RootWindow) = %s
-  IsWindowHovered(_RootWindow|_NoPopupHierarchy) = %s
-  IsWindowHovered(_RootWindow|_DockHierarchy) = %s
-  IsWindowHovered(_ChildWindows|_AllowWhenBlockedByPopup) = %s
-  IsWindowHovered(_AnyWindow) = %s" :format
-                            (ImGui.IsWindowHovered ctx)
-                            (ImGui.IsWindowHovered ctx
-                                                    (ImGui.HoveredFlags_AllowWhenBlockedByPopup))
-                            (ImGui.IsWindowHovered ctx
-                                                    (ImGui.HoveredFlags_AllowWhenBlockedByActiveItem))
-                            (ImGui.IsWindowHovered ctx
-                                                    (ImGui.HoveredFlags_ChildWindows))
-                            (ImGui.IsWindowHovered ctx
-                                                    (bor (ImGui.HoveredFlags_ChildWindows)
-                                                         (ImGui.HoveredFlags_NoPopupHierarchy)))
-                            (ImGui.IsWindowHovered ctx
-                                                    (bor (ImGui.HoveredFlags_ChildWindows)
-                                                         (ImGui.HoveredFlags_DockHierarchy)))
-                            (ImGui.IsWindowHovered ctx
-                                                    (bor (ImGui.HoveredFlags_ChildWindows)
-                                                         (ImGui.HoveredFlags_RootWindow)))
-                            (ImGui.IsWindowHovered ctx
-                                                    (bor (ImGui.HoveredFlags_ChildWindows)
-                                                         (ImGui.HoveredFlags_RootWindow)
-                                                         (ImGui.HoveredFlags_NoPopupHierarchy)))
-                            (ImGui.IsWindowHovered ctx
-                                                    (bor (ImGui.HoveredFlags_ChildWindows)
-                                                         (ImGui.HoveredFlags_RootWindow)
-                                                         (ImGui.HoveredFlags_DockHierarchy)))
-                            (ImGui.IsWindowHovered ctx
-                                                    (ImGui.HoveredFlags_RootWindow))
-                            (ImGui.IsWindowHovered ctx
-                                                    (bor (ImGui.HoveredFlags_RootWindow)
-                                                         (ImGui.HoveredFlags_NoPopupHierarchy)))
-                            (ImGui.IsWindowHovered ctx
-                                                    (bor (ImGui.HoveredFlags_RootWindow)
-                                                         (ImGui.HoveredFlags_DockHierarchy)))
-                            (ImGui.IsWindowHovered ctx
-                                                    (bor (ImGui.HoveredFlags_ChildWindows)
-                                                         (ImGui.HoveredFlags_AllowWhenBlockedByPopup)))
-                            (ImGui.IsWindowHovered ctx
-                                                    (ImGui.HoveredFlags_AnyWindow))))
-      (when (ImGui.BeginChild ctx :child 0 50 true)
-        (ImGui.Text ctx
-                     "This is another child window for testing the _ChildWindows flag.")
-        (ImGui.EndChild ctx))
-      (when widgets.query_window.embed_all_inside_a_child_window
-        (ImGui.EndChild ctx)))
-    (set (rv widgets.query_window.test_window)
-         (ImGui.Checkbox ctx
-                          "Hovered/Active tests after Begin() for title bar testing"
-                          widgets.query_window.test_window))
+             (ImGui.IsWindowFocused ctx)
+             (ImGui.IsWindowFocused ctx (ImGui.FocusedFlags_ChildWindows))
+             (ImGui.IsWindowFocused ctx (bor (ImGui.FocusedFlags_ChildWindows)
+                                             (ImGui.FocusedFlags_NoPopupHierarchy)))
+             (ImGui.IsWindowFocused ctx (bor (ImGui.FocusedFlags_ChildWindows)
+                                             (ImGui.FocusedFlags_DockHierarchy)))
+             (ImGui.IsWindowFocused ctx (bor (ImGui.FocusedFlags_ChildWindows)
+                                             (ImGui.FocusedFlags_RootWindow)))
+             (ImGui.IsWindowFocused ctx (bor (ImGui.FocusedFlags_ChildWindows)
+                                             (ImGui.FocusedFlags_RootWindow)
+                                             (ImGui.FocusedFlags_NoPopupHierarchy)))
+             (ImGui.IsWindowFocused ctx (bor (ImGui.FocusedFlags_ChildWindows)
+                                             (ImGui.FocusedFlags_RootWindow)
+                                             (ImGui.FocusedFlags_DockHierarchy)))
+             (ImGui.IsWindowFocused ctx (ImGui.FocusedFlags_RootWindow))
+             (ImGui.IsWindowFocused ctx (bor (ImGui.FocusedFlags_RootWindow)
+                                             (ImGui.FocusedFlags_NoPopupHierarchy)))
+             (ImGui.IsWindowFocused ctx (bor (ImGui.FocusedFlags_RootWindow)
+                                             (ImGui.FocusedFlags_DockHierarchy)))
+             (ImGui.IsWindowFocused ctx (ImGui.FocusedFlags_AnyWindow))))
+
+        ;; Testing IsWindowHovered() function with its various flags.
+        (ImGui.BulletText ctx
+                           (: "IsWindowHovered() = %s
+ IsWindowHovered(_AllowWhenBlockedByPopup) = %s
+ IsWindowHovered(_AllowWhenBlockedByActiveItem) = %s
+ IsWindowHovered(_ChildWindows) = %s
+ IsWindowHovered(_ChildWindows|_NoPopupHierarchy) = %s
+ IsWindowHovered(_ChildWindows|_DockHierarchy) = %s
+ IsWindowHovered(_ChildWindows|_RootWindow) = %s
+ IsWindowHovered(_ChildWindows|_RootWindow|_NoPopupHierarchy) = %s
+ IsWindowHovered(_ChildWindows|_RootWindow|_DockHierarchy) = %s
+ IsWindowHovered(_RootWindow) = %s
+ IsWindowHovered(_RootWindow|_NoPopupHierarchy) = %s
+ IsWindowHovered(_RootWindow|_DockHierarchy) = %s
+ IsWindowHovered(_ChildWindows|_AllowWhenBlockedByPopup) = %s
+ IsWindowHovered(_AnyWindow) = %s"
+                              :format
+                              (ImGui.IsWindowHovered ctx)
+                              (ImGui.IsWindowHovered ctx (ImGui.HoveredFlags_AllowWhenBlockedByPopup))
+                              (ImGui.IsWindowHovered ctx (ImGui.HoveredFlags_AllowWhenBlockedByActiveItem))
+                              (ImGui.IsWindowHovered ctx (ImGui.HoveredFlags_ChildWindows))
+                              (ImGui.IsWindowHovered ctx (bor (ImGui.HoveredFlags_ChildWindows)
+                                                              (ImGui.HoveredFlags_NoPopupHierarchy)))
+                              (ImGui.IsWindowHovered ctx (bor (ImGui.HoveredFlags_ChildWindows)
+                                                              (ImGui.HoveredFlags_DockHierarchy)))
+                              (ImGui.IsWindowHovered ctx (bor (ImGui.HoveredFlags_ChildWindows)
+                                                              (ImGui.HoveredFlags_RootWindow)))
+                              (ImGui.IsWindowHovered ctx (bor (ImGui.HoveredFlags_ChildWindows)
+                                                              (ImGui.HoveredFlags_RootWindow)
+                                                              (ImGui.HoveredFlags_NoPopupHierarchy)))
+                              (ImGui.IsWindowHovered ctx (bor (ImGui.HoveredFlags_ChildWindows)
+                                                              (ImGui.HoveredFlags_RootWindow)
+                                                              (ImGui.HoveredFlags_DockHierarchy)))
+                              (ImGui.IsWindowHovered ctx (ImGui.HoveredFlags_RootWindow))
+                              (ImGui.IsWindowHovered ctx (bor (ImGui.HoveredFlags_RootWindow)
+                                                              (ImGui.HoveredFlags_NoPopupHierarchy)))
+                              (ImGui.IsWindowHovered ctx (bor (ImGui.HoveredFlags_RootWindow)
+                                                              (ImGui.HoveredFlags_DockHierarchy)))
+                              (ImGui.IsWindowHovered ctx (bor (ImGui.HoveredFlags_ChildWindows)
+                                                              (ImGui.HoveredFlags_AllowWhenBlockedByPopup)))
+                              (ImGui.IsWindowHovered ctx (ImGui.HoveredFlags_AnyWindow))))
+        (when (ImGui.BeginChild ctx :child 0 50 true)
+          (ImGui.Text ctx "This is another child window for testing the _ChildWindows flag.")
+          (ImGui.EndChild ctx))
+        (when widgets.query_window.embed_all_inside_a_child_window
+          (ImGui.EndChild ctx))))
+
+    ;; Calling IsItemHovered() after begin returns the hovered status of the title bar.
+    ;; This is useful in particular if you want to create a context menu associated to the title bar of a window.
+    ;; This will also work when docked into a Tab (the Tab replace the Title Bar and guarantee the same properties).
+    (update-2nd widgets.query_window.test_window (ImGui.Checkbox ctx "Hovered/Active tests after Begin() for title bar testing" $))
     (when widgets.query_window.test_window
+      ;; FIXME-DOCK: This window cannot be docked within the ImGui Demo window, this will cause a feedback loop and get them stuck.
+      ;; Could we fix this through an ImGuiWindowClass feature? Or an API call to tag our parent as "don't skip items"?
+      (var rv nil)
       (set (rv widgets.query_window.test_window)
            (ImGui.Begin ctx "Title bar Hovered/Active tests" true))
       (when rv
-        (when (ImGui.BeginPopupContextItem ctx)
+        (when (ImGui.BeginPopupContextItem ctx) ;; <-- This is using IsItemHovered()
           (when (ImGui.MenuItem ctx :Close)
             (set widgets.query_window.test_window false))
           (ImGui.EndPopup ctx))
-        (ImGui.Text ctx (: "IsItemHovered() after begin = %s (== is title bar hovered)
-IsItemActive() after begin = %s (== is window being clicked/moved)
-" :format (ImGui.IsItemHovered ctx)
-                            (ImGui.IsItemActive ctx)))
+        (ImGui.Text ctx
+                    (: "IsItemHovered() after begin = %s (== is title bar hovered)\n\z
+                        IsItemActive() after begin = %s (== is window being clicked/moved)\n"
+                       :format
+                       (ImGui.IsItemHovered ctx)
+                       (ImGui.IsItemActive ctx)))
         (ImGui.End ctx)))
     (ImGui.TreePop ctx))
-  (when widgets.disable_all (ImGui.EndDisabled ctx))
+
+  ;; Demonstrate BeginDisabled/EndDisabled using a checkbox located at the bottom of the section (which is a bit odd:
+  ;; logically we'd have this checkbox at the top of the section, but we don't want this feature to steal that space)
+  (when widgets.disable_all
+    (ImGui.EndDisabled ctx))
+
   (when (ImGui.TreeNode ctx "Disable block")
-    (set (rv widgets.disable_all)
-         (ImGui.Checkbox ctx "Disable entire section above"
-                          widgets.disable_all))
+    (update-2nd widgets.disable_all (ImGui.Checkbox ctx "Disable entire section above" $))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Demonstrate using BeginDisabled()/EndDisabled() across this section.")
     (ImGui.TreePop ctx))
   (when (ImGui.TreeNode ctx "Text Filter")
-    (when (not widgets.filtering) (set widgets.filtering {:inst nil :text ""}))
+    ;; Helper class to easy setup a text filter.
+    ;; You may want to implement a more feature-full filtering scheme in your own application.
+    (set-when-not widgets.filtering {:inst nil :text ""})
+
+    ;; the filter object is destroyed once unused for one or more frames
     (when (not (ImGui.ValidatePtr widgets.filtering.inst :ImGui_TextFilter*))
       (set widgets.filtering.inst
            (ImGui.CreateTextFilter widgets.filtering.text)))
@@ -2722,37 +2715,38 @@ IsItemActive() after begin = %s (== is window being clicked/moved)
   (when (ImGui.CollapsingHeader ctx "Layout & Scrolling")
     (var rv nil)
     (when (ImGui.TreeNode ctx "Child windows")
-      (when (not layout.child)
-        (set layout.child {:disable_menu false
-                           :disable_mouse_wheel false
-                           :offset_x 0}))
+      (set-when-not layout.child {:disable_menu false
+                                  :disable_mouse_wheel false
+                                  :offset_x 0})
       (ImGui.SeparatorText ctx "Child windows")
       (demo.HelpMarker "Use child windows to begin into a self-contained independent scrolling/clipping regions within a host window.")
-      (set (rv layout.child.disable_mouse_wheel)
-           (ImGui.Checkbox ctx "Disable Mouse Wheel"
-                           layout.child.disable_mouse_wheel))
-      (set (rv layout.child.disable_menu)
-           (ImGui.Checkbox ctx "Disable Menu" layout.child.disable_menu))
-      (do
-        (var window-flags (ImGui.WindowFlags_HorizontalScrollbar))
-        (when layout.child.disable_mouse_wheel
-          (set window-flags
-               (bor window-flags (ImGui.WindowFlags_NoScrollWithMouse))))
-        (when (ImGui.BeginChild ctx :ChildL
-                                (* (ImGui.GetContentRegionAvail ctx) 0.5) 260
-                                false window-flags)
-          (for [i 0 99] (ImGui.Text ctx (: "%04d: scrollable region" :format i)))
+      (update-2nd layout.child.disable_mouse_wheel (ImGui.Checkbox ctx "Disable Mouse Wheel" $))
+      (update-2nd layout.child.disable_menu (ImGui.Checkbox ctx "Disable Menu" $))
+
+      ;; Child 1: no border, enable horizontal scrollbar
+      (let [window-flags (bor (ImGui.WindowFlags_HorizontalScrollbar)
+                              (if layout.child.disable_mouse_wheel
+                                (ImGui.WindowFlags_NoScrollWithMouse)
+                                ;;FIXME should be a cond->
+                                0))]
+        (when (ImGui.BeginChild ctx :ChildL (* (ImGui.GetContentRegionAvail ctx) 0.5) 260 false window-flags)
+          (for [i 0 99]
+            (ImGui.Text ctx (: "%04d: scrollable region" :format i)))
           (ImGui.EndChild ctx)))
+
+      ;; Child 2: rounded border
       (ImGui.SameLine ctx)
-      (do
-        (var window-flags (ImGui.WindowFlags_None))
-        (when layout.child.disable_mouse_wheel
-          (set window-flags
-               (bor window-flags (ImGui.WindowFlags_NoScrollWithMouse))))
-        (when (not layout.child.disable_menu)
-          (set window-flags (bor window-flags (ImGui.WindowFlags_MenuBar))))
-        (ImGui.PushStyleVar ctx (ImGui.StyleVar_ChildRounding) 5)
-        (local visible (ImGui.BeginChild ctx :ChildR 0 260 true window-flags))
+      (let [window-flags (bor (ImGui.WindowFlags_None)
+                              (if layout.child.disable_mouse_wheel
+                                (ImGui.WindowFlags_NoScrollWithMouse)
+                                ;;FIXME should be a cond->
+                                0)
+                              (if (not layout.child.disable_menu)
+                                (ImGui.WindowFlags_MenuBar)
+                                ;;FIXME should be a cond->
+                                0))
+            _ (ImGui.PushStyleVar ctx (ImGui.StyleVar_ChildRounding) 5)
+            visible (ImGui.BeginChild ctx :ChildR 0 260 true window-flags)]
         (when visible
           (when (and (not layout.child.disable_menu) (ImGui.BeginMenuBar ctx))
             (when (ImGui.BeginMenu ctx :Menu) (demo.ShowExampleMenuFile)
@@ -2766,664 +2760,683 @@ IsItemActive() after begin = %s (== is window being clicked/moved)
             (ImGui.EndTable ctx))
           (ImGui.EndChild ctx))
         (ImGui.PopStyleVar ctx))
+
       (ImGui.SeparatorText ctx :Misc/Advanced)
+
+      ;; Demonstrate a few extra things
+      ;; - Changing ImGuiCol_ChildBg (which is transparent black in default styles)
+      ;; - Using SetCursorPos() to position child window (the child window is an item from the POV of parent window)
+      ;;   You can also call SetNextWindowPos() to position the child window. The parent window will effectively
+      ;;   layout from this position.
+      ;; - Using ImGui.GetItemRectMin/Max() to query the "item" state (because the child window is an item from
+      ;;   the POV of the parent window). See 'Demo->Querying Status (Edited/Active/Hovered etc.)' for details.
       (do
         (ImGui.SetNextItemWidth ctx (* (ImGui.GetFontSize ctx) 8))
-        (set (rv layout.child.offset_x)
-             (ImGui.DragInt ctx "Offset X" layout.child.offset_x 1 (- 1000) 1000))
-        (ImGui.SetCursorPosX ctx
-                             (+ (ImGui.GetCursorPosX ctx) layout.child.offset_x))
+        (update-2nd layout.child.offset_x (ImGui.DragInt ctx "Offset X" $ 1 (- 1000) 1000))
+        (ImGui.SetCursorPosX ctx (+ (ImGui.GetCursorPosX ctx) layout.child.offset_x))
         (ImGui.PushStyleColor ctx (ImGui.Col_ChildBg) 4278190180)
-        (local visible
-          (ImGui.BeginChild ctx :Red 200 100 true (ImGui.WindowFlags_None)))
-        (ImGui.PopStyleColor ctx)
-        (when visible
-          (for [n 0 49] (ImGui.Text ctx (: "Some test %d" :format n)))
-          (ImGui.EndChild ctx))
-        (local child-is-hovered (ImGui.IsItemHovered ctx))
-        (local (child-rect-min-x child-rect-min-y) (ImGui.GetItemRectMin ctx))
-        (local (child-rect-max-x child-rect-max-y) (ImGui.GetItemRectMax ctx))
-        (ImGui.Text ctx (: "Hovered: %s" :format child-is-hovered))
-        (ImGui.Text ctx
-                    (: "Rect of child window is: (%.0f,%.0f) (%.0f,%.0f)"
-                       :format child-rect-min-x child-rect-min-y child-rect-max-x
-                       child-rect-max-y)))
+        (let [visible (ImGui.BeginChild ctx :Red 200 100 true (ImGui.WindowFlags_None))]
+          (ImGui.PopStyleColor ctx)
+          (when visible
+            (for [n 0 49]
+              (ImGui.Text ctx (: "Some test %d" :format n)))
+            (ImGui.EndChild ctx)))
+        (let [child-is-hovered (ImGui.IsItemHovered ctx)
+              (child-rect-min-x child-rect-min-y) (ImGui.GetItemRectMin ctx)
+              (child-rect-max-x child-rect-max-y) (ImGui.GetItemRectMax ctx)]
+          (ImGui.Text ctx (: "Hovered: %s" :format child-is-hovered))
+          (ImGui.Text ctx (: "Rect of child window is: (%.0f,%.0f) (%.0f,%.0f)"
+                             :format child-rect-min-x child-rect-min-y child-rect-max-x child-rect-max-y))))
+
       (ImGui.TreePop ctx))
+
     (when (ImGui.TreeNode ctx "Widgets Width")
-      (when (not layout.width)
-        (set layout.width {:d 0 :show_indented_items true}))
-      (set (rv layout.width.show_indented_items)
-           (ImGui.Checkbox ctx "Show indented items"
-                           layout.width.show_indented_items))
+      (set-when-not layout.width {:d 0 :show_indented_items true})
+
+      ;; Use SetNextItemWidth() to set the width of a single upcoming item.
+      ;; Use PushItemWidth()/PopItemWidth() to set the width of a group of items.
+      ;; In real code use you'll probably want to choose width values that are proportional to your font size
+      ;; e.g. Using '20.0 * GetFontSize()' as width instead of '200.0', etc.
+      (update-2nd layout.width.show_indented_items (ImGui.Checkbox ctx "Show indented items" $))
       (ImGui.Text ctx "SetNextItemWidth/PushItemWidth(100)")
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Fixed width.")
       (ImGui.PushItemWidth ctx 100)
-      (set (rv layout.width.d) (ImGui.DragDouble ctx "float##1b" layout.width.d))
+      (update-2nd layout.width.d (ImGui.DragDouble ctx "float##1b" $))
       (when layout.width.show_indented_items (ImGui.Indent ctx)
-        (set (rv layout.width.d)
-             (ImGui.DragDouble ctx "float (indented)##1b" layout.width.d))
+        (update-2nd layout.width.d (ImGui.DragDouble ctx "float (indented)##1b" $))
         (ImGui.Unindent ctx))
       (ImGui.PopItemWidth ctx)
+
       (ImGui.Text ctx "SetNextItemWidth/PushItemWidth(-100)")
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Align to right edge minus 100")
       (ImGui.PushItemWidth ctx (- 100))
-      (set (rv layout.width.d) (ImGui.DragDouble ctx "float##2a" layout.width.d))
+      (update-2nd layout.width.d (ImGui.DragDouble ctx "float##2a" $))
       (when layout.width.show_indented_items (ImGui.Indent ctx)
-        (set (rv layout.width.d)
-             (ImGui.DragDouble ctx "float (indented)##2b" layout.width.d))
+        (update-2nd layout.width.d (ImGui.DragDouble ctx "float (indented)##2b" $))
         (ImGui.Unindent ctx))
       (ImGui.PopItemWidth ctx)
-      (ImGui.Text ctx
-                  "SetNextItemWidth/PushItemWidth(GetContentRegionAvail().x * 0.5)")
+
+      (ImGui.Text ctx "SetNextItemWidth/PushItemWidth(GetContentRegionAvail().x * 0.5)")
       (ImGui.SameLine ctx)
-      (demo.HelpMarker "Half of available width.
-      (~ right-cursor_pos)
-      (works within a column set)")
+      (demo.HelpMarker "Half of available width.\n(~ right-cursor_pos)\n(works within a column set)")
       (ImGui.PushItemWidth ctx (* (ImGui.GetContentRegionAvail ctx) 0.5))
-      (set (rv layout.width.d) (ImGui.DragDouble ctx "float##3a" layout.width.d))
+      (update-2nd layout.width.d (ImGui.DragDouble ctx "float##3a" $))
       (when layout.width.show_indented_items (ImGui.Indent ctx)
-        (set (rv layout.width.d)
-             (ImGui.DragDouble ctx "float (indented)##3b" layout.width.d))
+        (update-2nd layout.width.d (ImGui.DragDouble ctx "float (indented)##3b" $))
         (ImGui.Unindent ctx))
       (ImGui.PopItemWidth ctx)
-      (ImGui.Text ctx
-                  "SetNextItemWidth/PushItemWidth(-GetContentRegionAvail().x * 0.5)")
+
+      (ImGui.Text ctx "SetNextItemWidth/PushItemWidth(-GetContentRegionAvail().x * 0.5)")
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Align to right edge minus half")
       (ImGui.PushItemWidth ctx (* (- (ImGui.GetContentRegionAvail ctx)) 0.5))
-      (set (rv layout.width.d) (ImGui.DragDouble ctx "float##4a" layout.width.d))
+      (update-2nd layout.width.d (ImGui.DragDouble ctx "float##4a" $))
       (when layout.width.show_indented_items (ImGui.Indent ctx)
-        (set (rv layout.width.d)
-             (ImGui.DragDouble ctx "float (indented)##4b" layout.width.d))
+        (update-2nd layout.width.d (ImGui.DragDouble ctx "float (indented)##4b" $))
         (ImGui.Unindent ctx))
       (ImGui.PopItemWidth ctx)
+
+      ;; Demonstrate using PushItemWidth to surround three items.
+      ;; Calling SetNextItemWidth() before each of them would have the same effect.
       (ImGui.Text ctx "SetNextItemWidth/PushItemWidth(-FLT_MIN)")
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Align to right edge")
       (ImGui.PushItemWidth ctx (- FLT_MIN))
-      (set (rv layout.width.d) (ImGui.DragDouble ctx "##float5a" layout.width.d))
+      (update-2nd layout.width.d (ImGui.DragDouble ctx "##float5a" $))
       (when layout.width.show_indented_items (ImGui.Indent ctx)
-        (set (rv layout.width.d)
-             (ImGui.DragDouble ctx "float (indented)##5b" layout.width.d))
+        (update-2nd layout.width.d (ImGui.DragDouble ctx "float (indented)##5b" $))
         (ImGui.Unindent ctx))
       (ImGui.PopItemWidth ctx)
       (ImGui.TreePop ctx))
-(when (ImGui.TreeNode ctx "Basic Horizontal Layout")
-  (when (not layout.horizontal)
-    (set layout.horizontal
-         {:c1 false
-          :c2 false
-          :c3 false
-          :c4 false
-          :d0 1
-          :d1 2
-          :d2 3
-          :item (- 1)
-          :selection [0 1 2 3]}))
-  (ImGui.TextWrapped ctx
-                     "(Use ImGui.SameLine() to keep adding items to the right of the preceding item)")
-  (ImGui.Text ctx "Two items: Hello")
-  (ImGui.SameLine ctx)
-  (ImGui.TextColored ctx 4294902015 :Sailor)
-  (ImGui.Text ctx "More spacing: Hello")
-  (ImGui.SameLine ctx 0 20)
-  (ImGui.TextColored ctx 4294902015 :Sailor)
-  (ImGui.AlignTextToFramePadding ctx)
-  (ImGui.Text ctx "Normal buttons")
-  (ImGui.SameLine ctx)
-  (ImGui.Button ctx :Banana)
-  (ImGui.SameLine ctx)
-  (ImGui.Button ctx :Apple)
-  (ImGui.SameLine ctx)
-  (ImGui.Button ctx :Corniflower)
-  (ImGui.Text ctx "Small buttons")
-  (ImGui.SameLine ctx)
-  (ImGui.SmallButton ctx "Like this one")
-  (ImGui.SameLine ctx)
-  (ImGui.Text ctx "can fit within a text block.")
-  (ImGui.Text ctx :Aligned)
-  (ImGui.SameLine ctx 150)
-  (ImGui.Text ctx :x=150)
-  (ImGui.SameLine ctx 300)
-  (ImGui.Text ctx :x=300)
-  (ImGui.Text ctx :Aligned)
-  (ImGui.SameLine ctx 150)
-  (ImGui.SmallButton ctx :x=150)
-  (ImGui.SameLine ctx 300)
-  (ImGui.SmallButton ctx :x=300)
-  (set (rv layout.horizontal.c1)
-       (ImGui.Checkbox ctx :My layout.horizontal.c1))
-  (ImGui.SameLine ctx)
-  (set (rv layout.horizontal.c2)
-       (ImGui.Checkbox ctx :Tailor layout.horizontal.c2))
-  (ImGui.SameLine ctx)
-  (set (rv layout.horizontal.c3)
-       (ImGui.Checkbox ctx :Is layout.horizontal.c3))
-  (ImGui.SameLine ctx)
-  (set (rv layout.horizontal.c4)
-       (ImGui.Checkbox ctx :Rich layout.horizontal.c4))
-  (ImGui.PushItemWidth ctx 80)
-  (local items "AAAA\000BBBB\000CCCC\000DDDD\000")
-  (set (rv layout.horizontal.item)
-       (ImGui.Combo ctx :Combo layout.horizontal.item items))
-  (ImGui.SameLine ctx)
-  (set (rv layout.horizontal.d0)
-       (ImGui.SliderDouble ctx :X layout.horizontal.d0 0 5))
-  (ImGui.SameLine ctx)
-  (set (rv layout.horizontal.d1)
-       (ImGui.SliderDouble ctx :Y layout.horizontal.d1 0 5))
-  (ImGui.SameLine ctx)
-  (set (rv layout.horizontal.d2)
-       (ImGui.SliderDouble ctx :Z layout.horizontal.d2 0 5))
-  (ImGui.PopItemWidth ctx)
-  (ImGui.PushItemWidth ctx 80)
-  (ImGui.Text ctx "Lists:")
-  (each [i sel (ipairs layout.horizontal.selection)]
-    (when (> i 1) (ImGui.SameLine ctx))
-    (ImGui.PushID ctx i)
-    (set-forcibly! (rv si) (ImGui.ListBox ctx "" sel items))
-    (tset layout.horizontal.selection i si)
-    (ImGui.PopID ctx))
-  (ImGui.PopItemWidth ctx)
-  (local button-sz [40 40])
-  (ImGui.Button ctx :A (table.unpack button-sz))
-  (ImGui.SameLine ctx)
-  (ImGui.Dummy ctx (table.unpack button-sz))
-  (ImGui.SameLine ctx)
-  (ImGui.Button ctx :B (table.unpack button-sz))
-  (ImGui.Text ctx "Manual wrapping:")
-  (local item-spacing-x
-    (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemSpacing)))
-  (local buttons-count 20)
-  (local window-visible-x2
-    (+ (ImGui.GetWindowPos ctx) (ImGui.GetWindowContentRegionMax ctx)))
-  (for [n 0 (- buttons-count 1)]
-    (ImGui.PushID ctx n)
-    (ImGui.Button ctx :Box (table.unpack button-sz))
-    (local last-button-x2 (ImGui.GetItemRectMax ctx))
-    (local next-button-x2 (+ (+ last-button-x2 item-spacing-x)
-                             (. button-sz 1)))
-    (when (and (< (+ n 1) buttons-count) (< next-button-x2 window-visible-x2))
-      (ImGui.SameLine ctx))
-    (ImGui.PopID ctx))
-  (ImGui.TreePop ctx))
-(when (ImGui.TreeNode ctx :Groups)
-  (when (not widgets.groups)
-    (set widgets.groups {:values (reaper.new_array [0.5 0.2 0.8 0.6 0.25])}))
-  (demo.HelpMarker "BeginGroup() basically locks the horizontal position for new line. EndGroup() bundles the whole group so that you can use \"item\" functions such as IsItemHovered()/IsItemActive() or SameLine() etc. on the whole group.")
-  (ImGui.BeginGroup ctx)
-  (ImGui.BeginGroup ctx)
-  (ImGui.Button ctx :AAA)
-  (ImGui.SameLine ctx)
-  (ImGui.Button ctx :BBB)
-  (ImGui.SameLine ctx)
-  (ImGui.BeginGroup ctx)
-  (ImGui.Button ctx :CCC)
-  (ImGui.Button ctx :DDD)
-  (ImGui.EndGroup ctx)
-  (ImGui.SameLine ctx)
-  (ImGui.Button ctx :EEE)
-  (ImGui.EndGroup ctx)
-  (when (ImGui.IsItemHovered ctx)
-    (ImGui.SetTooltip ctx "First group hovered"))
-  (local size [(ImGui.GetItemRectSize ctx)])
-  (local item-spacing-x
-    (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemSpacing)))
-  (ImGui.PlotHistogram ctx "##values" widgets.groups.values 0 nil 0 1
-                       (table.unpack size))
-  (ImGui.Button ctx :ACTION (* (- (. size 1) item-spacing-x) 0.5) (. size 2))
-  (ImGui.SameLine ctx)
-  (ImGui.Button ctx :REACTION (* (- (. size 1) item-spacing-x) 0.5)
-                (. size 2))
-  (ImGui.EndGroup ctx)
-  (ImGui.SameLine ctx)
-  (ImGui.Button ctx "LEVERAGE\nBUZZWORD" (table.unpack size))
-  (ImGui.SameLine ctx)
-  (when (ImGui.BeginListBox ctx :List (table.unpack size))
-    (ImGui.Selectable ctx :Selected true)
-    (ImGui.Selectable ctx "Not Selected" false)
-    (ImGui.EndListBox ctx))
-  (ImGui.TreePop ctx))
-(when (ImGui.TreeNode ctx "Text Baseline Alignment")
-  (do
-    (ImGui.BulletText ctx "Text baseline:") (ImGui.SameLine ctx)
-    (demo.HelpMarker "This is testing the vertical alignment that gets applied on text to keep it aligned with widgets. Lines only composed of text or \"small\" widgets use less vertical space than lines with framed widgets.")
-    (ImGui.Indent ctx)
-    (ImGui.Text ctx "KO Blahblah")
-    (ImGui.SameLine ctx)
-    (ImGui.Button ctx "Some framed item")
-    (ImGui.SameLine ctx)
-    (demo.HelpMarker "Baseline of button will look misaligned with text..")
-    (ImGui.AlignTextToFramePadding ctx)
-    (ImGui.Text ctx "OK Blahblah")
-    (ImGui.SameLine ctx)
-    (ImGui.Button ctx "Some framed item")
-    (ImGui.SameLine ctx)
-    (demo.HelpMarker "We call AlignTextToFramePadding() to vertically align the text baseline by +FramePadding.y")
-    (ImGui.Button ctx "TEST##1")
-    (ImGui.SameLine ctx)
-    (ImGui.Text ctx :TEST)
-    (ImGui.SameLine ctx)
-    (ImGui.SmallButton ctx "TEST##2")
-    (ImGui.AlignTextToFramePadding ctx)
-    (ImGui.Text ctx "Text aligned to framed item")
-    (ImGui.SameLine ctx)
-    (ImGui.Button ctx "Item##1")
-    (ImGui.SameLine ctx)
-    (ImGui.Text ctx :Item)
-    (ImGui.SameLine ctx)
-    (ImGui.SmallButton ctx "Item##2")
-    (ImGui.SameLine ctx)
-    (ImGui.Button ctx "Item##3")
-    (ImGui.Unindent ctx))
-  (ImGui.Spacing ctx)
-  (do
-    (ImGui.BulletText ctx "Multi-line text:") (ImGui.Indent ctx)
-    (ImGui.Text ctx "One\nTwo\nThree")
-    (ImGui.SameLine ctx)
-    (ImGui.Text ctx "Hello\nWorld")
-    (ImGui.SameLine ctx)
-    (ImGui.Text ctx :Banana)
-    (ImGui.Text ctx :Banana)
-    (ImGui.SameLine ctx)
-    (ImGui.Text ctx "Hello\nWorld")
-    (ImGui.SameLine ctx)
-    (ImGui.Text ctx "One\nTwo\nThree")
-    (ImGui.Button ctx "HOP##1")
-    (ImGui.SameLine ctx)
-    (ImGui.Text ctx :Banana)
-    (ImGui.SameLine ctx)
-    (ImGui.Text ctx "Hello\nWorld")
-    (ImGui.SameLine ctx)
-    (ImGui.Text ctx :Banana)
-    (ImGui.Button ctx "HOP##2")
-    (ImGui.SameLine ctx)
-    (ImGui.Text ctx "Hello\nWorld")
-    (ImGui.SameLine ctx)
-    (ImGui.Text ctx :Banana)
-    (ImGui.Unindent ctx))
-  (ImGui.Spacing ctx)
-  (do
-    (ImGui.BulletText ctx "Misc items:")
-    (ImGui.Indent ctx)
-    (ImGui.Button ctx :80x80 80 80)
-    (ImGui.SameLine ctx)
-    (ImGui.Button ctx :50x50 50 50)
-    (ImGui.SameLine ctx)
-    (ImGui.Button ctx "Button()")
-    (ImGui.SameLine ctx)
-    (ImGui.SmallButton ctx "SmallButton()")
-    (local spacing
-      (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemInnerSpacing)))
-    (ImGui.Button ctx "Button##1")
-    (ImGui.SameLine ctx 0 spacing)
-    (when (ImGui.TreeNode ctx "Node##1")
-      (for [i 0 5] (ImGui.BulletText ctx (: "Item %d.." :format i)))
-      (ImGui.TreePop ctx))
-    (ImGui.AlignTextToFramePadding ctx)
-    (local node-open (ImGui.TreeNode ctx "Node##2"))
-    (ImGui.SameLine ctx 0 spacing)
-    (ImGui.Button ctx "Button##2")
-    (when node-open
-      (for [i 0 5] (ImGui.BulletText ctx (: "Item %d.." :format i)))
-      (ImGui.TreePop ctx))
-    (ImGui.Button ctx "Button##3")
-    (ImGui.SameLine ctx 0 spacing)
-    (ImGui.BulletText ctx "Bullet text")
-    (ImGui.AlignTextToFramePadding ctx)
-    (ImGui.BulletText ctx :Node)
-    (ImGui.SameLine ctx 0 spacing)
-    (ImGui.Button ctx "Button##4")
-    (ImGui.Unindent ctx))
-  (ImGui.TreePop ctx))
-(when (ImGui.TreeNode ctx :Scrolling)
-  (when (not layout.scrolling)
-    (set layout.scrolling {:enable_extra_decorations false
-                           :enable_track true
-                           :lines 7
-                           :scroll_to_off_px 0
-                           :scroll_to_pos_px 200
-                           :show_horizontal_contents_size_demo_window false
-                           :track_item 50}))
-  (demo.HelpMarker "Use SetScrollHereY() or SetScrollFromPosY() to scroll to a given vertical position.")
-  (set (rv layout.scrolling.enable_extra_decorations)
-       (ImGui.Checkbox ctx :Decoration
-                       layout.scrolling.enable_extra_decorations))
-  (set (rv layout.scrolling.enable_track)
-       (ImGui.Checkbox ctx :Track layout.scrolling.enable_track))
-  (ImGui.PushItemWidth ctx 100)
-  (ImGui.SameLine ctx 140)
-  (set (rv layout.scrolling.track_item)
-       (ImGui.DragInt ctx "##item" layout.scrolling.track_item 0.25 0 99
-                      "Item = %d"))
-  (when rv (set layout.scrolling.enable_track true))
-  (var scroll-to-off (ImGui.Button ctx "Scroll Offset"))
-  (ImGui.SameLine ctx 140)
-  (set (rv layout.scrolling.scroll_to_off_px)
-       (ImGui.DragDouble ctx "##off" layout.scrolling.scroll_to_off_px 1 0
-                         FLT_MAX "+%.0f px"))
-  (when rv (set scroll-to-off true))
-  (var scroll-to-pos (ImGui.Button ctx "Scroll To Pos"))
-  (ImGui.SameLine ctx 140)
-  (set (rv layout.scrolling.scroll_to_pos_px)
-       (ImGui.DragDouble ctx "##pos" layout.scrolling.scroll_to_pos_px 1
-                         (- 10) FLT_MAX "X/Y = %.0f px"))
-  (when rv (set scroll-to-pos true))
-  (ImGui.PopItemWidth ctx)
-  (when (or scroll-to-off scroll-to-pos)
-    (set layout.scrolling.enable_track false))
-  (local names [:Top "25%" :Center "75%" :Bottom])
-  (local item-spacing-x
-    (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemSpacing)))
-  (var child-w (/ (- (ImGui.GetContentRegionAvail ctx) (* 4 item-spacing-x))
-                  (length names)))
-  (local child-flags (or (and layout.scrolling.enable_extra_decorations
-                              (ImGui.WindowFlags_MenuBar))
-                         (ImGui.WindowFlags_None)))
-  (when (< child-w 1) (set child-w 1))
-  (ImGui.PushID ctx "##VerticalScrolling")
-  (each [i name (ipairs names)]
-    (when (> i 1) (ImGui.SameLine ctx))
-    (ImGui.BeginGroup ctx)
-    (ImGui.Text ctx name)
-    (if (ImGui.BeginChild ctx i child-w 200 true child-flags)
-      (do
-        (when (ImGui.BeginMenuBar ctx) (ImGui.Text ctx :abc)
-          (ImGui.EndMenuBar ctx))
-        (when scroll-to-off
-          (ImGui.SetScrollY ctx layout.scrolling.scroll_to_off_px))
-        (when scroll-to-pos
-          (ImGui.SetScrollFromPosY ctx
-                                   (+ (select 2
-                                              (ImGui.GetCursorStartPos ctx))
-                                      layout.scrolling.scroll_to_pos_px)
-                                   (* (- i 1) 0.25)))
-        (for [item 0 99]
-          (if (and layout.scrolling.enable_track
-                   (= item layout.scrolling.track_item))
-            (do
-              (ImGui.TextColored ctx 4294902015
-                                 (: "Item %d" :format item))
-              (ImGui.SetScrollHereY ctx (* (- i 1) 0.25)))
-            (ImGui.Text ctx (: "Item %d" :format item))))
-        (local scroll-y (ImGui.GetScrollY ctx))
-        (local scroll-max-y (ImGui.GetScrollMaxY ctx))
-        (ImGui.EndChild ctx)
-        (ImGui.Text ctx (: "%.0f/%.0f" :format scroll-y scroll-max-y)))
-      (ImGui.Text ctx :N/A))
-    (ImGui.EndGroup ctx))
-  (ImGui.PopID ctx)
-  (ImGui.Spacing ctx)
-  (demo.HelpMarker "Use SetScrollHereX() or SetScrollFromPosX() to scroll to a given horizontal position.
 
-  Because the clipping rectangle of most window hides half worth of WindowPadding on the left/right, using SetScrollFromPosX(+1) will usually result in clipped text whereas the equivalent SetScrollFromPosY(+1) wouldn't.")
-  (ImGui.PushID ctx "##HorizontalScrolling")
-  (local scrollbar-size
-    (ImGui.GetStyleVar ctx (ImGui.StyleVar_ScrollbarSize)))
-  (local window-padding-y
-    (select 2 (ImGui.GetStyleVar ctx (ImGui.StyleVar_WindowPadding))))
-  (local child-height (+ (+ (ImGui.GetTextLineHeight ctx) scrollbar-size)
-                         (* window-padding-y 2)))
-  (var child-flags (ImGui.WindowFlags_HorizontalScrollbar))
-  (when layout.scrolling.enable_extra_decorations
-    (set child-flags
-         (bor child-flags (ImGui.WindowFlags_AlwaysVerticalScrollbar))))
-  (each [i name (ipairs names)]
-    (var (scroll-x scroll-max-x) (values 0 0))
-    (when (ImGui.BeginChild ctx i (- 100) child-height true child-flags)
-      (when scroll-to-off
-        (ImGui.SetScrollX ctx layout.scrolling.scroll_to_off_px))
-      (when scroll-to-pos
-        (ImGui.SetScrollFromPosX ctx
-                                 (+ (ImGui.GetCursorStartPos ctx)
-                                    layout.scrolling.scroll_to_pos_px)
-                                 (* (- i 1) 0.25)))
-      (for [item 0 99]
-        (when (> item 0) (ImGui.SameLine ctx))
-        (if (and layout.scrolling.enable_track
-                 (= item layout.scrolling.track_item))
+    (when (ImGui.TreeNode ctx "Basic Horizontal Layout")
+      (set-when-not layout.horizontal
+                    {:c1 false :c2 false :c3 false :c4 false
+                     :d0 1.0 :d1 2.0 :d2 3.0
+                     :item -1
+                     :selection [0 1 2 3]})
+
+      (ImGui.TextWrapped ctx "(Use ImGui.SameLine() to keep adding items to the right of the preceding item)")
+
+      ;; Text
+      (ImGui.Text ctx "Two items: Hello")
+      (ImGui.SameLine ctx)
+      (ImGui.TextColored ctx 0xFFFF00FF :Sailor)
+
+      ;; Adjust spacing
+      (ImGui.Text ctx "More spacing: Hello")
+      (ImGui.SameLine ctx 0 20)
+      (ImGui.TextColored ctx 0xFFFF00FF :Sailor)
+
+      ;; Button
+      (ImGui.AlignTextToFramePadding ctx)
+      (ImGui.Text ctx "Normal buttons")
+      (ImGui.SameLine ctx)
+      (ImGui.Button ctx :Banana)
+      (ImGui.SameLine ctx)
+      (ImGui.Button ctx :Apple)
+      (ImGui.SameLine ctx)
+      (ImGui.Button ctx :Corniflower)
+      (ImGui.Text ctx "Small buttons")
+      (ImGui.SameLine ctx)
+      (ImGui.SmallButton ctx "Like this one")
+      (ImGui.SameLine ctx)
+      (ImGui.Text ctx "can fit within a text block.")
+
+      ;; Aligned to arbitrary position. Easy/cheap column.
+      (ImGui.Text ctx :Aligned)
+      (ImGui.SameLine ctx 150)
+      (ImGui.Text ctx :x=150)
+      (ImGui.SameLine ctx 300)
+      (ImGui.Text ctx :x=300)
+      (ImGui.Text ctx :Aligned)
+      (ImGui.SameLine ctx 150)
+      (ImGui.SmallButton ctx :x=150)
+      (ImGui.SameLine ctx 300)
+      (ImGui.SmallButton ctx :x=300)
+
+      ;; Checkbox
+      (update-2nd layout.horizontal.c1 (ImGui.Checkbox ctx :My $))
+      (ImGui.SameLine ctx)
+      (update-2nd layout.horizontal.c2 (ImGui.Checkbox ctx :Tailor $))
+      (ImGui.SameLine ctx)
+      (update-2nd layout.horizontal.c3 (ImGui.Checkbox ctx :Is $))
+      (ImGui.SameLine ctx)
+      (update-2nd layout.horizontal.c4 (ImGui.Checkbox ctx :Rich $))
+
+      ;; Various
+      (ImGui.PushItemWidth ctx 80)
+      (local items "AAAA\0BBBB\0CCCC\0DDDD\0")
+      (update-2nd layout.horizontal.item (ImGui.Combo ctx :Combo $ items))
+      (ImGui.SameLine ctx)
+      (update-2nd layout.horizontal.d0 (ImGui.SliderDouble ctx :X $ 0 5))
+      (ImGui.SameLine ctx)
+      (update-2nd layout.horizontal.d1 (ImGui.SliderDouble ctx :Y $ 0 5))
+      (ImGui.SameLine ctx)
+      (update-2nd layout.horizontal.d2 (ImGui.SliderDouble ctx :Z $ 0 5))
+      (ImGui.PopItemWidth ctx)
+
+      (ImGui.PushItemWidth ctx 80)
+      (ImGui.Text ctx "Lists:")
+      (each [i sel (ipairs layout.horizontal.selection)]
+        (when (> i 1)
+          (ImGui.SameLine ctx))
+        (ImGui.PushID ctx i)
+        (let [(_ si) (ImGui.ListBox ctx "" sel items)]
+          (tset layout.horizontal.selection i si))
+        (ImGui.PopID ctx)
+        ;; if ImGui.IsItemHovered(ctx) then ImGui.SetTooltip(ctx, ('ListBox %d hovered'):format(i)) end
+        )
+      (ImGui.PopItemWidth ctx)
+
+      ;; Dummy
+      (local button-sz [40 40])
+      (ImGui.Button ctx :A (table.unpack button-sz))
+      (ImGui.SameLine ctx)
+      (ImGui.Dummy ctx (table.unpack button-sz))
+      (ImGui.SameLine ctx)
+      (ImGui.Button ctx :B (table.unpack button-sz))
+
+      ;; Manually wrapping
+      ;; (we should eventually provide this as an automatic layout feature, but for now you can do it manually)
+      (ImGui.Text ctx "Manual wrapping:")
+      (let [item-spacing-x (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemSpacing))
+            buttons-count 20
+            window-visible-x2 (+ (ImGui.GetWindowPos ctx) (ImGui.GetWindowContentRegionMax ctx))]
+        (for [n 0 (- buttons-count 1)]
+          (ImGui.PushID ctx n)
+          (ImGui.Button ctx :Box (table.unpack button-sz))
+          (let [last-button-x2 (ImGui.GetItemRectMax ctx)
+                ;; Expected position if next button was on same line
+                next-button-x2 (+ last-button-x2 item-spacing-x (. button-sz 1))]
+            (when (and (< (+ n 1) buttons-count)
+                       (< next-button-x2 window-visible-x2))
+              (ImGui.SameLine ctx)))
+          (ImGui.PopID ctx)))
+
+      (ImGui.TreePop ctx))
+
+    (when (ImGui.TreeNode ctx :Groups)
+      (set-when-not widgets.groups {:values (reaper.new_array [0.5 0.20 0.80 0.60 0.25])})
+      (demo.HelpMarker
+        "BeginGroup() basically locks the horizontal position for new line. \z
+        EndGroup() bundles the whole group so that you can use "item" functions such as \z
+        IsItemHovered()/IsItemActive() or SameLine() etc. on the whole group.")
+      (ImGui.BeginGroup ctx)
+      (ImGui.BeginGroup ctx)
+      (ImGui.Button ctx :AAA)
+      (ImGui.SameLine ctx)
+      (ImGui.Button ctx :BBB)
+      (ImGui.SameLine ctx)
+      (ImGui.BeginGroup ctx)
+      (ImGui.Button ctx :CCC)
+      (ImGui.Button ctx :DDD)
+      (ImGui.EndGroup ctx)
+      (ImGui.SameLine ctx)
+      (ImGui.Button ctx :EEE)
+      (ImGui.EndGroup ctx)
+      (when (ImGui.IsItemHovered ctx)
+        (ImGui.SetTooltip ctx "First group hovered"))
+
+      ;; Capture the group size and create widgets using the same size
+      (let [size [(ImGui.GetItemRectSize ctx)]
+            item-spacing-x (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemSpacing))]
+        (ImGui.PlotHistogram ctx "##values" widgets.groups.values 0 nil 0 1
+                             (table.unpack size))
+        (ImGui.Button ctx :ACTION (* (- (. size 1) item-spacing-x) 0.5) (. size 2))
+        (ImGui.SameLine ctx)
+        (ImGui.Button ctx :REACTION (* (- (. size 1) item-spacing-x) 0.5)
+                      (. size 2))
+        (ImGui.EndGroup ctx)
+        (ImGui.SameLine ctx)
+        (ImGui.Button ctx "LEVERAGE\nBUZZWORD" (table.unpack size))
+        (ImGui.SameLine ctx)
+        (when (ImGui.BeginListBox ctx :List (table.unpack size))
+          (ImGui.Selectable ctx :Selected true)
+          (ImGui.Selectable ctx "Not Selected" false)
+          (ImGui.EndListBox ctx))
+        (ImGui.TreePop ctx)))
+    (when (ImGui.TreeNode ctx "Text Baseline Alignment")
+      (do
+        (ImGui.BulletText ctx "Text baseline:")
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "This is testing the vertical alignment that gets applied on text to keep it aligned with widgets. Lines only composed of text or \"small\" widgets use less vertical space than lines with framed widgets.")
+        (ImGui.Indent ctx)
+        (ImGui.Text ctx "KO Blahblah")
+        (ImGui.SameLine ctx)
+        (ImGui.Button ctx "Some framed item")
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Baseline of button will look misaligned with text..")
+        (ImGui.AlignTextToFramePadding ctx)
+        (ImGui.Text ctx "OK Blahblah")
+        (ImGui.SameLine ctx)
+        (ImGui.Button ctx "Some framed item")
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "We call AlignTextToFramePadding() to vertically align the text baseline by +FramePadding.y")
+        (ImGui.Button ctx "TEST##1")
+        (ImGui.SameLine ctx)
+        (ImGui.Text ctx :TEST)
+        (ImGui.SameLine ctx)
+        (ImGui.SmallButton ctx "TEST##2")
+        (ImGui.AlignTextToFramePadding ctx)
+        (ImGui.Text ctx "Text aligned to framed item")
+        (ImGui.SameLine ctx)
+        (ImGui.Button ctx "Item##1")
+        (ImGui.SameLine ctx)
+        (ImGui.Text ctx :Item)
+        (ImGui.SameLine ctx)
+        (ImGui.SmallButton ctx "Item##2")
+        (ImGui.SameLine ctx)
+        (ImGui.Button ctx "Item##3")
+        (ImGui.Unindent ctx))
+      (ImGui.Spacing ctx)
+      (do
+        (ImGui.BulletText ctx "Multi-line text:") (ImGui.Indent ctx)
+        (ImGui.Text ctx "One\nTwo\nThree")
+        (ImGui.SameLine ctx)
+        (ImGui.Text ctx "Hello\nWorld")
+        (ImGui.SameLine ctx)
+        (ImGui.Text ctx :Banana)
+        (ImGui.Text ctx :Banana)
+        (ImGui.SameLine ctx)
+        (ImGui.Text ctx "Hello\nWorld")
+        (ImGui.SameLine ctx)
+        (ImGui.Text ctx "One\nTwo\nThree")
+        (ImGui.Button ctx "HOP##1")
+        (ImGui.SameLine ctx)
+        (ImGui.Text ctx :Banana)
+        (ImGui.SameLine ctx)
+        (ImGui.Text ctx "Hello\nWorld")
+        (ImGui.SameLine ctx)
+        (ImGui.Text ctx :Banana)
+        (ImGui.Button ctx "HOP##2")
+        (ImGui.SameLine ctx)
+        (ImGui.Text ctx "Hello\nWorld")
+        (ImGui.SameLine ctx)
+        (ImGui.Text ctx :Banana)
+        (ImGui.Unindent ctx))
+      (ImGui.Spacing ctx)
+      (do
+        (ImGui.BulletText ctx "Misc items:")
+        (ImGui.Indent ctx)
+        (ImGui.Button ctx :80x80 80 80)
+        (ImGui.SameLine ctx)
+        (ImGui.Button ctx :50x50 50 50)
+        (ImGui.SameLine ctx)
+        (ImGui.Button ctx "Button()")
+        (ImGui.SameLine ctx)
+        (ImGui.SmallButton ctx "SmallButton()")
+        (local spacing
+          (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemInnerSpacing)))
+        (ImGui.Button ctx "Button##1")
+        (ImGui.SameLine ctx 0 spacing)
+        (when (ImGui.TreeNode ctx "Node##1")
+          (for [i 0 5] (ImGui.BulletText ctx (: "Item %d.." :format i)))
+          (ImGui.TreePop ctx))
+        (ImGui.AlignTextToFramePadding ctx)
+        (local node-open (ImGui.TreeNode ctx "Node##2"))
+        (ImGui.SameLine ctx 0 spacing)
+        (ImGui.Button ctx "Button##2")
+        (when node-open
+          (for [i 0 5] (ImGui.BulletText ctx (: "Item %d.." :format i)))
+          (ImGui.TreePop ctx))
+        (ImGui.Button ctx "Button##3")
+        (ImGui.SameLine ctx 0 spacing)
+        (ImGui.BulletText ctx "Bullet text")
+        (ImGui.AlignTextToFramePadding ctx)
+        (ImGui.BulletText ctx :Node)
+        (ImGui.SameLine ctx 0 spacing)
+        (ImGui.Button ctx "Button##4")
+        (ImGui.Unindent ctx))
+      (ImGui.TreePop ctx))
+    (when (ImGui.TreeNode ctx :Scrolling)
+      (when (not layout.scrolling)
+        (set layout.scrolling {:enable_extra_decorations false
+                               :enable_track true
+                               :lines 7
+                               :scroll_to_off_px 0
+                               :scroll_to_pos_px 200
+                               :show_horizontal_contents_size_demo_window false
+                               :track_item 50}))
+      (demo.HelpMarker "Use SetScrollHereY() or SetScrollFromPosY() to scroll to a given vertical position.")
+      (set (rv layout.scrolling.enable_extra_decorations)
+           (ImGui.Checkbox ctx :Decoration
+                           layout.scrolling.enable_extra_decorations))
+      (set (rv layout.scrolling.enable_track)
+           (ImGui.Checkbox ctx :Track layout.scrolling.enable_track))
+      (ImGui.PushItemWidth ctx 100)
+      (ImGui.SameLine ctx 140)
+      (set (rv layout.scrolling.track_item)
+           (ImGui.DragInt ctx "##item" layout.scrolling.track_item 0.25 0 99
+                          "Item = %d"))
+      (when rv (set layout.scrolling.enable_track true))
+      (var scroll-to-off (ImGui.Button ctx "Scroll Offset"))
+      (ImGui.SameLine ctx 140)
+      (set (rv layout.scrolling.scroll_to_off_px)
+           (ImGui.DragDouble ctx "##off" layout.scrolling.scroll_to_off_px 1 0
+                             FLT_MAX "+%.0f px"))
+      (when rv (set scroll-to-off true))
+      (var scroll-to-pos (ImGui.Button ctx "Scroll To Pos"))
+      (ImGui.SameLine ctx 140)
+      (set (rv layout.scrolling.scroll_to_pos_px)
+           (ImGui.DragDouble ctx "##pos" layout.scrolling.scroll_to_pos_px 1
+                             (- 10) FLT_MAX "X/Y = %.0f px"))
+      (when rv (set scroll-to-pos true))
+      (ImGui.PopItemWidth ctx)
+      (when (or scroll-to-off scroll-to-pos)
+        (set layout.scrolling.enable_track false))
+      (local names [:Top "25%" :Center "75%" :Bottom])
+      (local item-spacing-x
+        (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemSpacing)))
+      (var child-w (/ (- (ImGui.GetContentRegionAvail ctx) (* 4 item-spacing-x))
+                      (length names)))
+      (local child-flags (or (and layout.scrolling.enable_extra_decorations
+                                  (ImGui.WindowFlags_MenuBar))
+                             (ImGui.WindowFlags_None)))
+      (when (< child-w 1) (set child-w 1))
+      (ImGui.PushID ctx "##VerticalScrolling")
+      (each [i name (ipairs names)]
+        (when (> i 1) (ImGui.SameLine ctx))
+        (ImGui.BeginGroup ctx)
+        (ImGui.Text ctx name)
+        (if (ImGui.BeginChild ctx i child-w 200 true child-flags)
           (do
-            (ImGui.TextColored ctx 4294902015 (: "Item %d" :format item))
-            (ImGui.SetScrollHereX ctx (* (- i 1) 0.25)))
-          (ImGui.Text ctx (: "Item %d" :format item))))
+            (when (ImGui.BeginMenuBar ctx) (ImGui.Text ctx :abc)
+              (ImGui.EndMenuBar ctx))
+            (when scroll-to-off
+              (ImGui.SetScrollY ctx layout.scrolling.scroll_to_off_px))
+            (when scroll-to-pos
+              (ImGui.SetScrollFromPosY ctx
+                                       (+ (select 2
+                                                  (ImGui.GetCursorStartPos ctx))
+                                          layout.scrolling.scroll_to_pos_px)
+                                       (* (- i 1) 0.25)))
+            (for [item 0 99]
+              (if (and layout.scrolling.enable_track
+                       (= item layout.scrolling.track_item))
+                (do
+                  (ImGui.TextColored ctx 4294902015
+                                     (: "Item %d" :format item))
+                  (ImGui.SetScrollHereY ctx (* (- i 1) 0.25)))
+                (ImGui.Text ctx (: "Item %d" :format item))))
+            (local scroll-y (ImGui.GetScrollY ctx))
+            (local scroll-max-y (ImGui.GetScrollMaxY ctx))
+            (ImGui.EndChild ctx)
+            (ImGui.Text ctx (: "%.0f/%.0f" :format scroll-y scroll-max-y)))
+          (ImGui.Text ctx :N/A))
+        (ImGui.EndGroup ctx))
+      (ImGui.PopID ctx)
+      (ImGui.Spacing ctx)
+      (demo.HelpMarker "Use SetScrollHereX() or SetScrollFromPosX() to scroll to a given horizontal position.
+
+      Because the clipping rectangle of most window hides half worth of WindowPadding on the left/right, using SetScrollFromPosX(+1) will usually result in clipped text whereas the equivalent SetScrollFromPosY(+1) wouldn't.")
+      (ImGui.PushID ctx "##HorizontalScrolling")
+      (local scrollbar-size
+        (ImGui.GetStyleVar ctx (ImGui.StyleVar_ScrollbarSize)))
+      (local window-padding-y
+        (select 2 (ImGui.GetStyleVar ctx (ImGui.StyleVar_WindowPadding))))
+      (local child-height (+ (+ (ImGui.GetTextLineHeight ctx) scrollbar-size)
+                             (* window-padding-y 2)))
+      (var child-flags (ImGui.WindowFlags_HorizontalScrollbar))
+      (when layout.scrolling.enable_extra_decorations
+        (set child-flags
+             (bor child-flags (ImGui.WindowFlags_AlwaysVerticalScrollbar))))
+      (each [i name (ipairs names)]
+        (var (scroll-x scroll-max-x) (values 0 0))
+        (when (ImGui.BeginChild ctx i (- 100) child-height true child-flags)
+          (when scroll-to-off
+            (ImGui.SetScrollX ctx layout.scrolling.scroll_to_off_px))
+          (when scroll-to-pos
+            (ImGui.SetScrollFromPosX ctx
+                                     (+ (ImGui.GetCursorStartPos ctx)
+                                        layout.scrolling.scroll_to_pos_px)
+                                     (* (- i 1) 0.25)))
+          (for [item 0 99]
+            (when (> item 0) (ImGui.SameLine ctx))
+            (if (and layout.scrolling.enable_track
+                     (= item layout.scrolling.track_item))
+              (do
+                (ImGui.TextColored ctx 4294902015 (: "Item %d" :format item))
+                (ImGui.SetScrollHereX ctx (* (- i 1) 0.25)))
+              (ImGui.Text ctx (: "Item %d" :format item))))
+          (set scroll-x (ImGui.GetScrollX ctx))
+          (set scroll-max-x (ImGui.GetScrollMaxX ctx))
+          (ImGui.EndChild ctx))
+        (ImGui.SameLine ctx)
+        (ImGui.Text ctx (: "%s\n%.0f/%.0f" :format name scroll-x scroll-max-x))
+        (ImGui.Spacing ctx))
+    (ImGui.PopID ctx)
+    (demo.HelpMarker "Horizontal scrolling for a window is enabled via the ImGuiWindowFlags_HorizontalScrollbar flag.
+
+    You may want to also explicitly specify content width by using SetNextWindowContentWidth() before Begin().")
+    (set (rv layout.scrolling.lines)
+         (ImGui.SliderInt ctx :Lines layout.scrolling.lines 1 15))
+    (ImGui.PushStyleVar ctx (ImGui.StyleVar_FrameRounding) 3)
+    (ImGui.PushStyleVar ctx (ImGui.StyleVar_FramePadding) 2 1)
+    (local scrolling-child-width (+ (* (ImGui.GetFrameHeightWithSpacing ctx) 7)
+                                    30))
+    (var (scroll-x scroll-max-x) (values 0 0))
+    (when (ImGui.BeginChild ctx :scrolling 0 scrolling-child-width true
+                            (ImGui.WindowFlags_HorizontalScrollbar))
+      (for [line 0 (- layout.scrolling.lines 1)]
+        (local num-buttons (+ 10
+                              (or (and (not= (band line 1) 0) (* line 9))
+                                  (* line 3))))
+        (for [n 0 (- num-buttons 1)]
+          (when (> n 0) (ImGui.SameLine ctx))
+          (ImGui.PushID ctx (+ n (* line 1000)))
+          (var label nil)
+          (if (= (% n 15) 0) (set label :FizzBuzz)
+            (= (% n 3) 0) (set label :Fizz)
+            (= (% n 5) 0) (set label :Buzz)
+            (set label (tostring n)))
+          (local hue (* n 0.05))
+          (ImGui.PushStyleColor ctx (ImGui.Col_Button) (demo.HSV hue 0.6 0.6))
+          (ImGui.PushStyleColor ctx (ImGui.Col_ButtonHovered)
+                                (demo.HSV hue 0.7 0.7))
+          (ImGui.PushStyleColor ctx (ImGui.Col_ButtonActive)
+                                (demo.HSV hue 0.8 0.8))
+          (ImGui.Button ctx label (+ 40 (* (math.sin (+ line n)) 20)) 0)
+          (ImGui.PopStyleColor ctx 3)
+          (ImGui.PopID ctx)))
       (set scroll-x (ImGui.GetScrollX ctx))
       (set scroll-max-x (ImGui.GetScrollMaxX ctx))
       (ImGui.EndChild ctx))
-    (ImGui.SameLine ctx)
-    (ImGui.Text ctx (: "%s\n%.0f/%.0f" :format name scroll-x scroll-max-x))
-    (ImGui.Spacing ctx))
-(ImGui.PopID ctx)
-(demo.HelpMarker "Horizontal scrolling for a window is enabled via the ImGuiWindowFlags_HorizontalScrollbar flag.
-
-You may want to also explicitly specify content width by using SetNextWindowContentWidth() before Begin().")
-(set (rv layout.scrolling.lines)
-     (ImGui.SliderInt ctx :Lines layout.scrolling.lines 1 15))
-(ImGui.PushStyleVar ctx (ImGui.StyleVar_FrameRounding) 3)
-(ImGui.PushStyleVar ctx (ImGui.StyleVar_FramePadding) 2 1)
-(local scrolling-child-width (+ (* (ImGui.GetFrameHeightWithSpacing ctx) 7)
-                                30))
-(var (scroll-x scroll-max-x) (values 0 0))
-(when (ImGui.BeginChild ctx :scrolling 0 scrolling-child-width true
-                        (ImGui.WindowFlags_HorizontalScrollbar))
-  (for [line 0 (- layout.scrolling.lines 1)]
-    (local num-buttons (+ 10
-                          (or (and (not= (band line 1) 0) (* line 9))
-                              (* line 3))))
-    (for [n 0 (- num-buttons 1)]
-      (when (> n 0) (ImGui.SameLine ctx))
-      (ImGui.PushID ctx (+ n (* line 1000)))
-      (var label nil)
-      (if (= (% n 15) 0) (set label :FizzBuzz)
-        (= (% n 3) 0) (set label :Fizz)
-        (= (% n 5) 0) (set label :Buzz)
-        (set label (tostring n)))
-      (local hue (* n 0.05))
-      (ImGui.PushStyleColor ctx (ImGui.Col_Button) (demo.HSV hue 0.6 0.6))
-      (ImGui.PushStyleColor ctx (ImGui.Col_ButtonHovered)
-                            (demo.HSV hue 0.7 0.7))
-      (ImGui.PushStyleColor ctx (ImGui.Col_ButtonActive)
-                            (demo.HSV hue 0.8 0.8))
-      (ImGui.Button ctx label (+ 40 (* (math.sin (+ line n)) 20)) 0)
-      (ImGui.PopStyleColor ctx 3)
-      (ImGui.PopID ctx)))
-  (set scroll-x (ImGui.GetScrollX ctx))
-  (set scroll-max-x (ImGui.GetScrollMaxX ctx))
-  (ImGui.EndChild ctx))
-(ImGui.PopStyleVar ctx 2)
-(var scroll-x-delta 0)
-(ImGui.SmallButton ctx "<<")
-(when (ImGui.IsItemActive ctx)
-  (set scroll-x-delta (* (- 0 (ImGui.GetDeltaTime ctx)) 1000)))
-(ImGui.SameLine ctx)
-(ImGui.Text ctx "Scroll from code")
-(ImGui.SameLine ctx)
-(ImGui.SmallButton ctx ">>")
-(when (ImGui.IsItemActive ctx)
-  (set scroll-x-delta (* (ImGui.GetDeltaTime ctx) 1000)))
-(ImGui.SameLine ctx)
-(ImGui.Text ctx (: "%.0f/%.0f" :format scroll-x scroll-max-x))
-(when (not= scroll-x-delta 0)
-  (when (ImGui.BeginChild ctx :scrolling)
-    (ImGui.SetScrollX ctx (+ (ImGui.GetScrollX ctx) scroll-x-delta))
-    (ImGui.EndChild ctx)))
-(ImGui.Spacing ctx)
-(set (rv layout.scrolling.show_horizontal_contents_size_demo_window)
-     (ImGui.Checkbox ctx "Show Horizontal contents size demo window"
-                     layout.scrolling.show_horizontal_contents_size_demo_window))
-(when layout.scrolling.show_horizontal_contents_size_demo_window
-  (when (not layout.horizontal_window)
-    (set layout.horizontal_window
-         {:contents_size_x 300
-          :explicit_content_size false
-          :show_button true
-          :show_child false
-          :show_columns true
-          :show_h_scrollbar true
-          :show_tab_bar true
-          :show_text_wrapped false
-          :show_tree_nodes true}))
-  (when layout.horizontal_window.explicit_content_size
-    (ImGui.SetNextWindowContentSize ctx
-                                    layout.horizontal_window.contents_size_x
-                                    0))
-  (set (rv layout.scrolling.show_horizontal_contents_size_demo_window)
-       (ImGui.Begin ctx "Horizontal contents size demo window" true
-                    (or (and layout.horizontal_window.show_h_scrollbar
-                             (ImGui.WindowFlags_HorizontalScrollbar))
-                        (ImGui.WindowFlags_None))))
-  (when rv
-    (ImGui.PushStyleVar ctx (ImGui.StyleVar_ItemSpacing) 2 0)
-    (ImGui.PushStyleVar ctx (ImGui.StyleVar_FramePadding) 2 0)
-    (demo.HelpMarker "Test of different widgets react and impact the work rectangle growing when horizontal scrolling is enabled.
-
-    Use 'Metrics->Tools->Show windows rectangles' to visualize rectangles.")
-    (set (rv layout.horizontal_window.show_h_scrollbar)
-         (ImGui.Checkbox ctx :H-scrollbar
-                         layout.horizontal_window.show_h_scrollbar))
-    (set (rv layout.horizontal_window.show_button)
-         (ImGui.Checkbox ctx :Button layout.horizontal_window.show_button))
-    (set (rv layout.horizontal_window.show_tree_nodes)
-         (ImGui.Checkbox ctx "Tree nodes"
-                         layout.horizontal_window.show_tree_nodes))
-    (set (rv layout.horizontal_window.show_text_wrapped)
-         (ImGui.Checkbox ctx "Text wrapped"
-                         layout.horizontal_window.show_text_wrapped))
-    (set (rv layout.horizontal_window.show_columns)
-         (ImGui.Checkbox ctx :Columns
-                         layout.horizontal_window.show_columns))
-    (set (rv layout.horizontal_window.show_tab_bar)
-         (ImGui.Checkbox ctx "Tab bar"
-                         layout.horizontal_window.show_tab_bar))
-    (set (rv layout.horizontal_window.show_child)
-         (ImGui.Checkbox ctx :Child layout.horizontal_window.show_child))
-    (set (rv layout.horizontal_window.explicit_content_size)
-         (ImGui.Checkbox ctx "Explicit content size"
-                         layout.horizontal_window.explicit_content_size))
-    (ImGui.Text ctx
-                (: "Scroll %.1f/%.1f %.1f/%.1f" :format
-                   (ImGui.GetScrollX ctx) (ImGui.GetScrollMaxX ctx)
-                   (ImGui.GetScrollY ctx) (ImGui.GetScrollMaxY ctx)))
-    (when layout.horizontal_window.explicit_content_size
-      (ImGui.SameLine ctx)
-      (ImGui.SetNextItemWidth ctx 100)
-      (set (rv layout.horizontal_window.contents_size_x)
-           (ImGui.DragDouble ctx "##csx"
-                             layout.horizontal_window.contents_size_x))
-      (local (x y) (ImGui.GetCursorScreenPos ctx))
-      (local draw-list (ImGui.GetWindowDrawList ctx))
-      (ImGui.DrawList_AddRectFilled draw-list x y (+ x 10) (+ y 10)
-                                    4294967295)
-      (ImGui.DrawList_AddRectFilled draw-list
-                                    (- (+ x
-                                          layout.horizontal_window.contents_size_x)
-                                       10)
-                                    y
-                                    (+ x
-                                       layout.horizontal_window.contents_size_x)
-                                    (+ y 10) 4294967295)
-      (ImGui.Dummy ctx 0 10))
     (ImGui.PopStyleVar ctx 2)
-    (ImGui.Separator ctx)
-    (when layout.horizontal_window.show_button
-      (ImGui.Button ctx "this is a 300-wide button" 300 0))
-    (when layout.horizontal_window.show_tree_nodes
-      (when (ImGui.TreeNode ctx "this is a tree node")
-        (when (ImGui.TreeNode ctx "another one of those tree node...")
-          (ImGui.Text ctx "Some tree contents")
-          (ImGui.TreePop ctx))
-        (ImGui.TreePop ctx))
-      (ImGui.CollapsingHeader ctx :CollapsingHeader true))
-    (when layout.horizontal_window.show_text_wrapped
-      (ImGui.TextWrapped ctx
-                         "This text should automatically wrap on the edge of the work rectangle."))
-    (when layout.horizontal_window.show_columns
-      (ImGui.Text ctx "Tables:")
-      (when (ImGui.BeginTable ctx :table 4 (ImGui.TableFlags_Borders))
-        (for [n 0 3]
-          (ImGui.TableNextColumn ctx)
-          (ImGui.Text ctx
-                      (: "Width %.2f" :format
-                         (ImGui.GetContentRegionAvail ctx))))
-        (ImGui.EndTable ctx)))
-    (when (and layout.horizontal_window.show_tab_bar
-               (ImGui.BeginTabBar ctx :Hello))
-      (when (ImGui.BeginTabItem ctx :OneOneOne) (ImGui.EndTabItem ctx))
-      (when (ImGui.BeginTabItem ctx :TwoTwoTwo) (ImGui.EndTabItem ctx))
-      (when (ImGui.BeginTabItem ctx :ThreeThreeThree)
-        (ImGui.EndTabItem ctx))
-      (when (ImGui.BeginTabItem ctx :FourFourFour) (ImGui.EndTabItem ctx))
-      (ImGui.EndTabBar ctx))
-    (when layout.horizontal_window.show_child
-      (when (ImGui.BeginChild ctx :child 0 0 true) (ImGui.EndChild ctx)))
-    (ImGui.End ctx)))
-(ImGui.TreePop ctx))
-(when (ImGui.TreeNode ctx :Clipping)
-  (when (not layout.clipping)
-    (set layout.clipping {:offset [30 30] :size [100 100]}))
-  (set-forcibly! (rv s1 s2)
-                 (ImGui.DragDouble2 ctx :size (. layout.clipping.size 1)
-                                    (. layout.clipping.size 2) 0.5 1 200
-                                    "%.0f"))
-  (tset layout.clipping.size 1 s1)
-  (tset layout.clipping.size 2 s2)
-  (ImGui.TextWrapped ctx "(Click and drag to scroll)")
-  (demo.HelpMarker "(Left) Using ImGui_PushClipRect():
-  Will alter ImGui hit-testing logic + DrawList rendering.
-  (use this if you want your clipping rectangle to affect interactions)
+    (var scroll-x-delta 0)
+    (ImGui.SmallButton ctx "<<")
+    (when (ImGui.IsItemActive ctx)
+      (set scroll-x-delta (* (- 0 (ImGui.GetDeltaTime ctx)) 1000)))
+    (ImGui.SameLine ctx)
+    (ImGui.Text ctx "Scroll from code")
+    (ImGui.SameLine ctx)
+    (ImGui.SmallButton ctx ">>")
+    (when (ImGui.IsItemActive ctx)
+      (set scroll-x-delta (* (ImGui.GetDeltaTime ctx) 1000)))
+    (ImGui.SameLine ctx)
+    (ImGui.Text ctx (: "%.0f/%.0f" :format scroll-x scroll-max-x))
+    (when (not= scroll-x-delta 0)
+      (when (ImGui.BeginChild ctx :scrolling)
+        (ImGui.SetScrollX ctx (+ (ImGui.GetScrollX ctx) scroll-x-delta))
+        (ImGui.EndChild ctx)))
+    (ImGui.Spacing ctx)
+    (set (rv layout.scrolling.show_horizontal_contents_size_demo_window)
+         (ImGui.Checkbox ctx "Show Horizontal contents size demo window"
+                         layout.scrolling.show_horizontal_contents_size_demo_window))
+    (when layout.scrolling.show_horizontal_contents_size_demo_window
+      (when (not layout.horizontal_window)
+        (set layout.horizontal_window
+             {:contents_size_x 300
+              :explicit_content_size false
+              :show_button true
+              :show_child false
+              :show_columns true
+              :show_h_scrollbar true
+              :show_tab_bar true
+              :show_text_wrapped false
+              :show_tree_nodes true}))
+      (when layout.horizontal_window.explicit_content_size
+        (ImGui.SetNextWindowContentSize ctx
+                                        layout.horizontal_window.contents_size_x
+                                        0))
+      (set (rv layout.scrolling.show_horizontal_contents_size_demo_window)
+           (ImGui.Begin ctx "Horizontal contents size demo window" true
+                        (or (and layout.horizontal_window.show_h_scrollbar
+                                 (ImGui.WindowFlags_HorizontalScrollbar))
+                            (ImGui.WindowFlags_None))))
+      (when rv
+        (ImGui.PushStyleVar ctx (ImGui.StyleVar_ItemSpacing) 2 0)
+        (ImGui.PushStyleVar ctx (ImGui.StyleVar_FramePadding) 2 0)
+        (demo.HelpMarker "Test of different widgets react and impact the work rectangle growing when horizontal scrolling is enabled.
 
-  (Center) Using ImGui_DrawList_PushClipRect():
-  Will alter DrawList rendering only.
-  (use this as a shortcut if you are only using DrawList calls)
+        Use 'Metrics->Tools->Show windows rectangles' to visualize rectangles.")
+        (set (rv layout.horizontal_window.show_h_scrollbar)
+             (ImGui.Checkbox ctx :H-scrollbar
+                             layout.horizontal_window.show_h_scrollbar))
+        (set (rv layout.horizontal_window.show_button)
+             (ImGui.Checkbox ctx :Button layout.horizontal_window.show_button))
+        (set (rv layout.horizontal_window.show_tree_nodes)
+             (ImGui.Checkbox ctx "Tree nodes"
+                             layout.horizontal_window.show_tree_nodes))
+        (set (rv layout.horizontal_window.show_text_wrapped)
+             (ImGui.Checkbox ctx "Text wrapped"
+                             layout.horizontal_window.show_text_wrapped))
+        (set (rv layout.horizontal_window.show_columns)
+             (ImGui.Checkbox ctx :Columns
+                             layout.horizontal_window.show_columns))
+        (set (rv layout.horizontal_window.show_tab_bar)
+             (ImGui.Checkbox ctx "Tab bar"
+                             layout.horizontal_window.show_tab_bar))
+        (set (rv layout.horizontal_window.show_child)
+             (ImGui.Checkbox ctx :Child layout.horizontal_window.show_child))
+        (set (rv layout.horizontal_window.explicit_content_size)
+             (ImGui.Checkbox ctx "Explicit content size"
+                             layout.horizontal_window.explicit_content_size))
+        (ImGui.Text ctx
+                    (: "Scroll %.1f/%.1f %.1f/%.1f" :format
+                       (ImGui.GetScrollX ctx) (ImGui.GetScrollMaxX ctx)
+                       (ImGui.GetScrollY ctx) (ImGui.GetScrollMaxY ctx)))
+        (when layout.horizontal_window.explicit_content_size
+          (ImGui.SameLine ctx)
+          (ImGui.SetNextItemWidth ctx 100)
+          (set (rv layout.horizontal_window.contents_size_x)
+               (ImGui.DragDouble ctx "##csx"
+                                 layout.horizontal_window.contents_size_x))
+          (local (x y) (ImGui.GetCursorScreenPos ctx))
+          (local draw-list (ImGui.GetWindowDrawList ctx))
+          (ImGui.DrawList_AddRectFilled draw-list x y (+ x 10) (+ y 10)
+                                        4294967295)
+          (ImGui.DrawList_AddRectFilled draw-list
+                                        (- (+ x
+                                              layout.horizontal_window.contents_size_x)
+                                           10)
+                                        y
+                                        (+ x
+                                           layout.horizontal_window.contents_size_x)
+                                        (+ y 10) 4294967295)
+          (ImGui.Dummy ctx 0 10))
+        (ImGui.PopStyleVar ctx 2)
+        (ImGui.Separator ctx)
+        (when layout.horizontal_window.show_button
+          (ImGui.Button ctx "this is a 300-wide button" 300 0))
+        (when layout.horizontal_window.show_tree_nodes
+          (when (ImGui.TreeNode ctx "this is a tree node")
+            (when (ImGui.TreeNode ctx "another one of those tree node...")
+              (ImGui.Text ctx "Some tree contents")
+              (ImGui.TreePop ctx))
+            (ImGui.TreePop ctx))
+          (ImGui.CollapsingHeader ctx :CollapsingHeader true))
+        (when layout.horizontal_window.show_text_wrapped
+          (ImGui.TextWrapped ctx
+                             "This text should automatically wrap on the edge of the work rectangle."))
+        (when layout.horizontal_window.show_columns
+          (ImGui.Text ctx "Tables:")
+          (when (ImGui.BeginTable ctx :table 4 (ImGui.TableFlags_Borders))
+            (for [n 0 3]
+              (ImGui.TableNextColumn ctx)
+              (ImGui.Text ctx
+                          (: "Width %.2f" :format
+                             (ImGui.GetContentRegionAvail ctx))))
+            (ImGui.EndTable ctx)))
+        (when (and layout.horizontal_window.show_tab_bar
+                   (ImGui.BeginTabBar ctx :Hello))
+          (when (ImGui.BeginTabItem ctx :OneOneOne) (ImGui.EndTabItem ctx))
+          (when (ImGui.BeginTabItem ctx :TwoTwoTwo) (ImGui.EndTabItem ctx))
+          (when (ImGui.BeginTabItem ctx :ThreeThreeThree)
+            (ImGui.EndTabItem ctx))
+          (when (ImGui.BeginTabItem ctx :FourFourFour) (ImGui.EndTabItem ctx))
+          (ImGui.EndTabBar ctx))
+        (when layout.horizontal_window.show_child
+          (when (ImGui.BeginChild ctx :child 0 0 true) (ImGui.EndChild ctx)))
+        (ImGui.End ctx)))
+    (ImGui.TreePop ctx))
+    (when (ImGui.TreeNode ctx :Clipping)
+      (when (not layout.clipping)
+        (set layout.clipping {:offset [30 30] :size [100 100]}))
+      (set-forcibly! (rv s1 s2)
+                     (ImGui.DragDouble2 ctx :size (. layout.clipping.size 1)
+                                        (. layout.clipping.size 2) 0.5 1 200
+                                        "%.0f"))
+      (tset layout.clipping.size 1 s1)
+      (tset layout.clipping.size 2 s2)
+      (ImGui.TextWrapped ctx "(Click and drag to scroll)")
+      (demo.HelpMarker "(Left) Using ImGui_PushClipRect():
+      Will alter ImGui hit-testing logic + DrawList rendering.
+      (use this if you want your clipping rectangle to affect interactions)
 
-  (Right) Using ImGui_DrawList_AddText() with a fine ClipRect:
-  Will alter only this specific ImGui_DrawList_AddText() rendering.
-  This is often used internally to avoid altering the clipping rectangle and minimize draw calls.")
-  (for [n 0 2]
-    (when (> n 0) (ImGui.SameLine ctx))
-    (ImGui.PushID ctx n)
-    (ImGui.InvisibleButton ctx "##canvas"
-                           (table.unpack layout.clipping.size))
-    (when (and (ImGui.IsItemActive ctx)
-               (ImGui.IsMouseDragging ctx (ImGui.MouseButton_Left)))
-      (local mouse-delta [(ImGui.GetMouseDelta ctx)])
-      (tset layout.clipping.offset 1
-            (+ (. layout.clipping.offset 1) (. mouse-delta 1)))
-      (tset layout.clipping.offset 2
-            (+ (. layout.clipping.offset 2) (. mouse-delta 2))))
-    (ImGui.PopID ctx)
-    (when (ImGui.IsItemVisible ctx)
-      (local (p0-x p0-y) (ImGui.GetItemRectMin ctx))
-      (local (p1-x p1-y) (ImGui.GetItemRectMax ctx))
-      (local text-str "Line 1 hello\nLine 2 clip me!")
-      (local text-pos
-        [(+ p0-x (. layout.clipping.offset 1))
-         (+ p0-y (. layout.clipping.offset 2))])
-      (local draw-list (ImGui.GetWindowDrawList ctx))
-      (if (= n 0) (do
-                    (ImGui.PushClipRect ctx p0-x p0-y p1-x p1-y true)
-                    (ImGui.DrawList_AddRectFilled draw-list p0-x p0-y p1-x
-                                                  p1-y 1515878655)
-                    (ImGui.DrawList_AddText draw-list (. text-pos 1)
-                                            (. text-pos 2) 4294967295
-                                            text-str)
-                    (ImGui.PopClipRect ctx)) (= n 1)
-        (do
-          (ImGui.DrawList_PushClipRect draw-list p0-x p0-y p1-x p1-y true)
-          (ImGui.DrawList_AddRectFilled draw-list p0-x p0-y p1-x p1-y
-                                        1515878655)
-          (ImGui.DrawList_AddText draw-list (. text-pos 1) (. text-pos 2)
-                                  4294967295 text-str)
-          (ImGui.DrawList_PopClipRect draw-list)) (= n 2)
-        (let [clip-rect [p0-x p0-y p1-x p1-y]]
-          (ImGui.DrawList_AddRectFilled draw-list p0-x p0-y p1-x p1-y
-                                        1515878655)
-          (ImGui.DrawList_AddTextEx draw-list (ImGui.GetFont ctx)
-                                    (ImGui.GetFontSize ctx) (. text-pos 1)
-                                    (. text-pos 2) 4294967295 text-str 0
-                                    (table.unpack clip-rect))))))
-  (ImGui.TreePop ctx))
+      (Center) Using ImGui_DrawList_PushClipRect():
+      Will alter DrawList rendering only.
+      (use this as a shortcut if you are only using DrawList calls)
+
+      (Right) Using ImGui_DrawList_AddText() with a fine ClipRect:
+      Will alter only this specific ImGui_DrawList_AddText() rendering.
+      This is often used internally to avoid altering the clipping rectangle and minimize draw calls.")
+      (for [n 0 2]
+        (when (> n 0) (ImGui.SameLine ctx))
+        (ImGui.PushID ctx n)
+        (ImGui.InvisibleButton ctx "##canvas"
+                               (table.unpack layout.clipping.size))
+        (when (and (ImGui.IsItemActive ctx)
+                   (ImGui.IsMouseDragging ctx (ImGui.MouseButton_Left)))
+          (local mouse-delta [(ImGui.GetMouseDelta ctx)])
+          (tset layout.clipping.offset 1
+                (+ (. layout.clipping.offset 1) (. mouse-delta 1)))
+          (tset layout.clipping.offset 2
+                (+ (. layout.clipping.offset 2) (. mouse-delta 2))))
+        (ImGui.PopID ctx)
+        (when (ImGui.IsItemVisible ctx)
+          (local (p0-x p0-y) (ImGui.GetItemRectMin ctx))
+          (local (p1-x p1-y) (ImGui.GetItemRectMax ctx))
+          (local text-str "Line 1 hello\nLine 2 clip me!")
+          (local text-pos
+            [(+ p0-x (. layout.clipping.offset 1))
+             (+ p0-y (. layout.clipping.offset 2))])
+          (local draw-list (ImGui.GetWindowDrawList ctx))
+          (if (= n 0) (do
+                        (ImGui.PushClipRect ctx p0-x p0-y p1-x p1-y true)
+                        (ImGui.DrawList_AddRectFilled draw-list p0-x p0-y p1-x
+                                                      p1-y 1515878655)
+                        (ImGui.DrawList_AddText draw-list (. text-pos 1)
+                                                (. text-pos 2) 4294967295
+                                                text-str)
+                        (ImGui.PopClipRect ctx)) (= n 1)
+            (do
+              (ImGui.DrawList_PushClipRect draw-list p0-x p0-y p1-x p1-y true)
+              (ImGui.DrawList_AddRectFilled draw-list p0-x p0-y p1-x p1-y
+                                            1515878655)
+              (ImGui.DrawList_AddText draw-list (. text-pos 1) (. text-pos 2)
+                                      4294967295 text-str)
+              (ImGui.DrawList_PopClipRect draw-list)) (= n 2)
+            (let [clip-rect [p0-x p0-y p1-x p1-y]]
+              (ImGui.DrawList_AddRectFilled draw-list p0-x p0-y p1-x p1-y
+                                            1515878655)
+              (ImGui.DrawList_AddTextEx draw-list (ImGui.GetFont ctx)
+                                        (ImGui.GetFontSize ctx) (. text-pos 1)
+                                        (. text-pos 2) 4294967295 text-str 0
+                                        (table.unpack clip-rect))))))
+      (ImGui.TreePop ctx))
 )
   )
 
