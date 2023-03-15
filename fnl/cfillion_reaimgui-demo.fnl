@@ -148,8 +148,8 @@
   (local color (ImGui.GetStyleColor ctx (ImGui.Col_CheckMark)))
   (ImGui.TextColored ctx color url)
   (if (ImGui.IsItemClicked ctx) (reaper.CF_ShellExecute url)
-      (ImGui.IsItemHovered ctx) (ImGui.SetMouseCursor ctx
-                                                        (ImGui.MouseCursor_Hand))))
+    (ImGui.IsItemHovered ctx) (ImGui.SetMouseCursor ctx
+                                                    (ImGui.MouseCursor_Hand))))
 
 (fn demo.HSV [h s v a]
   (let [(r g b) (ImGui.ColorConvertHSVtoRGB h s v)]
@@ -183,6 +183,7 @@
 
 (fn demo.ShowDemoWindow [open]
   (var rv nil)
+  (var open open)
   (when show-app.documents (set show-app.documents (demo.ShowExampleAppDocuments)))
   (when show-app.console (set show-app.console (demo.ShowExampleAppConsole)))
   (when show-app.log (set show-app.log (demo.ShowExampleAppLog)))
@@ -214,7 +215,7 @@
   (when demo.no_docking (set window-flags (bor window-flags (ImGui.WindowFlags_NoDocking))))
   (when demo.topmost (set window-flags (bor window-flags (ImGui.WindowFlags_TopMost))))
   (when demo.unsaved_document (set window-flags (bor window-flags (ImGui.WindowFlags_UnsavedDocument))))
-  (when demo.no_close (set-forcibly! open false))
+  (when demo.no_close (set open false))
   (local main-viewport (ImGui.GetMainViewport ctx))
   (local work-pos [(ImGui.Viewport_GetWorkPos main-viewport)])
   (ImGui.SetNextWindowPos ctx (+ (. work-pos 1) 20) (+ (. work-pos 2) 20)
@@ -222,7 +223,7 @@
   (ImGui.SetNextWindowSize ctx 550 680 (ImGui.Cond_FirstUseEver))
   (when demo.set_dock_id (ImGui.SetNextWindowDockID ctx demo.set_dock_id)
     (set demo.set_dock_id nil))
-  (set-forcibly! (rv open) (ImGui.Begin ctx "Dear ImGui Demo" open window-flags))
+  (set (rv open) (ImGui.Begin ctx "Dear ImGui Demo" open window-flags))
   (when (not rv) (lua "return open"))
   (ImGui.PushItemWidth ctx (* (ImGui.GetFontSize ctx) (- 12)))
   (when (ImGui.BeginMenuBar ctx)
@@ -1211,8 +1212,8 @@ label:
       (tset widgets.input.buf 2 b2)
       (set-forcibly! (rv b3)
                      (ImGui.InputText ctx :hexadecimal (. widgets.input.buf 3)
-                                       (bor (ImGui.InputTextFlags_CharsHexadecimal)
-                                            (ImGui.InputTextFlags_CharsUppercase))))
+                                      (bor (ImGui.InputTextFlags_CharsHexadecimal)
+                                           (ImGui.InputTextFlags_CharsUppercase))))
       (tset widgets.input.buf 3 b3)
       (set-forcibly! (rv b4)
                      (ImGui.InputText ctx :uppercase (. widgets.input.buf 4)
