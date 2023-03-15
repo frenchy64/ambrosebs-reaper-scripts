@@ -4728,22 +4728,16 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
   (ImGui.TreePop ctx))
 (Do-open-action)
 (when (ImGui.TreeNode ctx "Synced instances")
-  (when (not tables.synced)
-    (set tables.synced
-         {:flags (bor (ImGui.TableFlags_Resizable)
-                      (ImGui.TableFlags_Reorderable)
-                      (ImGui.TableFlags_Hideable)
-                      (ImGui.TableFlags_Borders)
-                      (ImGui.TableFlags_SizingFixedFit)
-                      (ImGui.TableFlags_NoSavedSettings))}))
+  (set-when-not tables.synced
+                {:flags (bor (ImGui.TableFlags_Resizable)
+                             (ImGui.TableFlags_Reorderable)
+                             (ImGui.TableFlags_Hideable)
+                             (ImGui.TableFlags_Borders)
+                             (ImGui.TableFlags_SizingFixedFit)
+                             (ImGui.TableFlags_NoSavedSettings))})
   (demo.HelpMarker "Multiple tables with the same identifier will share their settings, width, visibility, order etc.")
-  (set (rv tables.synced.flags)
-       (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ScrollY tables.synced.flags
-                            (ImGui.TableFlags_ScrollY)))
-  (set (rv tables.synced.flags)
-       (ImGui.CheckboxFlags ctx :ImGuiTableFlags_SizingFixedFit
-                            tables.synced.flags
-                            (ImGui.TableFlags_SizingFixedFit)))
+  (update-2nd tables.synced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ScrollY $ (ImGui.TableFlags_ScrollY)))
+  (update-2nd tables.synced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_SizingFixedFit $ (ImGui.TableFlags_SizingFixedFit)))
   (for [n 0 2]
     (local buf (: "Synced Table %d" :format n))
     (local open
@@ -4851,159 +4845,87 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
   (ImGui.TreePop ctx))
 (Do-open-action)
 (when (ImGui.TreeNode ctx :Advanced)
-  (when (not tables.advanced)
-    (set tables.advanced
-         {:contents_type 5
-          :flags (bor (ImGui.TableFlags_Resizable)
-                      (ImGui.TableFlags_Reorderable)
-                      (ImGui.TableFlags_Hideable)
-                      (ImGui.TableFlags_Sortable)
-                      (ImGui.TableFlags_SortMulti)
-                      (ImGui.TableFlags_RowBg)
-                      (ImGui.TableFlags_Borders)
-                      (ImGui.TableFlags_ScrollX)
-                      (ImGui.TableFlags_ScrollY)
-                      (ImGui.TableFlags_SizingFixedFit))
-          :freeze_cols 1
-          :freeze_rows 1
-          :inner_width_with_scroll 0
-          :items {}
-          :items_count (* (length template-items-names) 2)
-          :items_need_sort false
-          :outer_size_enabled true
-          :outer_size_value [0 (* TEXT_BASE_HEIGHT 12)]
-          :row_min_height 0
-          :show_headers true
-          :show_wrapped_text false}))
+  (set-when-not tables.advanced
+                {:contents_type 5
+                 :flags (bor (ImGui.TableFlags_Resizable)
+                             (ImGui.TableFlags_Reorderable)
+                             (ImGui.TableFlags_Hideable)
+                             (ImGui.TableFlags_Sortable)
+                             (ImGui.TableFlags_SortMulti)
+                             (ImGui.TableFlags_RowBg)
+                             (ImGui.TableFlags_Borders)
+                             (ImGui.TableFlags_ScrollX)
+                             (ImGui.TableFlags_ScrollY)
+                             (ImGui.TableFlags_SizingFixedFit))
+                 :freeze_cols 1
+                 :freeze_rows 1
+                 :inner_width_with_scroll 0
+                 :items {}
+                 :items_count (* (length template-items-names) 2)
+                 :items_need_sort false
+                 :outer_size_enabled true
+                 :outer_size_value [0 (* TEXT_BASE_HEIGHT 12)]
+                 :row_min_height 0
+                 :show_headers true
+                 :show_wrapped_text false})
   (when (ImGui.TreeNode ctx :Options)
     (demo.PushStyleCompact)
     (ImGui.PushItemWidth ctx (* TEXT_BASE_WIDTH 28))
     (when (ImGui.TreeNode ctx "Features:" (ImGui.TreeNodeFlags_DefaultOpen))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Resizable
-                                tables.advanced.flags
-                                (ImGui.TableFlags_Resizable)))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Reorderable
-                                tables.advanced.flags
-                                (ImGui.TableFlags_Reorderable)))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Hideable
-                                tables.advanced.flags
-                                (ImGui.TableFlags_Hideable)))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Sortable
-                                tables.advanced.flags
-                                (ImGui.TableFlags_Sortable)))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoSavedSettings
-                                tables.advanced.flags
-                                (ImGui.TableFlags_NoSavedSettings)))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ContextMenuInBody
-                                tables.advanced.flags
-                                (ImGui.TableFlags_ContextMenuInBody)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Resizable $ (ImGui.TableFlags_Resizable)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Reorderable $ (ImGui.TableFlags_Reorderable)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Hideable $ (ImGui.TableFlags_Hideable)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Sortable $ (ImGui.TableFlags_Sortable)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoSavedSettings $ (ImGui.TableFlags_NoSavedSettings)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ContextMenuInBody $ (ImGui.TableFlags_ContextMenuInBody)))
       (ImGui.TreePop ctx))
     (when (ImGui.TreeNode ctx "Decorations:"
                           (ImGui.TreeNodeFlags_DefaultOpen))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_RowBg
-                                tables.advanced.flags
-                                (ImGui.TableFlags_RowBg)))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersV
-                                tables.advanced.flags
-                                (ImGui.TableFlags_BordersV)))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersOuterV
-                                tables.advanced.flags
-                                (ImGui.TableFlags_BordersOuterV)))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersInnerV
-                                tables.advanced.flags
-                                (ImGui.TableFlags_BordersInnerV)))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersH
-                                tables.advanced.flags
-                                (ImGui.TableFlags_BordersH)))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersOuterH
-                                tables.advanced.flags
-                                (ImGui.TableFlags_BordersOuterH)))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersInnerH
-                                tables.advanced.flags
-                                (ImGui.TableFlags_BordersInnerH)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_RowBg $ (ImGui.TableFlags_RowBg)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersV $ (ImGui.TableFlags_BordersV)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersOuterV $ (ImGui.TableFlags_BordersOuterV)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersInnerV $ (ImGui.TableFlags_BordersInnerV)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersH $ (ImGui.TableFlags_BordersH)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersOuterH $ (ImGui.TableFlags_BordersOuterH)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersInnerH $ (ImGui.TableFlags_BordersInnerH)))
       (ImGui.TreePop ctx))
     (when (ImGui.TreeNode ctx "Sizing:" (ImGui.TreeNodeFlags_DefaultOpen))
       (set tables.advanced.flags
            (demo.EditTableSizingFlags tables.advanced.flags))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "In the Advanced demo we override the policy of each column so those table-wide settings have less effect that typical.")
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoHostExtendX
-                                tables.advanced.flags
-                                (ImGui.TableFlags_NoHostExtendX)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoHostExtendX $ (ImGui.TableFlags_NoHostExtendX)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Make outer width auto-fit to columns, overriding outer_size.x value.
 
       Only available when ScrollX/ScrollY are disabled and Stretch columns are not used.")
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoHostExtendY
-                                tables.advanced.flags
-                                (ImGui.TableFlags_NoHostExtendY)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoHostExtendY $ (ImGui.TableFlags_NoHostExtendY)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Make outer height stop exactly at outer_size.y (prevent auto-extending table past the limit).
 
       Only available when ScrollX/ScrollY are disabled. Data below the limit will be clipped and not visible.")
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoKeepColumnsVisible
-                                tables.advanced.flags
-                                (ImGui.TableFlags_NoKeepColumnsVisible)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoKeepColumnsVisible $ (ImGui.TableFlags_NoKeepColumnsVisible)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Only available if ScrollX is disabled.")
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_PreciseWidths
-                                tables.advanced.flags
-                                (ImGui.TableFlags_PreciseWidths)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_PreciseWidths $ (ImGui.TableFlags_PreciseWidths)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Disable distributing remainder width to stretched columns (width allocation on a 100-wide table with 3 columns: Without this flag: 33,33,34. With this flag: 33,33,33). With larger number of columns, resizing will appear to be less smooth.")
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoClip
-                                tables.advanced.flags
-                                (ImGui.TableFlags_NoClip)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoClip $ (ImGui.TableFlags_NoClip)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Disable clipping rectangle for every individual columns (reduce draw command count, items will be able to overflow into other columns). Generally incompatible with ScrollFreeze options.")
       (ImGui.TreePop ctx))
     (when (ImGui.TreeNode ctx "Padding:" (ImGui.TreeNodeFlags_DefaultOpen))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_PadOuterX
-                                tables.advanced.flags
-                                (ImGui.TableFlags_PadOuterX)))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoPadOuterX
-                                tables.advanced.flags
-                                (ImGui.TableFlags_NoPadOuterX)))
-      (set (rv tables.advanced.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoPadInnerX
-                                tables.advanced.flags
-                                (ImGui.TableFlags_NoPadInnerX)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_PadOuterX $ (ImGui.TableFlags_PadOuterX)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoPadOuterX $ (ImGui.TableFlags_NoPadOuterX)))
+      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoPadInnerX $ (ImGui.TableFlags_NoPadInnerX)))
       (ImGui.TreePop ctx))
 (when (ImGui.TreeNode ctx "Scrolling:"
                       (ImGui.TreeNodeFlags_DefaultOpen))
-  (set (rv tables.advanced.flags)
-       (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ScrollX
-                            tables.advanced.flags
-                            (ImGui.TableFlags_ScrollX)))
+  (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ScrollX $ (ImGui.TableFlags_ScrollX)))
   (ImGui.SameLine ctx)
   (ImGui.SetNextItemWidth ctx (ImGui.GetFrameHeight ctx))
-  (set (rv tables.advanced.freeze_cols)
-       (ImGui.DragInt ctx :freeze_cols tables.advanced.freeze_cols 0.2 0
-                      9 nil (ImGui.SliderFlags_NoInput)))
-  (set (rv tables.advanced.flags)
-       (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ScrollY
-                            tables.advanced.flags
-                            (ImGui.TableFlags_ScrollY)))
+  (update-2nd tables.advanced.freeze_cols (ImGui.DragInt ctx :freeze_cols $ 0.2 0 9 nil (ImGui.SliderFlags_NoInput)))
+  (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ScrollY $ (ImGui.TableFlags_ScrollY)))
   (ImGui.SameLine ctx)
   (ImGui.SetNextItemWidth ctx (ImGui.GetFrameHeight ctx))
   (set (rv tables.advanced.freeze_rows)
@@ -5011,25 +4933,16 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
                       9 nil (ImGui.SliderFlags_NoInput)))
   (ImGui.TreePop ctx))
 (when (ImGui.TreeNode ctx "Sorting:" (ImGui.TreeNodeFlags_DefaultOpen))
-  (set (rv tables.advanced.flags)
-       (ImGui.CheckboxFlags ctx :ImGuiTableFlags_SortMulti
-                            tables.advanced.flags
-                            (ImGui.TableFlags_SortMulti)))
+  (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_SortMulti $ (ImGui.TableFlags_SortMulti)))
   (ImGui.SameLine ctx)
   (demo.HelpMarker "When sorting is enabled: hold shift when clicking headers to sort on multiple column. TableGetSortSpecs() may return specs where (SpecsCount > 1).")
-  (set (rv tables.advanced.flags)
-       (ImGui.CheckboxFlags ctx :ImGuiTableFlags_SortTristate
-                            tables.advanced.flags
-                            (ImGui.TableFlags_SortTristate)))
+  (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_SortTristate $ (ImGui.TableFlags_SortTristate)))
   (ImGui.SameLine ctx)
   (demo.HelpMarker "When sorting is enabled: allow no sorting, disable default sorting. TableGetSortSpecs() may return specs where (SpecsCount == 0).")
   (ImGui.TreePop ctx))
 (when (ImGui.TreeNode ctx "Other:" (ImGui.TreeNodeFlags_DefaultOpen))
-  (set (rv tables.advanced.show_headers)
-       (ImGui.Checkbox ctx :show_headers tables.advanced.show_headers))
-  (set (rv tables.advanced.show_wrapped_text)
-       (ImGui.Checkbox ctx :show_wrapped_text
-                       tables.advanced.show_wrapped_text))
+  (update-2nd tables.advanced.show_headers (ImGui.Checkbox ctx :show_headers $))
+  (update-2nd tables.advanced.show_wrapped_text (ImGui.Checkbox ctx :show_wrapped_text $))
   (set-forcibly! (rv osv1 osv2)
                  (ImGui.DragDouble2 ctx "##OuterSize"
                                     (table.unpack tables.advanced.outer_size_value)))
@@ -5038,31 +4951,19 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
   (ImGui.SameLine ctx 0
                   (ImGui.GetStyleVar ctx
                                      (ImGui.StyleVar_ItemInnerSpacing)))
-  (set (rv tables.advanced.outer_size_enabled)
-       (ImGui.Checkbox ctx :outer_size
-                       tables.advanced.outer_size_enabled))
+  (update-2nd tables.advanced.outer_size_enabled (ImGui.Checkbox ctx :outer_size $))
   (ImGui.SameLine ctx)
   (demo.HelpMarker "If scrolling is disabled (ScrollX and ScrollY not set):
   - The table is output directly in the parent window.
   - OuterSize.x < 0.0 will right-align the table.
   - OuterSize.x = 0.0 will narrow fit the table unless there are any Stretch columns.
   - OuterSize.y then becomes the minimum size for the table, which will extend vertically if there are more rows (unless NoHostExtendY is set).")
-  (set (rv tables.advanced.inner_width_with_scroll)
-       (ImGui.DragDouble ctx "inner_width (when ScrollX active)"
-                         tables.advanced.inner_width_with_scroll 1 0
-                         FLT_MAX))
-  (set (rv tables.advanced.row_min_height)
-       (ImGui.DragDouble ctx :row_min_height
-                         tables.advanced.row_min_height 1 0 FLT_MAX))
+  (update-2nd tables.advanced.inner_width_with_scroll (ImGui.DragDouble ctx "inner_width (when ScrollX active)" $ 1 0 FLT_MAX))
+  (update-2nd tables.advanced.row_min_height (ImGui.DragDouble ctx :row_min_height $ 1 0 FLT_MAX))
   (ImGui.SameLine ctx)
   (demo.HelpMarker "Specify height of the Selectable item.")
-  (set (rv tables.advanced.items_count)
-       (ImGui.DragInt ctx :items_count tables.advanced.items_count 0.1 0
-                      9999))
-  (set (rv tables.advanced.contents_type)
-       (ImGui.Combo ctx "items_type (first column)"
-                    tables.advanced.contents_type
-                    "Text\000Button\000SmallButton\000FillButton\000Selectable\000Selectable (span row)\000"))
+  (update-2nd tables.advanced.items_count (ImGui.DragInt ctx :items_count $ 0.1 0 9999))
+  (update-2nd tables.advanced.contents_type (ImGui.Combo ctx "items_type (first column)" $ "Text\000Button\000SmallButton\000FillButton\000Selectable\000Selectable (span row)\000"))
   (ImGui.TreePop ctx))
 (ImGui.PopItemWidth ctx)
 (demo.PopStyleCompact)
@@ -5071,17 +4972,16 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
 (when (not= (length tables.advanced.items) tables.advanced.items_count)
   (set tables.advanced.items {})
   (for [n 0 (- tables.advanced.items_count 1)]
-    (local template-n (% n (length template-items-names)))
-    (local item
-      {:id n
-       :name (. template-items-names (+ template-n 1))
-       :quantity (or (and (= template-n 3) 10)
-                     (or (and (= template-n 4) 20) 0))})
-    (table.insert tables.advanced.items item)))
-(local inner-width-to-use (or (and (not= (band tables.advanced.flags
-                                               (ImGui.TableFlags_ScrollX))
-                                         0)
-                                   tables.advanced.inner_width_with_scroll)
+    (let [template-n (% n (length template-items-names))
+          item {:id n
+                :name (. template-items-names (+ template-n 1))
+                :quantity (or (and (= template-n 3) 10)
+                              (or (and (= template-n 4) 20) 0))}]
+      (table.insert tables.advanced.items item))))
+(local inner-width-to-use (or (when (not= (band tables.advanced.flags
+                                                (ImGui.TableFlags_ScrollX))
+                                          0)
+                                tables.advanced.inner_width_with_scroll)
                               0))
 (var (w h) (values 0 0))
 (when tables.advanced.outer_size_enabled
@@ -5178,9 +5078,7 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
   (ImGui.EndTable ctx))
 (ImGui.TreePop ctx))
 (ImGui.PopID ctx)
-(when tables.disable_indent (ImGui.PopStyleVar ctx))
-)
-  )
+(when tables.disable_indent (ImGui.PopStyleVar ctx))))
 
 (fn demo.ShowDemoWindowInputs []
   (var rv nil)
@@ -5239,54 +5137,46 @@ Capturing the keyboard allows receiving input from REAPER's global scope.
 Hovering the colored canvas will call SetNextFrameWantCaptureXXX.")
       (local capture-override-desc [:None "Set to false" "Set to true"])
       (ImGui.SetNextItemWidth ctx (* (ImGui.GetFontSize ctx) 15))
-      (set (rv misc.capture_override.keyboard)
-           (ImGui.SliderInt ctx "SetNextFrameWantCaptureKeyboard() on hover"
-                             misc.capture_override.keyboard (- 1) 1
-                             (. capture-override-desc
-                                (+ misc.capture_override.keyboard 2))
-                             (ImGui.SliderFlags_AlwaysClamp)))
+      (update-2nd misc.capture_override.keyboard
+                  (ImGui.SliderInt ctx "SetNextFrameWantCaptureKeyboard() on hover" $ (- 1) 1
+                                   (. capture-override-desc (+ $ 2)) (ImGui.SliderFlags_AlwaysClamp)))
       (ImGui.ColorButton ctx "##panel" 2988028671
-                          (bor (ImGui.ColorEditFlags_NoTooltip)
-                               (ImGui.ColorEditFlags_NoDragDrop))
-                          128 96)
+                         (bor (ImGui.ColorEditFlags_NoTooltip)
+                              (ImGui.ColorEditFlags_NoDragDrop))
+                         128 96)
       (when (and (ImGui.IsItemHovered ctx)
-                 (not= misc.capture_override.keyboard (- 1)))
-        (ImGui.SetNextFrameWantCaptureKeyboard ctx
-                                                (= misc.capture_override.keyboard
-                                                   1)))
+                 (not= misc.capture_override.keyboard -1))
+        (ImGui.SetNextFrameWantCaptureKeyboard ctx (= 1 misc.capture_override.keyboard)))
       (ImGui.TreePop ctx))
     (when (ImGui.TreeNode ctx "Mouse Cursors")
-      (local current (ImGui.GetMouseCursor ctx))
-      (each [cursor name (demo.EachEnum :MouseCursor)]
-        (when (= cursor current)
-          (ImGui.Text ctx (: "Current mouse cursor = %d: %s" :format current
-                              name))
-          (lua :break)))
+      (let [current (ImGui.GetMouseCursor ctx)]
+        (each [cursor name (demo.EachEnum :MouseCursor)]
+          (when (= cursor current)
+            (ImGui.Text ctx (: "Current mouse cursor = %d: %s" :format current
+                               name))
+            (lua :break))))
       (ImGui.Text ctx "Hover to see mouse cursors:")
       (each [i name (demo.EachEnum :MouseCursor)]
-        (local label (: "Mouse cursor %d: %s" :format i name))
-        (ImGui.Bullet ctx)
-        (ImGui.Selectable ctx label false)
-        (when (ImGui.IsItemHovered ctx) (ImGui.SetMouseCursor ctx i)))
+        (let [label (: "Mouse cursor %d: %s" :format i name)]
+          (ImGui.Bullet ctx)
+          (ImGui.Selectable ctx label false)
+          (when (ImGui.IsItemHovered ctx) (ImGui.SetMouseCursor ctx i))))
       (ImGui.TreePop ctx))
     (when (ImGui.TreeNode ctx :Tabbing)
-      (when (not misc.tabbing) (set misc.tabbing {:buf :hello}))
-      (ImGui.Text ctx
-                   "Use TAB/SHIFT+TAB to cycle through keyboard editable fields.")
-      (set (rv misc.tabbing.buf) (ImGui.InputText ctx :1 misc.tabbing.buf))
-      (set (rv misc.tabbing.buf) (ImGui.InputText ctx :2 misc.tabbing.buf))
-      (set (rv misc.tabbing.buf) (ImGui.InputText ctx :3 misc.tabbing.buf))
+      (set-when-not misc.tabbing {:buf :hello})
+      (ImGui.Text ctx "Use TAB/SHIFT+TAB to cycle through keyboard editable fields.")
+      (update-2nd misc.tabbing.buf (ImGui.InputText ctx :1 $))
+      (update-2nd misc.tabbing.buf (ImGui.InputText ctx :2 $))
+      (update-2nd misc.tabbing.buf (ImGui.InputText ctx :3 $))
       (ImGui.PushAllowKeyboardFocus ctx false)
-      (set (rv misc.tabbing.buf)
-           (ImGui.InputText ctx "4 (tab skip)" misc.tabbing.buf))
+      (update-2nd misc.tabbing.buf (ImGui.InputText ctx "4 (tab skip)" $))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Item won't be cycled through when using TAB or Shift+Tab.")
       (ImGui.PopAllowKeyboardFocus ctx)
-      (set (rv misc.tabbing.buf) (ImGui.InputText ctx :5 misc.tabbing.buf))
+      (update-2nd misc.tabbing.buf (ImGui.InputText ctx :5 $))
       (ImGui.TreePop ctx))
     (when (ImGui.TreeNode ctx "Focus from code")
-      (when (not misc.focus)
-        (set misc.focus {:buf "click on a button to set focus" :d3 [0 0 0]}))
+      (set-when-not misc.focus {:buf "click on a button to set focus" :d3 [0 0 0]})
       (local focus-1 (ImGui.Button ctx "Focus on 1"))
       (ImGui.SameLine ctx)
       (local focus-2 (ImGui.Button ctx "Focus on 2"))
@@ -5294,55 +5184,49 @@ Hovering the colored canvas will call SetNextFrameWantCaptureXXX.")
       (local focus-3 (ImGui.Button ctx "Focus on 3"))
       (var has-focus 0)
       (when focus-1 (ImGui.SetKeyboardFocusHere ctx))
-      (set (rv misc.focus.buf) (ImGui.InputText ctx :1 misc.focus.buf))
+      (update-2nd misc.focus.buf (ImGui.InputText ctx :1 $))
       (when (ImGui.IsItemActive ctx) (set has-focus 1))
       (when focus-2 (ImGui.SetKeyboardFocusHere ctx))
-      (set (rv misc.focus.buf) (ImGui.InputText ctx :2 misc.focus.buf))
+      (update-2nd misc.focus.buf (ImGui.InputText ctx :2 $))
       (when (ImGui.IsItemActive ctx) (set has-focus 2))
       (ImGui.PushAllowKeyboardFocus ctx false)
       (when focus-3 (ImGui.SetKeyboardFocusHere ctx))
-      (set (rv misc.focus.buf)
-           (ImGui.InputText ctx "3 (tab skip)" misc.focus.buf))
+      (update-2nd misc.focus.buf (ImGui.InputText ctx "3 (tab skip)" $))
       (when (ImGui.IsItemActive ctx) (set has-focus 3))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Item won't be cycled through when using TAB or Shift+Tab.")
       (ImGui.PopAllowKeyboardFocus ctx)
-      (if (> has-focus 0) (ImGui.Text ctx
-                                       (: "Item with focus: %d" :format
-                                          has-focus))
-          (ImGui.Text ctx "Item with focus: <none>"))
-      (var focus-ahead (- 1))
+      (if (> has-focus 0)
+        (ImGui.Text ctx
+                    (: "Item with focus: %d" :format
+                       has-focus))
+        (ImGui.Text ctx "Item with focus: <none>"))
+      (var focus-ahead -1)
       (when (ImGui.Button ctx "Focus on X") (set focus-ahead 0))
       (ImGui.SameLine ctx)
       (when (ImGui.Button ctx "Focus on Y") (set focus-ahead 1))
       (ImGui.SameLine ctx)
       (when (ImGui.Button ctx "Focus on Z") (set focus-ahead 2))
-      (when (not= focus-ahead (- 1))
+      (when (not= -1 focus-ahead)
         (ImGui.SetKeyboardFocusHere ctx focus-ahead))
       (set-forcibly! (rv d31 d32 d33)
-                     (ImGui.SliderDouble3 ctx :Float3 (. misc.focus.d3 1)
-                                           (. misc.focus.d3 2)
-                                           (. misc.focus.d3 3) 0 1))
+                     (ImGui.SliderDouble3 ctx :Float3
+                                          (. misc.focus.d3 1)
+                                          (. misc.focus.d3 2)
+                                          (. misc.focus.d3 3)
+                                          0 1))
       (tset misc.focus.d3 1 d31)
       (tset misc.focus.d3 2 d32)
       (tset misc.focus.d3 3 d33)
-      (ImGui.TextWrapped ctx
-                          "NB: Cursor & selection are preserved when refocusing last used item in code.")
+      (ImGui.TextWrapped ctx "NB: Cursor & selection are preserved when refocusing last used item in code.")
       (ImGui.TreePop ctx))
     (when (ImGui.TreeNode ctx :Dragging)
-      (ImGui.TextWrapped ctx
-                          "You can use GetMouseDragDelta(0) to query for the dragged amount on any widget.")
+      (ImGui.TextWrapped ctx "You can use GetMouseDragDelta(0) to query for the dragged amount on any widget.")
       (for [button 0 2]
         (ImGui.Text ctx (: "IsMouseDragging(%d):" :format button))
-        (ImGui.Text ctx
-                     (: "  w/ default threshold: %s," :format
-                        (ImGui.IsMouseDragging ctx button)))
-        (ImGui.Text ctx
-                     (: "  w/ zero threshold: %s," :format
-                        (ImGui.IsMouseDragging ctx button 0)))
-        (ImGui.Text ctx
-                     (: "  w/ large threshold: %s," :format
-                        (ImGui.IsMouseDragging ctx button 20))))
+        (ImGui.Text ctx (: "  w/ default threshold: %s," :format (ImGui.IsMouseDragging ctx button)))
+        (ImGui.Text ctx (: "  w/ zero threshold: %s," :format (ImGui.IsMouseDragging ctx button 0)))
+        (ImGui.Text ctx (: "  w/ large threshold: %s," :format (ImGui.IsMouseDragging ctx button 20))))
       (ImGui.Button ctx "Drag Me")
       (when (ImGui.IsItemActive ctx)
         (local draw-list (ImGui.GetForegroundDrawList ctx))
@@ -5350,20 +5234,16 @@ Hovering the colored canvas will call SetNextFrameWantCaptureXXX.")
         (local click-pos [(ImGui.GetMouseClickedPos ctx 0)])
         (local color (ImGui.GetColor ctx (ImGui.Col_Button)))
         (ImGui.DrawList_AddLine draw-list (. click-pos 1) (. click-pos 2)
-                                 (. mouse-pos 1) (. mouse-pos 2) color 4))
+                                (. mouse-pos 1) (. mouse-pos 2) color 4))
       (local value-raw
              [(ImGui.GetMouseDragDelta ctx 0 0 (ImGui.MouseButton_Left) 0)])
       (local value-with-lock-threshold
              [(ImGui.GetMouseDragDelta ctx 0 0 (ImGui.MouseButton_Left))])
       (local mouse-delta [(ImGui.GetMouseDelta ctx)])
       (ImGui.Text ctx "GetMouseDragDelta(0):")
-      (ImGui.Text ctx
-                   (: "  w/ default threshold: (%.1f, %.1f)" :format
-                      (table.unpack value-with-lock-threshold)))
-      (ImGui.Text ctx (: "  w/ zero threshold: (%.1f, %.1f)" :format
-                          (table.unpack value-raw)))
-      (ImGui.Text ctx (: "GetMouseDelta() (%.1f, %.1f)" :format
-                          (table.unpack mouse-delta)))
+      (ImGui.Text ctx (: "  w/ default threshold: (%.1f, %.1f)" :format (table.unpack value-with-lock-threshold)))
+      (ImGui.Text ctx (: "  w/ zero threshold: (%.1f, %.1f)" :format (table.unpack value-raw)))
+      (ImGui.Text ctx (: "GetMouseDelta() (%.1f, %.1f)" :format (table.unpack mouse-delta)))
       (ImGui.TreePop ctx))))
 
 (fn demo.GetStyleData []
