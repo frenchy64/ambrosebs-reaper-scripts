@@ -3697,37 +3697,36 @@ GetItemRectSize() = (%.1f, %.1f)"
       (ImGui.TreePop ctx))))
 
 (local My-item-column-iD_ID 4)
-
 (local My-item-column-iD_Name 5)
-
 (local My-item-column-iD_Quantity 6)
-
 (local My-item-column-iD_Description 7)
 
 (fn demo.CompareTableItems [a b]
-  (for [next-id 0 math.huge]
-    (local (ok col-user-id col-idx sort-order sort-direction)
-           (ImGui.TableGetColumnSortSpecs ctx next-id))
-    (when (not ok) (lua :break))
-    (var key nil)
-    (if (= col-user-id My-item-column-iD_ID) (set key :id)
-        (= col-user-id My-item-column-iD_Name) (set key :name)
-        (= col-user-id My-item-column-iD_Quantity) (set key :quantity)
-        (= col-user-id My-item-column-iD_Description) (set key :name)
-        (error "unknown user column ID"))
-    (local is-ascending (= sort-direction (ImGui.SortDirection_Ascending)))
-    (if (< (. a key) (. b key))
-        (let [___antifnl_rtn_1___ is-ascending]
-          (lua "return ___antifnl_rtn_1___")) (> (. a key) (. b key))
-        (let [___antifnl_rtn_1___ (not is-ascending)]
-          (lua "return ___antifnl_rtn_1___"))))
-  (< a.id b.id))
+  (faccumulate [res nil
+                next-id 0 math.huge
+                &until (not (= nil res))]
+    (let [(ok col-user-id col-idx sort-order sort-direction) (ImGui.TableGetColumnSortSpecs ctx next-id)]
+      (if (not ok)
+        ;; table.sort is unstable so always return a way to differentiate items.
+        ;; Your own compare function may want to avoid fallback on implicit sort specs e.g. a Name compare if it wasn't already part of the sort specs.
+        (< a.id b.id)
+        (let [;; Here we identify columns using the ColumnUserID value that we ourselves passed to TableSetupColumn()
+              ;; We could also choose to identify columns based on their index (col_idx), which is simpler!
+              key (case col-user-id
+                    My-item-column-iD_ID :id
+                    My-item-column-iD_Name :name
+                    My-item-column-iD_Quantity :quantity
+                    My-item-column-iD_Description :name
+                    (error "unknown user column ID"))
+              is-ascending (= sort-direction (ImGui.SortDirection_Ascending))]
+          (if
+            (< (. a key) (. b key)) is-ascending
+            (> (. a key) (. b key)) (not is-ascending)))))))
 
+;; Make the UI compact because there are so many fields
 (fn demo.PushStyleCompact []
-  (let [(frame-padding-x frame-padding-y) (ImGui.GetStyleVar ctx
-                                                              (ImGui.StyleVar_FramePadding))
-        (item-spacing-x item-spacing-y) (ImGui.GetStyleVar ctx
-                                                            (ImGui.StyleVar_ItemSpacing))]
+  (let [(frame-padding-x frame-padding-y) (ImGui.GetStyleVar ctx (ImGui.StyleVar_FramePadding))
+        (item-spacing-x item-spacing-y) (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemSpacing))]
     (ImGui.PushStyleVar ctx (ImGui.StyleVar_FramePadding) frame-padding-x
                          (math.floor (* frame-padding-y 0.6)))
     (ImGui.PushStyleVar ctx (ImGui.StyleVar_ItemSpacing) item-spacing-x

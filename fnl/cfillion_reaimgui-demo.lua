@@ -4128,7 +4128,7 @@ function demo.CompareTableItems(a, b)
     end
   end
 
-  -- table.sort is instable so always return a way to differenciate items.
+  -- table.sort is unstable so always return a way to differentiate items.
   -- Your own compare function may want to avoid fallback on implicit sort specs e.g. a Name compare if it wasn't already part of the sort specs.
   return a.id < b.id
 end
