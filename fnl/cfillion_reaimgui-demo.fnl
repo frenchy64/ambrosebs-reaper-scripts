@@ -3469,173 +3469,232 @@ GetItemRectSize() = (%.1f, %.1f)"
 
 (fn demo.ShowDemoWindowPopups []
   (when (ImGui.CollapsingHeader ctx "Popups & Modal windows")
-    (var rv nil)
+    ;; The properties of popups windows are:
+    ;; - They block normal mouse hovering detection outside them. (*)
+    ;; - Unless modal, they can be closed by clicking anywhere outside them, or by pressing ESCAPE.
+    ;; - Their visibility state (~bool) is held internally by Dear ImGui instead of being held by the programmer as
+    ;;   we are used to with regular Begin() calls. User can manipulate the visibility state by calling OpenPopup().
+    ;; (*) One can use IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup) to bypass it and detect hovering even
+    ;;     when normally blocked by a popup.
+    ;; Those three properties are connected. The library needs to hold their visibility state BECAUSE it can close
+    ;; popups at any time.
+
+    ;; Typical use for regular windows:
+    ;;   bool my_tool_is_active = false; if (ImGui.Button("Open")) my_tool_is_active = true; [...] if (my_tool_is_active) Begin("My Tool", &my_tool_is_active) { [...] } End();
+    ;; Typical use for popups:
+    ;;   if (ImGui.Button("Open")) ImGui.OpenPopup("MyPopup"); if (ImGui.BeginPopup("MyPopup") { [...] EndPopup(); }
+
+    ;; With popups we have to go through a library call (here OpenPopup) to manipulate the visibility state.
+    ;; This may be a bit confusing at first but it should quickly make sense. Follow on the examples below.
     (when (ImGui.TreeNode ctx :Popups)
-      (when (not popups.popups)
-        (set popups.popups
-             {:selected_fish (- 1) :toggles [true false false false false]}))
-      (ImGui.TextWrapped ctx
-                         "When a popup is active, it inhibits interacting with windows that are behind the popup. Clicking outside the popup closes it.")
-      (local names [:Bream :Haddock :Mackerel :Pollock :Tilefish])
-      (when (ImGui.Button ctx :Select..) (ImGui.OpenPopup ctx :my_select_popup))
-      (ImGui.SameLine ctx)
-      (ImGui.Text ctx (or (. names popups.popups.selected_fish) :<None>))
-      (when (ImGui.BeginPopup ctx :my_select_popup)
-        (ImGui.SeparatorText ctx :Aquarium)
-        (each [i fish (ipairs names)]
-          (when (ImGui.Selectable ctx fish) (set popups.popups.selected_fish i)))
-        (ImGui.EndPopup ctx))
-      (when (ImGui.Button ctx :Toggle..) (ImGui.OpenPopup ctx :my_toggle_popup))
-      (when (ImGui.BeginPopup ctx :my_toggle_popup)
-        (each [i fish (ipairs names)]
-          (set-forcibly! (rv ti)
-                         (ImGui.MenuItem ctx fish "" (. popups.popups.toggles i)))
-          (tset popups.popups.toggles i ti))
-        (when (ImGui.BeginMenu ctx :Sub-menu) (ImGui.MenuItem ctx "Click me")
-          (ImGui.EndMenu ctx))
-        (ImGui.Separator ctx)
-        (ImGui.Text ctx "Tooltip here")
-        (when (ImGui.IsItemHovered ctx)
-          (ImGui.SetTooltip ctx "I am a tooltip over a popup"))
-        (when (ImGui.Button ctx "Stacked Popup")
-          (ImGui.OpenPopup ctx "another popup"))
-        (when (ImGui.BeginPopup ctx "another popup")
+      (set-when-not popups.popups {:selected_fish -1 :toggles [true false false false false]})
+
+      (ImGui.TextWrapped ctx "When a popup is active, it inhibits interacting with windows that are behind the popup. Clicking outside the popup closes it.")
+      (let [names [:Bream :Haddock :Mackerel :Pollock :Tilefish]]
+        (when (ImGui.Button ctx :Select..) (ImGui.OpenPopup ctx :my_select_popup))
+        (ImGui.SameLine ctx)
+        (ImGui.Text ctx (or (. names popups.popups.selected_fish) :<None>))
+        (when (ImGui.BeginPopup ctx :my_select_popup)
+          (ImGui.SeparatorText ctx :Aquarium)
           (each [i fish (ipairs names)]
-            (set-forcibly! (rv ti)
-                           (ImGui.MenuItem ctx fish ""
-                                           (. popups.popups.toggles i)))
-            (tset popups.popups.toggles i ti))
-          (when (ImGui.BeginMenu ctx :Sub-menu) (ImGui.MenuItem ctx "Click me")
-            (when (ImGui.Button ctx "Stacked Popup")
-              (ImGui.OpenPopup ctx "another popup"))
-            (when (ImGui.BeginPopup ctx "another popup")
-              (ImGui.Text ctx "I am the last one here.")
-              (ImGui.EndPopup ctx))
-            (ImGui.EndMenu ctx))
+            (when (ImGui.Selectable ctx fish)
+              (set popups.popups.selected_fish i)))
           (ImGui.EndPopup ctx))
-        (ImGui.EndPopup ctx))
-      (when (ImGui.Button ctx "With a menu..")
-        (ImGui.OpenPopup ctx :my_file_popup))
-      (when (ImGui.BeginPopup ctx :my_file_popup (ImGui.WindowFlags_MenuBar))
-        (when (ImGui.BeginMenuBar ctx)
-          (when (ImGui.BeginMenu ctx :File) (demo.ShowExampleMenuFile)
+
+        ;; Showing a menu with toggles
+        (when (ImGui.Button ctx :Toggle..)
+          (ImGui.OpenPopup ctx :my_toggle_popup))
+        (when (ImGui.BeginPopup ctx :my_toggle_popup)
+          (each [i fish (ipairs names)]
+            (let [(_ ti) (ImGui.MenuItem ctx fish "" (. popups.popups.toggles i))]
+              (tset popups.popups.toggles i ti)))
+          (when (ImGui.BeginMenu ctx :Sub-menu)
+            (ImGui.MenuItem ctx "Click me")
             (ImGui.EndMenu ctx))
-          (when (ImGui.BeginMenu ctx :Edit) (ImGui.MenuItem ctx :Dummy)
-            (ImGui.EndMenu ctx))
-          (ImGui.EndMenuBar ctx))
-        (ImGui.Text ctx "Hello from popup!")
-        (ImGui.Button ctx "This is a dummy button..")
-        (ImGui.EndPopup ctx))
-      (ImGui.TreePop ctx))
+
+          (ImGui.Separator ctx)
+          (ImGui.Text ctx "Tooltip here")
+          (when (ImGui.IsItemHovered ctx)
+            (ImGui.SetTooltip ctx "I am a tooltip over a popup"))
+
+          (when (ImGui.Button ctx "Stacked Popup")
+            (ImGui.OpenPopup ctx "another popup"))
+          (when (ImGui.BeginPopup ctx "another popup")
+            (each [i fish (ipairs names)]
+              (let [(_ ti) (ImGui.MenuItem ctx fish "" (. popups.popups.toggles i))]
+                (tset popups.popups.toggles i ti)))
+            (when (ImGui.BeginMenu ctx :Sub-menu)
+              (ImGui.MenuItem ctx "Click me")
+              (when (ImGui.Button ctx "Stacked Popup")
+                (ImGui.OpenPopup ctx "another popup"))
+              (when (ImGui.BeginPopup ctx "another popup")
+                (ImGui.Text ctx "I am the last one here.")
+                (ImGui.EndPopup ctx))
+              (ImGui.EndMenu ctx))
+            (ImGui.EndPopup ctx))
+          (ImGui.EndPopup ctx))
+
+        ;; Call the more complete ShowExampleMenuFile which we use in various places of this demo
+        (when (ImGui.Button ctx "With a menu..")
+          (ImGui.OpenPopup ctx :my_file_popup))
+        (when (ImGui.BeginPopup ctx :my_file_popup (ImGui.WindowFlags_MenuBar))
+          (when (ImGui.BeginMenuBar ctx)
+            (when (ImGui.BeginMenu ctx :File)
+              (demo.ShowExampleMenuFile)
+              (ImGui.EndMenu ctx))
+            (when (ImGui.BeginMenu ctx :Edit)
+              (ImGui.MenuItem ctx :Dummy)
+              (ImGui.EndMenu ctx))
+            (ImGui.EndMenuBar ctx))
+          (ImGui.Text ctx "Hello from popup!")
+          (ImGui.Button ctx "This is a dummy button..")
+          (ImGui.EndPopup ctx))
+
+        (ImGui.TreePop ctx)))
+
     (when (ImGui.TreeNode ctx "Context menus")
-      (when (not popups.context)
-        (set popups.context {:name :Label1 :selected 0 :value 0.5}))
+      (set-when-not popups.context {:name :Label1 :selected 0 :value 0.5})
+
       (demo.HelpMarker "\"Context\" functions are simple helpers to associate a Popup to a given Item or Window identifier.")
+
+      ;; BeginPopupContextItem() is a helper to provide common/simple popup behavior of essentially doing:
+      ;;     if (id == 0)
+      ;;         id = GetItemID(); // Use last item id
+      ;;     if (IsItemHovered() && IsMouseReleased(ImGuiMouseButton_Right))
+      ;;         OpenPopup(id);
+      ;;     return BeginPopup(id);
+      ;; For advanced uses you may want to replicate and customize this code.
+      ;; See more details in BeginPopupContextItem().
+
+      ;; Example 1
+      ;; When used after an item that has an ID (e.g. Button), we can skip providing an ID to BeginPopupContextItem(),
+      ;; and BeginPopupContextItem() will use the last item ID as the popup ID.
       (let [names [:Label1 :Label2 :Label3 :Label4 :Label5]]
         (each [n name (ipairs names)]
           (when (ImGui.Selectable ctx name (= popups.context.selected n))
             (set popups.context.selected n))
-          (when (ImGui.BeginPopupContextItem ctx)
+          (when (ImGui.BeginPopupContextItem ctx) ;; use last item id as popup id
             (set popups.context.selected n)
             (ImGui.Text ctx (: "This a popup for \"%s\"!" :format name))
-            (when (ImGui.Button ctx :Close) (ImGui.CloseCurrentPopup ctx))
+            (when (ImGui.Button ctx :Close)
+              (ImGui.CloseCurrentPopup ctx))
             (ImGui.EndPopup ctx))
           (when (ImGui.IsItemHovered ctx)
             (ImGui.SetTooltip ctx "Right-click to open popup"))))
+
+      ;; Example 2
+      ;; Popup on a Text() element which doesn't have an identifier: we need to provide an identifier to BeginPopupContextItem().
+      ;; Using an explicit identifier is also convenient if you want to activate the popups from different locations.
       (do
         (demo.HelpMarker "Text() elements don't have stable identifiers so we need to provide one.")
-        (ImGui.Text ctx (: "Value = %.6f <-- (1) right-click this text" :format
-                           popups.context.value))
+        (ImGui.Text ctx (: "Value = %.6f <-- (1) right-click this text" :format popups.context.value))
         (when (ImGui.BeginPopupContextItem ctx "my popup")
           (when (ImGui.Selectable ctx "Set to zero")
             (set popups.context.value 0))
           (when (ImGui.Selectable ctx "Set to PI")
             (set popups.context.value 3.141592))
           (ImGui.SetNextItemWidth ctx (- FLT_MIN))
-          (set (rv popups.context.value)
-               (ImGui.DragDouble ctx "##Value" popups.context.value 0.1 0 0))
+          (update-2nd popups.context.value (ImGui.DragDouble ctx "##Value" $ 0.1 0.0 0.0))
           (ImGui.EndPopup ctx))
+
+        ;; We can also use OpenPopupOnItemClick() to toggle the visibility of a given popup.
+        ;; Here we make it that right-clicking this other text element opens the same popup as above.
+        ;; The popup itself will be submitted by the code above.
         (ImGui.Text ctx "(2) Or right-click this text")
-        (ImGui.OpenPopupOnItemClick ctx "my popup"
-                                    (ImGui.PopupFlags_MouseButtonRight))
+        (ImGui.OpenPopupOnItemClick ctx "my popup" (ImGui.PopupFlags_MouseButtonRight))
+
+        ;; Back to square one: manually open the same popup.
         (when (ImGui.Button ctx "(3) Or click this button")
           (ImGui.OpenPopup ctx "my popup")))
+
+      ;; Example 3
+      ;; When using BeginPopupContextItem() with an implicit identifier (NULL == use last item ID),
+      ;; we need to make sure your item identifier is stable.
+      ;; In this example we showcase altering the item label while preserving its identifier, using the ### operator (see FAQ).
       (do
         (demo.HelpMarker "Showcase using a popup ID linked to item ID, with the item having a changing label + stable ID using the ### operator.")
         (ImGui.Button ctx (: "Button: %s###Button" :format popups.context.name))
-        (when (ImGui.BeginPopupContextItem ctx) (ImGui.Text ctx "Edit name:")
-          (set (rv popups.context.name)
-               (ImGui.InputText ctx "##edit" popups.context.name))
-          (when (ImGui.Button ctx :Close) (ImGui.CloseCurrentPopup ctx))
+        (when (ImGui.BeginPopupContextItem ctx)
+          (ImGui.Text ctx "Edit name:")
+          (update-2nd popups.context.name (ImGui.InputText ctx "##edit" $))
+          (when (ImGui.Button ctx :Close)
+            (ImGui.CloseCurrentPopup ctx))
           (ImGui.EndPopup ctx))
         (ImGui.SameLine ctx)
         (ImGui.Text ctx "(<-- right-click here)"))
+
       (ImGui.TreePop ctx))
-(when (ImGui.TreeNode ctx :Modals)
-  (when (not popups.modal)
-    (set popups.modal {:color 1723007104
-                       :dont_ask_me_next_time false
-                       :item 1}))
-  (ImGui.TextWrapped ctx
-                     "Modal windows are like popups but the user cannot close them by clicking outside.")
-  (when (ImGui.Button ctx :Delete..) (ImGui.OpenPopup ctx :Delete?))
-  (local center [(ImGui.Viewport_GetCenter (ImGui.GetWindowViewport ctx))])
-  (ImGui.SetNextWindowPos ctx (. center 1) (. center 2)
-                          (ImGui.Cond_Appearing) 0.5 0.5)
-  (when (ImGui.BeginPopupModal ctx :Delete? nil
-                               (ImGui.WindowFlags_AlwaysAutoResize))
-    (ImGui.Text ctx "All those beautiful files will be deleted.
-    This operation cannot be undone!")
-    (ImGui.Separator ctx)
-    (ImGui.PushStyleVar ctx (ImGui.StyleVar_FramePadding) 0 0)
-    (set (rv popups.modal.dont_ask_me_next_time)
-         (ImGui.Checkbox ctx "Don't ask me next time"
-                         popups.modal.dont_ask_me_next_time))
-    (ImGui.PopStyleVar ctx)
-    (when (ImGui.Button ctx :OK 120 0) (ImGui.CloseCurrentPopup ctx))
-    (ImGui.SetItemDefaultFocus ctx)
-    (ImGui.SameLine ctx)
-    (when (ImGui.Button ctx :Cancel 120 0) (ImGui.CloseCurrentPopup ctx))
-    (ImGui.EndPopup ctx))
-  (when (ImGui.Button ctx "Stacked modals..")
-    (ImGui.OpenPopup ctx "Stacked 1"))
-  (when (ImGui.BeginPopupModal ctx "Stacked 1" nil
-                               (ImGui.WindowFlags_MenuBar))
-    (when (ImGui.BeginMenuBar ctx)
-      (when (ImGui.BeginMenu ctx :File)
-        (when (ImGui.MenuItem ctx "Some menu item") nil)
+
+    (when (ImGui.TreeNode ctx :Modals)
+      (set-when-not popups.modal {:color 0x66b30080
+                                  :dont_ask_me_next_time false
+                                  :item 1})
+      (ImGui.TextWrapped ctx "Modal windows are like popups but the user cannot close them by clicking outside.")
+
+      (when (ImGui.Button ctx :Delete..)
+        (ImGui.OpenPopup ctx :Delete?))
+
+      ;; Always center this window when appearing
+      (let [center [(ImGui.Viewport_GetCenter (ImGui.GetWindowViewport ctx))]]
+        (ImGui.SetNextWindowPos ctx (. center 1) (. center 2) (ImGui.Cond_Appearing) 0.5 0.5))
+      (when (ImGui.BeginPopupModal ctx :Delete? nil (ImGui.WindowFlags_AlwaysAutoResize))
+        (ImGui.Text ctx "All those beautiful files will be deleted.\nThis operation cannot be undone!")
+        (ImGui.Separator ctx)
+
+        ;;static int unused_i = 0;
+        ;;ImGui.Combo("Combo", &unused_i, "Delete\0Delete harder\0");
+
+        (ImGui.PushStyleVar ctx (ImGui.StyleVar_FramePadding) 0 0)
+        (update-2nd popups.modal.dont_ask_me_next_time (ImGui.Checkbox ctx "Don't ask me next time" $))
+        (ImGui.PopStyleVar ctx)
+
+        (when (ImGui.Button ctx :OK 120 0) (ImGui.CloseCurrentPopup ctx))
+        (ImGui.SetItemDefaultFocus ctx)
+        (ImGui.SameLine ctx)
+        (when (ImGui.Button ctx :Cancel 120 0) (ImGui.CloseCurrentPopup ctx))
+        (ImGui.EndPopup ctx))
+
+      (when (ImGui.Button ctx "Stacked modals..")
+        (ImGui.OpenPopup ctx "Stacked 1"))
+      (when (ImGui.BeginPopupModal ctx "Stacked 1" nil (ImGui.WindowFlags_MenuBar))
+        (when (ImGui.BeginMenuBar ctx)
+          (when (ImGui.BeginMenu ctx :File)
+            (when (ImGui.MenuItem ctx "Some menu item") 
+              ;;something..
+              nil)
+            (ImGui.EndMenu ctx))
+          (ImGui.EndMenuBar ctx))
+        (ImGui.Text ctx "Hello from Stacked The First\nUsing style.Colors[ImGuiCol_ModalWindowDimBg] behind it.")
+
+        ;; Testing behavior of widgets stacking their own regular popups over the modal.
+        (update-2nd popups.modal.item (ImGui.Combo ctx :Combo $ "aaaa\000bbbb\000cccc\000dddd\000eeee\000"))
+        (update-2nd popups.modal.color (ImGui.ColorEdit4 ctx :color $))
+
+        (when (ImGui.Button ctx "Add another modal..")
+          (ImGui.OpenPopup ctx "Stacked 2"))
+
+        ;; Also demonstrate passing p_open=true to BeginPopupModal(), this will create a regular close button which
+        ;; will close the popup.
+        (let [unused-open true]
+          (when (ImGui.BeginPopupModal ctx "Stacked 2" unused-open)
+            (ImGui.Text ctx "Hello from Stacked The Second!")
+            (when (ImGui.Button ctx :Close)
+              (ImGui.CloseCurrentPopup ctx))
+            (ImGui.EndPopup ctx))
+          (when (ImGui.Button ctx :Close)
+            (ImGui.CloseCurrentPopup ctx))
+          (ImGui.EndPopup ctx)))
+      (ImGui.TreePop ctx))
+
+    (when (ImGui.TreeNode ctx "Menus inside a regular window")
+      (ImGui.TextWrapped ctx "Below we are testing adding menu items to a regular window. It's rather unusual but should work!")
+      (ImGui.Separator ctx)
+      (ImGui.MenuItem ctx "Menu item" :CTRL+M)
+      (when (ImGui.BeginMenu ctx "Menu inside a regular window")
+        (demo.ShowExampleMenuFile)
         (ImGui.EndMenu ctx))
-      (ImGui.EndMenuBar ctx))
-    (ImGui.Text ctx
-                "Hello from Stacked The First
-                Using style.Colors[ImGuiCol_ModalWindowDimBg] behind it.")
-    (set (rv popups.modal.item)
-         (ImGui.Combo ctx :Combo popups.modal.item
-                      "aaaa\000bbbb\000cccc\000dddd\000eeee\000"))
-    (set (rv popups.modal.color)
-         (ImGui.ColorEdit4 ctx :color popups.modal.color))
-    (when (ImGui.Button ctx "Add another modal..")
-      (ImGui.OpenPopup ctx "Stacked 2"))
-    (local unused-open true)
-    (when (ImGui.BeginPopupModal ctx "Stacked 2" unused-open)
-      (ImGui.Text ctx "Hello from Stacked The Second!")
-      (when (ImGui.Button ctx :Close) (ImGui.CloseCurrentPopup ctx))
-      (ImGui.EndPopup ctx))
-    (when (ImGui.Button ctx :Close) (ImGui.CloseCurrentPopup ctx))
-    (ImGui.EndPopup ctx))
-  (ImGui.TreePop ctx))
-(when (ImGui.TreeNode ctx "Menus inside a regular window")
-  (ImGui.TextWrapped ctx
-                     "Below we are testing adding menu items to a regular window. It's rather unusual but should work!")
-  (ImGui.Separator ctx)
-  (ImGui.MenuItem ctx "Menu item" :CTRL+M)
-  (when (ImGui.BeginMenu ctx "Menu inside a regular window")
-    (demo.ShowExampleMenuFile)
-    (ImGui.EndMenu ctx))
-  (ImGui.Separator ctx)
-  (ImGui.TreePop ctx))
-)
-  )
+      (ImGui.Separator ctx)
+      (ImGui.TreePop ctx))))
 
 (local My-item-column-iD_ID 4)
 
