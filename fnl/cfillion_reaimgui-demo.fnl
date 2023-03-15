@@ -673,7 +673,7 @@
       (ImGui.LabelText ctx :label :Value)
       (ImGui.SeparatorText ctx :Inputs)
       (do
-        (update-2nd widgets.basic.str0 #(ImGui.InputText ctx "input text" $))
+        (update-2nd widgets.basic.str0 (ImGui.InputText ctx "input text" $))
         (ImGui.SameLine ctx)
         (demo.HelpMarker "USER:
         Hold SHIFT or use mouse to select text.
@@ -1216,21 +1216,25 @@
           (ImGui.Text ctx :123456))
         (ImGui.EndTable ctx))
       (ImGui.TreePop ctx))
+
+    ;; Add in a bit of silly fun...
     (when (ImGui.TreeNode ctx :Grid)
-      (var winning-state true)
-      (each [ri row (ipairs widgets.selectables.grid)]
-        (each [ci sel (ipairs row)]
-          (when (not sel) (set winning-state false) (lua :break))))
+      (var winning-state true) ;; If all cells are selected...
+      (each [_ row (ipairs widgets.selectables.grid) &until (not winning-state)]
+        (each [_ sel (ipairs row) &until (not winning-state)]
+          (when (not sel)
+            (set winning-state false))))
       (when winning-state
         (local time (ImGui.GetTime ctx))
         (ImGui.PushStyleVar ctx (ImGui.StyleVar_SelectableTextAlign)
-                             (+ 0.5 (* 0.5 (math.cos (* time 2))))
-                             (+ 0.5 (* 0.5 (math.sin (* time 3))))))
+                            (+ 0.5 (* 0.5 (math.cos (* time 2))))
+                            (+ 0.5 (* 0.5 (math.sin (* time 3))))))
       (each [ri row (ipairs widgets.selectables.grid)]
         (each [ci col (ipairs row)]
           (when (> ci 1) (ImGui.SameLine ctx))
           (ImGui.PushID ctx (+ (* ri (length widgets.selectables.grid)) ci))
           (when (ImGui.Selectable ctx :Sailor col 0 50 50)
+            ;; Toggle clicked cell + toggle neighbors
             (tset row ci (not (. row ci)))
             (when (> ci 1)
               (tset row (- ci 1) (not (. row (- ci 1)))))
@@ -1238,13 +1242,14 @@
               (tset row (+ ci 1) (not (. row (+ ci 1)))))
             (when (> ri 1)
               (tset (. widgets.selectables.grid (- ri 1)) ci
-                    (not (. (. widgets.selectables.grid (- ri 1)) ci))))
+                    (not (. widgets.selectables.grid (- ri 1) ci))))
             (when (< ri 4)
               (tset (. widgets.selectables.grid (+ ri 1)) ci
-                    (not (. (. widgets.selectables.grid (+ ri 1)) ci)))))
+                    (not (. widgets.selectables.grid (+ ri 1) ci)))))
           (ImGui.PopID ctx)))
       (when winning-state (ImGui.PopStyleVar ctx))
       (ImGui.TreePop ctx))
+
     (when (ImGui.TreeNode ctx :Alignment)
       (demo.HelpMarker "By default, Selectables uses style.SelectableTextAlign but it can be overridden on a per-item basis using PushStyleVar(). You'll probably want to always keep your default situation to left-align otherwise it becomes difficult to layout multiple items on a same line")
       (for [y 1 3]
@@ -1255,11 +1260,9 @@
           (ImGui.PushStyleVar ctx (ImGui.StyleVar_SelectableTextAlign)
                                align-x align-y)
           (local row (. widgets.selectables.align y))
-          (var rx nil)
-          (set-forcibly! (rv rx)
-                         (ImGui.Selectable ctx name (. row x)
-                                            (ImGui.SelectableFlags_None) 80 80))
-          (tset row x rx)
+          (let [(_ rx) (ImGui.Selectable ctx name (. row x)
+                                         (ImGui.SelectableFlags_None) 80 80)]
+            (tset row x rx))
           (ImGui.PopStyleVar ctx)))
       (ImGui.TreePop ctx))
     (ImGui.TreePop ctx))
@@ -1280,26 +1283,32 @@ label:
 \tlock cmpxchg8b eax
 "}
                           :password :hunter2}))
+
     (when (ImGui.TreeNode ctx "Multi-line Text Input")
-      (set (rv widgets.input.multiline.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiInputTextFlags_ReadOnly
-                                 widgets.input.multiline.flags
-                                 (ImGui.InputTextFlags_ReadOnly)))
-      (set (rv widgets.input.multiline.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiInputTextFlags_AllowTabInput
-                                 widgets.input.multiline.flags
-                                 (ImGui.InputTextFlags_AllowTabInput)))
-      (set (rv widgets.input.multiline.flags)
-           (ImGui.CheckboxFlags ctx :ImGuiInputTextFlags_CtrlEnterForNewLine
-                                 widgets.input.multiline.flags
-                                 (ImGui.InputTextFlags_CtrlEnterForNewLine)))
-      (set (rv widgets.input.multiline.text)
-           (ImGui.InputTextMultiline ctx "##source"
-                                      widgets.input.multiline.text (- FLT_MIN)
-                                      (* (ImGui.GetTextLineHeight ctx) 16)
-                                      widgets.input.multiline.flags))
+      (update-2nd widgets.input.multiline.flags (ImGui.CheckboxFlags ctx :ImGuiInputTextFlags_ReadOnly $
+                                                                     (ImGui.InputTextFlags_ReadOnly)))
+      (update-2nd widgets.input.multiline.flags (ImGui.CheckboxFlags ctx :ImGuiInputTextFlags_AllowTabInput $
+                                                                     (ImGui.InputTextFlags_AllowTabInput)))
+      (update-2nd widgets.input.multiline.flags (ImGui.CheckboxFlags ctx :ImGuiInputTextFlags_CtrlEnterForNewLine $
+                                                                     (ImGui.InputTextFlags_CtrlEnterForNewLine)))
+      (update-2nd widgets.input.multiline.text
+                  (ImGui.InputTextMultiline ctx "##source" $
+                                            (- FLT_MIN) (* (ImGui.GetTextLineHeight ctx) 16)
+                                            widgets.input.multiline.flags))
       (ImGui.TreePop ctx))
+
     (when (ImGui.TreeNode ctx "Filtered Text Input")
+      ;; TODO
+      ;; struct TextFilters
+      ;; {
+      ;;     // Return 0 (pass) if the character is 'i' or 'm' or 'g' or 'u' or 'i'
+      ;;     static int FilterImGuiLetters(ImGuiInputTextCallbackData* data)
+      ;;     {
+      ;;         if (data->EventChar < 256 && strchr("imgui", (char)data->EventChar))
+      ;;             return 0;
+      ;;         return 1;
+      ;;     }
+      ;; };
       (update-2nd-array widgets.input.buf 1 (ImGui.InputText ctx :default $))
       (update-2nd-array widgets.input.buf 2 (ImGui.InputText ctx :decimal $ (ImGui.InputTextFlags_CharsDecimal)))
       (update-2nd-array widgets.input.buf 3
@@ -1312,7 +1321,9 @@ label:
       (update-2nd-array widgets.input.buf 5
                         (ImGui.InputText ctx "no blank" $
                                          (ImGui.InputTextFlags_CharsNoBlank)))
+      ;; static char buf6[64] = ""; ImGui.InputText("\"imgui\" letters", buf6, 64, ImGuiInputTextFlags_CallbackCharFilter, TextFilters::FilterImGuiLetters)
       (ImGui.TreePop ctx))
+
     (when (ImGui.TreeNode ctx "Password Input")
       (update-2nd widgets.input.password (ImGui.InputText ctx :password $ (ImGui.InputTextFlags_Password)))
       (ImGui.SameLine ctx)
@@ -1323,278 +1334,410 @@ Disable logging.
       (update-2nd widgets.input.password (ImGui.InputTextWithHint ctx "password (w/ hint)" :<password> $ (ImGui.InputTextFlags_Password)))
       (update-2nd widgets.input.password (ImGui.InputText ctx "password (clear)" $))
       (ImGui.TreePop ctx))
+
+;; TODO
+;;         if (ImGui.TreeNode("Completion, History, Edit Callbacks"))
+;;         {
+;;             struct Funcs
+;;             {
+;;                 static int MyCallback(ImGuiInputTextCallbackData* data)
+;;                 {
+;;                     if (data->EventFlag == ImGuiInputTextFlags_CallbackCompletion)
+;;                     {
+;;                         data->InsertChars(data->CursorPos, "..");
+;;                     }
+;;                     else if (data->EventFlag == ImGuiInputTextFlags_CallbackHistory)
+;;                     {
+;;                         if (data->EventKey == ImGuiKey_UpArrow)
+;;                         {
+;;                             data->DeleteChars(0, data->BufTextLen);
+;;                             data->InsertChars(0, "Pressed Up!");
+;;                             data->SelectAll();
+;;                         }
+;;                         else if (data->EventKey == ImGuiKey_DownArrow)
+;;                         {
+;;                             data->DeleteChars(0, data->BufTextLen);
+;;                             data->InsertChars(0, "Pressed Down!");
+;;                             data->SelectAll();
+;;                         }
+;;                     }
+;;                     else if (data->EventFlag == ImGuiInputTextFlags_CallbackEdit)
+;;                     {
+;;                         // Toggle casing of first character
+;;                         char c = data->Buf[0];
+;;                         if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) data->Buf[0] ^= 32;
+;;                         data->BufDirty = true;
+;;
+;;                         // Increment a counter
+;;                         int* p_int = (int*)data->UserData;
+;;                         *p_int = *p_int + 1;
+;;                     }
+;;                     return 0;
+;;                 }
+;;             };
+;;             static char buf1[64];
+;;             ImGui.InputText("Completion", buf1, 64, ImGuiInputTextFlags_CallbackCompletion, Funcs::MyCallback);
+;;             ImGui.SameLine(); HelpMarker("Here we append \"..\" each time Tab is pressed. See 'Examples>Console' for a more meaningful demonstration of using this callback.");
+;;
+;;             static char buf2[64];
+;;             ImGui.InputText("History", buf2, 64, ImGuiInputTextFlags_CallbackHistory, Funcs::MyCallback);
+;;             ImGui.SameLine(); HelpMarker("Here we replace and select text each time Up/Down are pressed. See 'Examples>Console' for a more meaningful demonstration of using this callback.");
+;;
+;;             static char buf3[64];
+;;             static int edit_count = 0;
+;;             ImGui.InputText("Edit", buf3, 64, ImGuiInputTextFlags_CallbackEdit, Funcs::MyCallback, (void*)&edit_count);
+;;             ImGui.SameLine(); HelpMarker("Here we toggle the casing of the first character on every edit + count edits.");
+;;             ImGui.SameLine(); ImGui.Text("(%d)", edit_count);
+;;
+;;             ImGui.TreePop();
+;;         }
+;;
+;;         if (ImGui.TreeNode("Resize Callback"))
+;;         {
+;;             // To wire InputText() with std::string or any other custom string type,
+;;             // you can use the ImGuiInputTextFlags_CallbackResize flag + create a custom ImGui_InputText() wrapper
+;;             // using your preferred type. See misc/cpp/imgui_stdlib.h for an implementation of this using std::string.
+;;             HelpMarker(
+;;                 "Using ImGuiInputTextFlags_CallbackResize to wire your custom string type to InputText().\n\n"
+;;                 "See misc/cpp/imgui_stdlib.h for an implementation of this for std::string.");
+;;             struct Funcs
+;;             {
+;;                 static int MyResizeCallback(ImGuiInputTextCallbackData* data)
+;;                 {
+;;                     if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
+;;                     {
+;;                         ImVector<char>* my_str = (ImVector<char>*)data->UserData;
+;;                         IM_ASSERT(my_str->begin() == data->Buf);
+;;                         my_str->resize(data->BufSize); // NB: On resizing calls, generally data->BufSize == data->BufTextLen + 1
+;;                         data->Buf = my_str->begin();
+;;                     }
+;;                     return 0;
+;;                 }
+;;
+;;                 // Note: Because ImGui_ is a namespace you would typically add your own function into the namespace.
+;;                 // For example, you code may declare a function 'ImGui_InputText(const char* label, MyString* my_str)'
+;;                 static bool MyInputTextMultiline(const char* label, ImVector<char>* my_str, const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0)
+;;                 {
+;;                     IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
+;;                     return ImGui.InputTextMultiline(label, my_str->begin(), (size_t)my_str->size(), size, flags | ImGuiInputTextFlags_CallbackResize, Funcs::MyResizeCallback, (void*)my_str);
+;;                 }
+;;             };
+;;
+;;             // For this demo we are using ImVector as a string container.
+;;             // Note that because we need to store a terminating zero character, our size/capacity are 1 more
+;;             // than usually reported by a typical string class.
+;;             static ImVector<char> my_str;
+;;             if (my_str.empty())
+;;                 my_str.push_back(0);
+;;             Funcs::MyInputTextMultiline("##MyStr", &my_str, ImVec2(-FLT_MIN, ImGui.GetTextLineHeight() * 16));
+;;             ImGui.Text("Data: %p\nSize: %d\nCapacity: %d", (void*)my_str.begin(), my_str.size(), my_str.capacity());
+;;             ImGui.TreePop();
+;;         }
     (ImGui.TreePop ctx))
+
   (when (ImGui.TreeNode ctx :Tabs)
-    (when (not widgets.tabs)
-      (set widgets.tabs {:active [1 2 3]
-                         :flags1 (ImGui.TabBarFlags_Reorderable)
-                         :flags2 (bor (ImGui.TabBarFlags_AutoSelectNewTabs)
-                                      (ImGui.TabBarFlags_Reorderable)
-                                      (ImGui.TabBarFlags_FittingPolicyResizeDown))
-                         :next_id 4
-                         :opened [true true true true]
-                         :show_leading_button true
-                         :show_trailing_button true}))
-    (local fitting-policy-mask
-           (bor (ImGui.TabBarFlags_FittingPolicyResizeDown)
-                (ImGui.TabBarFlags_FittingPolicyScroll)))
-    (when (ImGui.TreeNode ctx :Basic)
-      (when (ImGui.BeginTabBar ctx :MyTabBar (ImGui.TabBarFlags_None))
-        (when (ImGui.BeginTabItem ctx :Avocado)
-          (ImGui.Text ctx "This is the Avocado tab!\nblah blah blah blah blah")
-          (ImGui.EndTabItem ctx))
-        (when (ImGui.BeginTabItem ctx :Broccoli)
-          (ImGui.Text ctx "This is the Broccoli tab!\nblah blah blah blah blah")
-          (ImGui.EndTabItem ctx))
-        (when (ImGui.BeginTabItem ctx :Cucumber)
-          (ImGui.Text ctx "This is the Cucumber tab!\nblah blah blah blah blah")
-          (ImGui.EndTabItem ctx))
-        (ImGui.EndTabBar ctx))
-      (ImGui.Separator ctx)
-      (ImGui.TreePop ctx))
-    (when (ImGui.TreeNode ctx "Advanced & Close Button")
-      (update-2nd widgets.tabs.flags1 #(ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_Reorderable $ (ImGui.TabBarFlags_Reorderable)))
-      (update-2nd widgets.tabs.flags1 #(ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_AutoSelectNewTabs $ (ImGui.TabBarFlags_AutoSelectNewTabs)))
-      (update-2nd widgets.tabs.flags1 #(ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_TabListPopupButton $ (ImGui.TabBarFlags_TabListPopupButton)))
-      (update-2nd widgets.tabs.flags1 #(ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_NoCloseWithMiddleMouseButton $ (ImGui.TabBarFlags_NoCloseWithMiddleMouseButton)))
-      (when (= (band widgets.tabs.flags1 fitting-policy-mask) 0)
-        (set widgets.tabs.flags1
-             (bor widgets.tabs.flags1
-                  (ImGui.TabBarFlags_FittingPolicyResizeDown))))
-      (when (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_FittingPolicyResizeDown
-                                 widgets.tabs.flags1
-                                 (ImGui.TabBarFlags_FittingPolicyResizeDown))
-        (set widgets.tabs.flags1
-             (bor (band widgets.tabs.flags1 (bnot fitting-policy-mask))
-                  (ImGui.TabBarFlags_FittingPolicyResizeDown))))
-      (when (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_FittingPolicyScroll
-                                 widgets.tabs.flags1
-                                 (ImGui.TabBarFlags_FittingPolicyScroll))
-        (set widgets.tabs.flags1
-             (bor (band widgets.tabs.flags1 (bnot fitting-policy-mask))
-                  (ImGui.TabBarFlags_FittingPolicyScroll))))
-      (local names [:Artichoke :Beetroot :Celery :Daikon])
-      (each [n opened (ipairs widgets.tabs.opened)]
-        (when (> n 1)
-          (ImGui.SameLine ctx))
-        (let [(_ on) (ImGui.Checkbox ctx (. names n) opened)]
-          (tset widgets.tabs.opened n on)))
-      (when (ImGui.BeginTabBar ctx :MyTabBar widgets.tabs.flags1)
-        (each [n opened (ipairs widgets.tabs.opened)]
-          (when opened
-            (let [(_ on) (ImGui.BeginTabItem ctx (. names n) true (ImGui.TabItemFlags_None))]
-              (tset widgets.tabs.opened n on))
-            (when rv
-              (ImGui.Text ctx (: "This is the %s tab!" :format (. names n)))
-              (when (= 0 (band n 1))
-                (ImGui.Text ctx "I am an odd tab."))
-              (ImGui.EndTabItem ctx))))
-        (ImGui.EndTabBar ctx))
-      (ImGui.Separator ctx)
-      (ImGui.TreePop ctx))
-    (when (ImGui.TreeNode ctx "TabItemButton & Leading/Trailing flags")
-      (update-2nd widgets.tabs.show_leading_button #(ImGui.Checkbox ctx "Show Leading TabItemButton()" $))
-      (update-2nd widgets.tabs.show_trailing_button #(ImGui.Checkbox ctx "Show Trailing TabItemButton()" $))
-      (update-2nd widgets.tabs.flags2 #(ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_TabListPopupButton $ (ImGui.TabBarFlags_TabListPopupButton)))
-      (when (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_FittingPolicyResizeDown
-                                 widgets.tabs.flags2
-                                 (ImGui.TabBarFlags_FittingPolicyResizeDown))
-        (set widgets.tabs.flags2
-             (bor (band widgets.tabs.flags2 (bnot fitting-policy-mask))
-                  (ImGui.TabBarFlags_FittingPolicyResizeDown))))
-      (when (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_FittingPolicyScroll
-                                 widgets.tabs.flags2
-                                 (ImGui.TabBarFlags_FittingPolicyScroll))
-        (set widgets.tabs.flags2
-             (bor (band widgets.tabs.flags2 (bnot fitting-policy-mask))
-                  (ImGui.TabBarFlags_FittingPolicyScroll))))
-      (when (ImGui.BeginTabBar ctx :MyTabBar widgets.tabs.flags2)
-        (when widgets.tabs.show_leading_button
-          (when (ImGui.TabItemButton ctx "?"
-                                     (bor (ImGui.TabItemFlags_Leading)
-                                          (ImGui.TabItemFlags_NoTooltip)))
-            (ImGui.OpenPopup ctx :MyHelpMenu)))
-        (when (ImGui.BeginPopup ctx :MyHelpMenu)
-          (ImGui.Selectable ctx :Hello!)
-          (ImGui.EndPopup ctx))
-        (when widgets.tabs.show_trailing_button
-          (when (ImGui.TabItemButton ctx "+"
-                                      (bor (ImGui.TabItemFlags_Trailing)
-                                           (ImGui.TabItemFlags_NoTooltip)))
-            (table.insert widgets.tabs.active widgets.tabs.next_id)
-            (set widgets.tabs.next_id (+ widgets.tabs.next_id 1))))
-        (var n 1)
-        (while (<= n (length widgets.tabs.active))
-          (let [name (: "%04d" :format (- (. widgets.tabs.active n) 1))
-                (rv open) (ImGui.BeginTabItem ctx name true (ImGui.TabItemFlags_None))]
-            (when rv
-              (ImGui.Text ctx (: "This is the %s tab!" :format name))
-              (ImGui.EndTabItem ctx))
-            (if open
-              (set n (+ n 1))
-              (table.remove widgets.tabs.active n))))
-        (ImGui.EndTabBar ctx))
-      (ImGui.Separator ctx)
-      (ImGui.TreePop ctx))
-    (ImGui.TreePop ctx))
+    (set-when-not widgets.tabs {:active [1 2 3]
+                                :flags1 (ImGui.TabBarFlags_Reorderable)
+                                :flags2 (bor (ImGui.TabBarFlags_AutoSelectNewTabs)
+                                             (ImGui.TabBarFlags_Reorderable)
+                                             (ImGui.TabBarFlags_FittingPolicyResizeDown))
+                                :next_id 4
+                                :opened [true true true true]
+                                :show_leading_button true
+                                :show_trailing_button true})
+    (let [fitting-policy-mask (bor (ImGui.TabBarFlags_FittingPolicyResizeDown)
+                                   (ImGui.TabBarFlags_FittingPolicyScroll))]
+      (when (ImGui.TreeNode ctx :Basic)
+        (when (ImGui.BeginTabBar ctx :MyTabBar (ImGui.TabBarFlags_None))
+          (when (ImGui.BeginTabItem ctx :Avocado)
+            (ImGui.Text ctx "This is the Avocado tab!\nblah blah blah blah blah")
+            (ImGui.EndTabItem ctx))
+          (when (ImGui.BeginTabItem ctx :Broccoli)
+            (ImGui.Text ctx "This is the Broccoli tab!\nblah blah blah blah blah")
+            (ImGui.EndTabItem ctx))
+          (when (ImGui.BeginTabItem ctx :Cucumber)
+            (ImGui.Text ctx "This is the Cucumber tab!\nblah blah blah blah blah")
+            (ImGui.EndTabItem ctx))
+          (ImGui.EndTabBar ctx))
+        (ImGui.Separator ctx)
+        (ImGui.TreePop ctx))
+
+      (when (ImGui.TreeNode ctx "Advanced & Close Button")
+        ;; Expose a couple of the available flags. In most cases you may just call BeginTabBar() with no flags (0).
+        (update-2nd widgets.tabs.flags1 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_Reorderable $ (ImGui.TabBarFlags_Reorderable)))
+        (update-2nd widgets.tabs.flags1 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_AutoSelectNewTabs $ (ImGui.TabBarFlags_AutoSelectNewTabs)))
+        (update-2nd widgets.tabs.flags1 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_TabListPopupButton $ (ImGui.TabBarFlags_TabListPopupButton)))
+        (update-2nd widgets.tabs.flags1 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_NoCloseWithMiddleMouseButton $ (ImGui.TabBarFlags_NoCloseWithMiddleMouseButton)))
+
+        (when (= 0 (band widgets.tabs.flags1 fitting-policy-mask)) ;; was FittingPolicyDefault_
+          (set widgets.tabs.flags1
+               (bor widgets.tabs.flags1
+                    (ImGui.TabBarFlags_FittingPolicyResizeDown))))
+        (when (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_FittingPolicyResizeDown
+                                   widgets.tabs.flags1
+                                   (ImGui.TabBarFlags_FittingPolicyResizeDown))
+          (set widgets.tabs.flags1
+               (bor (band widgets.tabs.flags1 (bnot fitting-policy-mask))
+                    (ImGui.TabBarFlags_FittingPolicyResizeDown))))
+        (when (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_FittingPolicyScroll
+                                   widgets.tabs.flags1
+                                   (ImGui.TabBarFlags_FittingPolicyScroll))
+          (set widgets.tabs.flags1
+               (bor (band widgets.tabs.flags1 (bnot fitting-policy-mask))
+                    (ImGui.TabBarFlags_FittingPolicyScroll))))
+
+        ;; Tab Bar
+        (let [names [:Artichoke :Beetroot :Celery :Daikon]]
+          (each [n opened (ipairs widgets.tabs.opened)]
+            (when (> n 1)
+              (ImGui.SameLine ctx))
+            (let [(_ on) (ImGui.Checkbox ctx (. names n) opened)]
+              (tset widgets.tabs.opened n on)))
+
+          ;; Passing a bool* to BeginTabItem() is similar to passing one to Begin():
+          ;; the underlying bool will be set to false when the tab is closed.
+          (when (ImGui.BeginTabBar ctx :MyTabBar widgets.tabs.flags1)
+            (each [n opened (ipairs widgets.tabs.opened)]
+              (when opened
+                (let [(_ on) (ImGui.BeginTabItem ctx (. names n) true (ImGui.TabItemFlags_None))]
+                  (tset widgets.tabs.opened n on))
+                (when rv
+                  (ImGui.Text ctx (: "This is the %s tab!" :format (. names n)))
+                  (when (= 0 (band n 1))
+                    (ImGui.Text ctx "I am an odd tab."))
+                  (ImGui.EndTabItem ctx))))
+            (ImGui.EndTabBar ctx))
+          (ImGui.Separator ctx)
+          (ImGui.TreePop ctx)))
+
+      (when (ImGui.TreeNode ctx "TabItemButton & Leading/Trailing flags")
+        ;; TabItemButton() and Leading/Trailing flags are distinct features which we will demo together.
+        ;; (It is possible to submit regular tabs with Leading/Trailing flags, or TabItemButton tabs without Leading/Trailing flags...
+        ;; but they tend to make more sense together)
+        (update-2nd widgets.tabs.show_leading_button (ImGui.Checkbox ctx "Show Leading TabItemButton()" $))
+        (update-2nd widgets.tabs.show_trailing_button (ImGui.Checkbox ctx "Show Trailing TabItemButton()" $))
+
+        ;; Expose some other flags which are useful to showcase how they interact with Leading/Trailing tabs
+        (update-2nd widgets.tabs.flags2 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_TabListPopupButton $
+                                                             (ImGui.TabBarFlags_TabListPopupButton)))
+        (when (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_FittingPolicyResizeDown
+                                   widgets.tabs.flags2
+                                   (ImGui.TabBarFlags_FittingPolicyResizeDown))
+          (set widgets.tabs.flags2
+               (bor (band widgets.tabs.flags2 (bnot fitting-policy-mask))
+                    (ImGui.TabBarFlags_FittingPolicyResizeDown))))
+        (when (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_FittingPolicyScroll
+                                   widgets.tabs.flags2
+                                   (ImGui.TabBarFlags_FittingPolicyScroll))
+          (set widgets.tabs.flags2
+               (bor (band widgets.tabs.flags2 (bnot fitting-policy-mask))
+                    (ImGui.TabBarFlags_FittingPolicyScroll))))
+
+        ;; Demo a Leading TabItemButton(): click the '?' button to open a menu
+        (when (ImGui.BeginTabBar ctx :MyTabBar widgets.tabs.flags2)
+          (when widgets.tabs.show_leading_button
+            (when (ImGui.TabItemButton ctx "?"
+                                       (bor (ImGui.TabItemFlags_Leading)
+                                            (ImGui.TabItemFlags_NoTooltip)))
+              (ImGui.OpenPopup ctx :MyHelpMenu)))
+          (when (ImGui.BeginPopup ctx :MyHelpMenu)
+            (ImGui.Selectable ctx :Hello!)
+            (ImGui.EndPopup ctx))
+
+          ;; Demo Trailing Tabs: click the "+" button to add a new tab (in your app you may want to use a font icon instead of the "+")
+          ;; Note that we submit it before the regular tabs, but because of the ImGuiTabItemFlags_Trailing flag it will always appear at the end.
+          (when widgets.tabs.show_trailing_button
+            (when (ImGui.TabItemButton ctx "+"
+                                       (bor (ImGui.TabItemFlags_Trailing)
+                                            (ImGui.TabItemFlags_NoTooltip)))
+              ;; add new tab
+              (table.insert widgets.tabs.active widgets.tabs.next_id)
+              (set widgets.tabs.next_id (+ 1 widgets.tabs.next_id))))
+
+          ;; Submit our regular tabs
+          (var n 1)
+          (while (<= n (length widgets.tabs.active))
+            (let [name (: "%04d" :format (- (. widgets.tabs.active n) 1))
+                  (rv open) (ImGui.BeginTabItem ctx name true (ImGui.TabItemFlags_None))]
+              (when rv
+                (ImGui.Text ctx (: "This is the %s tab!" :format name))
+                (ImGui.EndTabItem ctx))
+              (if open
+                (set n (+ n 1))
+                (table.remove widgets.tabs.active n))))
+          (ImGui.EndTabBar ctx))
+        (ImGui.Separator ctx)
+        (ImGui.TreePop ctx))
+      (ImGui.TreePop ctx)))
+
   (when (ImGui.TreeNode ctx :Plotting)
     (local PLOT1-SIZE 90)
     (local plot2-funcs
-           [#(math.sin (* $ 0.1))
-            #(if (= (band $ 1) 1) 1 -1)])
-    (when (not widgets.plots)
-      (set widgets.plots {:animate true
-                          :frame_times (reaper.new_array [0.6 0.1 1 0.5 0.92 0.1 0.2])
-                          :plot1 {:data (reaper.new_array PLOT1-SIZE)
-                                  :offset 1
-                                  :phase 0
-                                  :refresh_time 0}
-                          :plot2 {:data (reaper.new_array 1)
-                                  :fill true
-                                  :func 0
-                                  :size 70}
-                          :progress 0
-                          :progress_dir 1})
-      (widgets.plots.plot1.data.clear))
+           [#(math.sin (* $ 0.1)) ;;sin
+            #(if (= (band $ 1) 1) 1.0 -1.0)]) ;;saw
+    (set-when-not widgets.plots {:animate true
+                                 :frame_times (reaper.new_array [0.6 0.1 1 0.5 0.92 0.1 0.2])
+                                 :plot1 {:data (reaper.new_array PLOT1-SIZE)
+                                         :offset 1
+                                         :phase 0
+                                         :refresh_time 0}
+                                 :plot2 {:data (reaper.new_array 1)
+                                         :fill true
+                                         :func 0
+                                         :size 70}
+                                 :progress 0
+                                 :progress_dir 1})
+
     (update-2nd widgets.plots.animate (ImGui.Checkbox ctx :Animate $))
+
+    ;; Plot as lines and plot as histogram
     (ImGui.PlotLines ctx "Frame Times" widgets.plots.frame_times)
     (ImGui.PlotHistogram ctx :Histogram widgets.plots.frame_times 0 nil 0 1 0 80)
+
+    ;; Fill an array of contiguous float values to plot
     (when (or (not widgets.plots.animate)
-              (= widgets.plots.plot1.refresh_time 0))
+              (= 0 widgets.plots.plot1.refresh_time))
       (set widgets.plots.plot1.refresh_time (ImGui.GetTime ctx)))
-    (while (< widgets.plots.plot1.refresh_time (ImGui.GetTime ctx))
+    (while (< widgets.plots.plot1.refresh_time (ImGui.GetTime ctx)) ;; Create data at fixed 60 Hz rate for the demo
       (tset widgets.plots.plot1.data widgets.plots.plot1.offset
             (math.cos widgets.plots.plot1.phase))
       (set widgets.plots.plot1.offset
-           (+ (% widgets.plots.plot1.offset PLOT1-SIZE) 1))
+           (+ 1 (% widgets.plots.plot1.offset PLOT1-SIZE)))
       (set widgets.plots.plot1.phase
-           (+ widgets.plots.plot1.phase (* 0.1 widgets.plots.plot1.offset)))
+           (+ widgets.plots.plot1.phase (* 0.10 widgets.plots.plot1.offset)))
       (set widgets.plots.plot1.refresh_time
-           (+ widgets.plots.plot1.refresh_time (/ 1 60))))
+           (+ widgets.plots.plot1.refresh_time (/ 1.0 60.0))))
+
+    ;; Plots can display overlay texts
+    ;; (in this example, we will display an average value)
     (do
-      (var average 0)
+      (var average 0.0)
       (for [n 1 PLOT1-SIZE]
         (set average (+ average (. widgets.plots.plot1.data n))))
       (set average (/ average PLOT1-SIZE))
+
       (local overlay (: "avg %f" :format average))
       (ImGui.PlotLines ctx :Lines widgets.plots.plot1.data
-                       (- widgets.plots.plot1.offset 1) overlay (- 1) 1 0 80))
+                       (- widgets.plots.plot1.offset 1) overlay -1.0 1.0 0 80.0))
+
     (ImGui.SeparatorText ctx :Functions)
     (ImGui.SetNextItemWidth ctx (* (ImGui.GetFontSize ctx) 8))
-    (set (rv widgets.plots.plot2.func)
-         (ImGui.Combo ctx :func widgets.plots.plot2.func "Sin\000Saw\000"))
-    (local func-changed rv)
-    (ImGui.SameLine ctx)
-    (set (rv widgets.plots.plot2.size)
-         (ImGui.SliderInt ctx "Sample count" widgets.plots.plot2.size 1 400))
-    (when (or (or func-changed rv) widgets.plots.plot2.fill)
-      (set widgets.plots.plot2.fill false)
-      (set widgets.plots.plot2.data (reaper.new_array widgets.plots.plot2.size))
-      (for [n 1 widgets.plots.plot2.size]
-        (tset widgets.plots.plot2.data n
-              ((. plot2-funcs (+ widgets.plots.plot2.func 1)) (- n 1)))))
-    (ImGui.PlotLines ctx :Lines widgets.plots.plot2.data 0 nil -1 1 0 80)
-    (ImGui.PlotHistogram ctx :Histogram widgets.plots.plot2.data 0 nil -1 1 0 80)
+    (let [func-changed (update-2nd widgets.plots.plot2.func (ImGui.Combo ctx :func $ "Sin\000Saw\000"))
+          _ (ImGui.SameLine ctx)
+          rv (update-2nd widgets.plots.plot2.size (ImGui.SliderInt ctx "Sample count" $ 1 400))]
+      ;; Use functions to generate output
+      (when (or func-changed rv widgets.plots.plot2.fill)
+        (set widgets.plots.plot2.fill false)
+        (set widgets.plots.plot2.data (reaper.new_array widgets.plots.plot2.size))
+        (for [n 1 widgets.plots.plot2.size]
+          (tset widgets.plots.plot2.data n
+                ((. plot2-funcs (+ 1 widgets.plots.plot2.func)) (- n 1))))))
+
+    (ImGui.PlotLines ctx :Lines widgets.plots.plot2.data 0 nil -1.0 1.0 0 80)
+    (ImGui.PlotHistogram ctx :Histogram widgets.plots.plot2.data 0 nil -1.0 1.0 0 80)
     (ImGui.Separator ctx)
+
+    ;; Animate a simple progress bar
     (when widgets.plots.animate
       (set widgets.plots.progress
            (+ widgets.plots.progress
-              (* (* widgets.plots.progress_dir 0.4) (ImGui.GetDeltaTime ctx))))
+              (* widgets.plots.progress_dir 0.4 (ImGui.GetDeltaTime ctx))))
       (if (>= widgets.plots.progress 1.1)
-          (do
-            (set widgets.plots.progress 1.1)
-            (set widgets.plots.progress_dir
-                 (* widgets.plots.progress_dir (- 1))))
-          (<= widgets.plots.progress (- 0.1))
-          (do
-            (set widgets.plots.progress (- 0.1))
-            (set widgets.plots.progress_dir
-                 (* widgets.plots.progress_dir (- 1))))))
+        (do
+          (set widgets.plots.progress 1.1)
+          (set widgets.plots.progress_dir
+               (* -1 widgets.plots.progress_dir)))
+        (<= widgets.plots.progress -0.1)
+        (do
+          (set widgets.plots.progress -0.1)
+          (set widgets.plots.progress_dir
+               (* -1 widgets.plots.progress_dir)))))
+
+    ;; Typically we would use (-1.0,0.0) or (-FLT_MIN,0.0) to use all available width,
+    ;; or (width,0.0) for a specified width. (0.0,0.0) uses ItemWidth.
     (ImGui.ProgressBar ctx widgets.plots.progress 0 0)
-    (ImGui.SameLine ctx 0
-                     (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemInnerSpacing)))
+    (ImGui.SameLine ctx 0 (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemInnerSpacing)))
     (ImGui.Text ctx "Progress Bar")
-    (local progress-saturated (demo.clamp widgets.plots.progress 0 1))
-    (local buf
-           (: "%d/%d" :format (math.floor (* progress-saturated 1753)) 1753))
-    (ImGui.ProgressBar ctx widgets.plots.progress 0 0 buf)
+    (let [progress-saturated (demo.clamp widgets.plots.progress 0 1)
+          buf (: "%d/%d" :format (math.floor (* progress-saturated 1753)) 1753)] 
+      (ImGui.ProgressBar ctx widgets.plots.progress 0 0 buf))
     (ImGui.TreePop ctx))
+
   (when (ImGui.TreeNode ctx "Color/Picker Widgets")
-    (when (not widgets.colors)
-      (set widgets.colors {:alpha true
-                           :alpha_bar true
-                           :alpha_half_preview false
-                           :alpha_preview true
-                           :backup_color nil
-                           :display_mode 0
-                           :drag_and_drop true
-                           :hsva 1006632959
-                           :no_border false
-                           :options_menu true
-                           :picker_mode 0
-                           :raw_hsv (reaper.new_array 4)
-                           :ref_color false
-                           :ref_color_rgba 4278255488
-                           :rgba 1922079432
-                           :saved_palette nil
-                           :side_preview true}))
+    (set-when-not widgets.colors {:alpha true
+                                  :alpha_bar true
+                                  :alpha_half_preview false
+                                  :alpha_preview true
+                                  :backup_color nil
+                                  :display_mode 0
+                                  :drag_and_drop true
+                                  :hsva 0x3bffffff
+                                  :no_border false
+                                  :options_menu true
+                                  :picker_mode 0
+                                  :raw_hsv (reaper.new_array 4)
+                                  :ref_color false
+                                  :ref_color_rgba 0xff00ff80
+                                  :rgba 0x72909ac8
+                                  :saved_palette nil ;; filled later
+                                  :side_preview true})
+
+    ;; static bool hdr = false;
     (ImGui.SeparatorText ctx :Options)
-    (set (rv widgets.colors.alpha_preview)
-         (ImGui.Checkbox ctx "With Alpha Preview" widgets.colors.alpha_preview))
-    (set (rv widgets.colors.alpha_half_preview)
-         (ImGui.Checkbox ctx "With Half Alpha Preview"
-                          widgets.colors.alpha_half_preview))
-    (set (rv widgets.colors.drag_and_drop)
-         (ImGui.Checkbox ctx "With Drag and Drop" widgets.colors.drag_and_drop))
-    (set (rv widgets.colors.options_menu)
-         (ImGui.Checkbox ctx "With Options Menu" widgets.colors.options_menu))
+    (update-2nd widgets.colors.alpha_preview (ImGui.Checkbox ctx "With Alpha Preview" $))
+    (update-2nd widgets.colors.alpha_half_preview (ImGui.Checkbox ctx "With Half Alpha Preview" $))
+    (update-2nd widgets.colors.drag_and_drop (ImGui.Checkbox ctx "With Drag and Drop" $))
+    (update-2nd widgets.colors.options_menu (ImGui.Checkbox ctx "With Options Menu" $))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Right-click on the individual color widget to show options.")
+    ;; ImGui.Checkbox("With HDR", &hdr); ImGui.SameLine(); HelpMarker("Currently all this does is to lift the 0..1 limits on dragging widgets.")
     (local misc-flags
-      (bor (or (and widgets.colors.drag_and_drop 0)
-               (ImGui.ColorEditFlags_NoDragDrop))
-           (or (and widgets.colors.alpha_half_preview
-                    (ImGui.ColorEditFlags_AlphaPreviewHalf))
-               (or (and widgets.colors.alpha_preview
-                        (ImGui.ColorEditFlags_AlphaPreview))
-                   0))
-           (or (and widgets.colors.options_menu 0)
-               (ImGui.ColorEditFlags_NoOptions))))
+      (bor ;;(widgets.colors.hdr and ImGui.ColorEditFlags_HDR() or 0) |
+           (if widgets.colors.drag_and_drop 0 (ImGui.ColorEditFlags_NoDragDrop))
+           (if
+             widgets.colors.alpha_half_preview (ImGui.ColorEditFlags_AlphaPreviewHalf)
+             widgets.colors.alpha_preview (ImGui.ColorEditFlags_AlphaPreview)
+             0)
+           (if widgets.colors.options_menu 0 (ImGui.ColorEditFlags_NoOptions))))
+
     (ImGui.SeparatorText ctx "Inline color editor")
     (ImGui.Text ctx "Color widget:")
     (ImGui.SameLine ctx)
-    (demo.HelpMarker "Click on the color square to open a color picker.
-CTRL+click on individual component to input value.
-")
+    (demo.HelpMarker
+      "Click on the color square to open a color picker.\n\z
+       CTRL+click on individual component to input value.\n"))
     (var argb (demo.RgbaToArgb widgets.colors.rgba))
-    (set (rv argb) (ImGui.ColorEdit3 ctx "MyColor##1" argb misc-flags))
-    (when rv (set widgets.colors.rgba (demo.ArgbToRgba argb)))
+    (when (update-2nd argb (ImGui.ColorEdit3 ctx "MyColor##1" $ misc-flags))
+      (set widgets.colors.rgba (demo.ArgbToRgba argb)))
+
     (ImGui.Text ctx "Color widget HSV with Alpha:")
-    (set (rv widgets.colors.rgba)
-         (ImGui.ColorEdit4 ctx "MyColor##2" widgets.colors.rgba
-                            (bor (ImGui.ColorEditFlags_DisplayHSV) misc-flags)))
+    (update-2nd widgets.colors.rgba
+                (ImGui.ColorEdit4 ctx "MyColor##2" $ (bor (ImGui.ColorEditFlags_DisplayHSV)
+                                                          misc-flags)))
+
     (ImGui.Text ctx "Color widget with Float Display:")
-    (set (rv widgets.colors.rgba)
-         (ImGui.ColorEdit4 ctx "MyColor##2f" widgets.colors.rgba
-                            (bor (ImGui.ColorEditFlags_Float) misc-flags)))
+    (update-2nd widgets.colors.rgba
+                (ImGui.ColorEdit4 ctx "MyColor##2f" $ (bor (ImGui.ColorEditFlags_Float)
+                                                           misc-flags)))
+
     (ImGui.Text ctx "Color button with Picker:")
     (ImGui.SameLine ctx)
     (demo.HelpMarker "With the ImGuiColorEditFlags_NoInputs flag you can hide all the slider/text inputs.
 With the ImGuiColorEditFlags_NoLabel flag you can pass a non-empty label which will only be used for the tooltip and picker popup.")
-    (set (rv widgets.colors.rgba)
-         (ImGui.ColorEdit4 ctx "MyColor##3" widgets.colors.rgba
-                            (bor (ImGui.ColorEditFlags_NoInputs)
-                                 (ImGui.ColorEditFlags_NoLabel)
-                                 misc-flags)))
+    (update-2nd widgets.colors.rgba
+                (ImGui.ColorEdit4 ctx "MyColor##3" $
+                                  (bor (ImGui.ColorEditFlags_NoInputs)
+                                       (ImGui.ColorEditFlags_NoLabel)
+                                       misc-flags)))
     (ImGui.Text ctx "Color button with Custom Picker Popup:")
+
+    ;; Generate a default palette. The palette will persist and can be edited.
     (when (not widgets.colors.saved_palette)
       (set widgets.colors.saved_palette {})
       (for [n 0 31]
-        (table.insert widgets.colors.saved_palette (demo.HSV (/ n 31) 0.8 0.8))))
-    (var open-popup (ImGui.ColorButton ctx "MyColor##3b" widgets.colors.rgba
-                                        misc-flags))
-    (ImGui.SameLine ctx 0
-                     (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemInnerSpacing)))
+        (table.insert widgets.colors.saved_palette (demo.HSV (/ n 31.0) 0.8 0.8))))
+    (var open-popup (ImGui.ColorButton ctx "MyColor##3b" widgets.colors.rgba misc-flags))
+    (ImGui.SameLine ctx 0 (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemInnerSpacing)))
     (set open-popup (or (ImGui.Button ctx :Palette) open-popup))
     (when open-popup (ImGui.OpenPopup ctx :mypicker)
       (set widgets.colors.backup_color widgets.colors.rgba))
@@ -1607,84 +1750,82 @@ With the ImGuiColorEditFlags_NoLabel flag you can pass a non-empty label which w
                                      (ImGui.ColorEditFlags_NoSidePreview)
                                      (ImGui.ColorEditFlags_NoSmallPreview))))
       (ImGui.SameLine ctx)
-      (ImGui.BeginGroup ctx)
+
+      (ImGui.BeginGroup ctx) ;; Lock X position
       (ImGui.Text ctx :Current)
       (ImGui.ColorButton ctx "##current" widgets.colors.rgba
-                          (bor (ImGui.ColorEditFlags_NoPicker)
-                               (ImGui.ColorEditFlags_AlphaPreviewHalf))
-                          60 40)
+                         (bor (ImGui.ColorEditFlags_NoPicker)
+                              (ImGui.ColorEditFlags_AlphaPreviewHalf))
+                         60 40)
       (ImGui.Text ctx :Previous)
       (when (ImGui.ColorButton ctx "##previous" widgets.colors.backup_color
-                                (bor (ImGui.ColorEditFlags_NoPicker)
-                                     (ImGui.ColorEditFlags_AlphaPreviewHalf))
-                                60 40)
+                               (bor (ImGui.ColorEditFlags_NoPicker)
+                                    (ImGui.ColorEditFlags_AlphaPreviewHalf))
+                               60 40)
         (set widgets.colors.rgba widgets.colors.backup_color))
       (ImGui.Separator ctx)
       (ImGui.Text ctx :Palette)
-      (local palette-button-flags
-        (bor (ImGui.ColorEditFlags_NoAlpha)
-             (ImGui.ColorEditFlags_NoPicker)
-             (ImGui.ColorEditFlags_NoTooltip)))
+      (local palette-button-flags (bor (ImGui.ColorEditFlags_NoAlpha)
+                                       (ImGui.ColorEditFlags_NoPicker)
+                                       (ImGui.ColorEditFlags_NoTooltip)))
       (each [n c (ipairs widgets.colors.saved_palette)]
         (ImGui.PushID ctx n)
-        (when (not= (% (- n 1) 8) 0)
-          (ImGui.SameLine ctx 0
-                           (select 2
-                                   (ImGui.GetStyleVar ctx
-                                                       (ImGui.StyleVar_ItemSpacing)))))
+        (when (not= 0 (% (- n 1)
+                         8))
+          (ImGui.SameLine ctx 0 (select 2 (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemSpacing)))))
+
         (when (ImGui.ColorButton ctx "##palette" c palette-button-flags 20 20)
           (set widgets.colors.rgba
                (bor (lshift c 8) (band widgets.colors.rgba 255))))
+
+        ;; Allow user to drop colors into each palette entry. Note that ColorButton() is already a
+        ;; drag source by default, unless specifying the ImGuiColorEditFlags_NoDragDrop flag.
         (when (ImGui.BeginDragDropTarget ctx)
-          (var drop-color nil)
-          (set (rv drop-color) (ImGui.AcceptDragDropPayloadRGB ctx))
-          (when rv (tset widgets.colors.saved_palette n drop-color))
-          (set (rv drop-color) (ImGui.AcceptDragDropPayloadRGBA ctx))
-          (when rv (tset widgets.colors.saved_palette n (rshift drop-color 8)))
-          (ImGui.EndDragDropTarget ctx))
+          (let [(rv drop-color) (ImGui.AcceptDragDropPayloadRGB ctx)
+                _ (when rv (tset widgets.colors.saved_palette n drop-color))
+                (rv drop-color) (ImGui.AcceptDragDropPayloadRGBA ctx)
+                _ (when rv (tset widgets.colors.saved_palette n (rshift drop-color 8)))]
+            (ImGui.EndDragDropTarget ctx)))
+
         (ImGui.PopID ctx))
       (ImGui.EndGroup ctx)
       (ImGui.EndPopup ctx))
+
     (ImGui.Text ctx "Color button only:")
-    (set (rv widgets.colors.no_border)
-         (ImGui.Checkbox ctx :ImGuiColorEditFlags_NoBorder
-                          widgets.colors.no_border))
+    (update-2nd widgets.colors.no_border (ImGui.Checkbox ctx :ImGuiColorEditFlags_NoBorder $))
     (ImGui.ColorButton ctx "MyColor##3c" widgets.colors.rgba
-                        (bor misc-flags
-                             (or (and widgets.colors.no_border
-                                      (ImGui.ColorEditFlags_NoBorder))
-                                 0)) 80 80)
+                       (bor misc-flags
+                            (if widgets.colors.no_border
+                              (ImGui.ColorEditFlags_NoBorder)
+                              0))
+                       80 80)
+
     (ImGui.SeparatorText ctx "Color picker")
-    (set (rv widgets.colors.alpha)
-         (ImGui.Checkbox ctx "With Alpha" widgets.colors.alpha))
-    (set (rv widgets.colors.alpha_bar)
-         (ImGui.Checkbox ctx "With Alpha Bar" widgets.colors.alpha_bar))
-    (set (rv widgets.colors.side_preview)
-         (ImGui.Checkbox ctx "With Side Preview" widgets.colors.side_preview))
+    (update-2nd widgets.colors.alpha (ImGui.Checkbox ctx "With Alpha" $))
+    (update-2nd widgets.colors.alpha_bar (ImGui.Checkbox ctx "With Alpha Bar" $))
+    (update-2nd widgets.colors.side_preview (ImGui.Checkbox ctx "With Side Preview" $))
     (when widgets.colors.side_preview
       (ImGui.SameLine ctx)
-      (set (rv widgets.colors.ref_color)
-           (ImGui.Checkbox ctx "With Ref Color" widgets.colors.ref_color))
+      (update-2nd widgets.colors.ref_color (ImGui.Checkbox ctx "With Ref Color" $))
       (when widgets.colors.ref_color
         (ImGui.SameLine ctx)
-        (set (rv widgets.colors.ref_color_rgba)
-             (ImGui.ColorEdit4 ctx "##RefColor" widgets.colors.ref_color_rgba
-                                (bor (ImGui.ColorEditFlags_NoInputs)
-                                     misc-flags)))))
-    (set (rv widgets.colors.display_mode)
-         (ImGui.Combo ctx "Display Mode" widgets.colors.display_mode
-                       "Auto/Current\000None\000RGB Only\000HSV Only\000Hex Only\000"))
+        (update-2nd widgets.colors.ref_color_rgba
+                    (ImGui.ColorEdit4 ctx "##RefColor" $
+                                      (bor (ImGui.ColorEditFlags_NoInputs)
+                                           misc-flags)))))
+    (update-2nd widgets.colors.display_mode
+                (ImGui.Combo ctx "Display Mode" $
+                             "Auto/Current\000None\000RGB Only\000HSV Only\000Hex Only\000"))
     (ImGui.SameLine ctx)
-    (demo.HelpMarker "ColorEdit defaults to displaying RGB inputs if you don't specify a display mode, but the user can change it with a right-click on those inputs.
-
-ColorPicker defaults to displaying RGB+HSV+Hex if you don't specify a display mode.
-
-You can change the defaults using SetColorEditOptions().")
-    (set (rv widgets.colors.picker_mode)
-         (ImGui.Combo ctx "Picker Mode" widgets.colors.picker_mode
-                       "Auto/Current\000Hue bar + SV rect\000Hue wheel + SV triangle\000"))
+    (demo.HelpMarker
+      "ColorEdit defaults to displaying RGB inputs if you don't specify a display mode, \z
+       but the user can change it with a right-click on those inputs.\n\nColorPicker defaults to displaying RGB+HSV+Hex \z
+       if you don't specify a display mode.\n\nYou can change the defaults using SetColorEditOptions().")
+    (update-2nd widgets.colors.picker_mode
+                (ImGui.Combo ctx "Picker Mode" $ "Auto/Current\000Hue bar + SV rect\000Hue wheel + SV triangle\000"))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "When not specified explicitly (Auto/Current mode), user can right-click the picker to change mode.")
+
     (var flags misc-flags)
     (when (not widgets.colors.alpha)
       (set flags (bor flags (ImGui.ColorEditFlags_NoAlpha))))
@@ -1692,30 +1833,27 @@ You can change the defaults using SetColorEditOptions().")
       (set flags (bor flags (ImGui.ColorEditFlags_AlphaBar))))
     (when (not widgets.colors.side_preview)
       (set flags (bor flags (ImGui.ColorEditFlags_NoSidePreview))))
-    (when (= widgets.colors.picker_mode 1)
-      (set flags (bor flags (ImGui.ColorEditFlags_PickerHueBar))))
-    (when (= widgets.colors.picker_mode 2)
-      (set flags (bor flags (ImGui.ColorEditFlags_PickerHueWheel))))
-    (when (= widgets.colors.display_mode 1)
-      (set flags (bor flags (ImGui.ColorEditFlags_NoInputs))))
-    (when (= widgets.colors.display_mode 2)
-      (set flags (bor flags (ImGui.ColorEditFlags_DisplayRGB))))
-    (when (= widgets.colors.display_mode 3)
-      (set flags (bor flags (ImGui.ColorEditFlags_DisplayHSV))))
-    (when (= widgets.colors.display_mode 4)
-      (set flags (bor flags (ImGui.ColorEditFlags_DisplayHex))))
-    (var color (or (and widgets.colors.alpha widgets.colors.rgba)
-                   (demo.RgbaToArgb widgets.colors.rgba)))
+    (case widgets.colors.picker_mode
+      1 (set flags (bor flags (ImGui.ColorEditFlags_PickerHueBar)))
+      2 (set flags (bor flags (ImGui.ColorEditFlags_PickerHueWheel))))
+    (case widgets.colors.display_mode
+      1 (set flags (bor flags (ImGui.ColorEditFlags_NoInputs))) ;; Disable all RGB/HSV/Hex displays
+      2 (set flags (bor flags (ImGui.ColorEditFlags_DisplayRGB))) ;; Override display mode
+      3 (set flags (bor flags (ImGui.ColorEditFlags_DisplayHSV)))
+      4 (set flags (bor flags (ImGui.ColorEditFlags_DisplayHex))))
+
+    (var color (if widgets.colors.alpha
+                 widgets.colors.rgba
+                 (demo.RgbaToArgb widgets.colors.rgba)))
     (local ref-color
            (or (and widgets.colors.alpha widgets.colors.ref_color_rgba)
                (demo.RgbaToArgb widgets.colors.ref_color_rgba)))
-    (set (rv color) (ImGui.ColorPicker4 ctx "MyColor##4" color flags
-                                         (or (and widgets.colors.ref_color
-                                                  ref-color)
-                                             nil)))
-    (when rv
+    (when (update-2nd color (ImGui.ColorPicker4 ctx "MyColor##4" $ flags
+                                                (when widgets.colors.ref_color
+                                                  ref-color)))
       (set widgets.colors.rgba
-           (or (and widgets.colors.alpha color) (demo.ArgbToRgba color))))
+           (if widgets.colors.alpha color (demo.ArgbToRgba color))))
+
     (ImGui.Text ctx "Set defaults in code:")
     (ImGui.SameLine ctx)
     (demo.HelpMarker "SetColorEditOptions() is designed to allow you to set boot-time default.
@@ -1726,61 +1864,63 @@ We don't have a getter to avoidencouraging you to persistently save values that 
                                   (bor (ImGui.ColorEditFlags_Uint8)
                                        (ImGui.ColorEditFlags_DisplayHSV)
                                        (ImGui.ColorEditFlags_PickerHueBar))))
-    (when (ImGui.Button ctx "Default: Float + Hue Wheel")
+    (when (ImGui.Button ctx "Default: Float + Hue Wheel") ;; (NOTE: removed HDR for ReaImGui as we use uint32 for color i/o)
       (ImGui.SetColorEditOptions ctx
                                   (bor (ImGui.ColorEditFlags_Float)
                                        (ImGui.ColorEditFlags_PickerHueWheel))))
+
+    ;; Always both a small version of both types of pickers (to make it more visible in the demo to people who are skimming quickly through it)
     (var color (demo.RgbaToArgb widgets.colors.rgba))
     (ImGui.Text ctx "Both types:")
     (local w (* (- (ImGui.GetContentRegionAvail ctx)
-                   (select 2
-                           (ImGui.GetStyleVar ctx
-                                               (ImGui.StyleVar_ItemSpacing))))
-                0.4))
+                   (select 2 (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemSpacing))))
+                0.40))
     (ImGui.SetNextItemWidth ctx w)
-    (set (rv color)
-         (ImGui.ColorPicker3 ctx "##MyColor##5" color
-                              (bor (ImGui.ColorEditFlags_PickerHueBar)
-                                   (ImGui.ColorEditFlags_NoSidePreview)
-                                   (ImGui.ColorEditFlags_NoInputs)
-                                   (ImGui.ColorEditFlags_NoAlpha))))
-    (when rv (set widgets.colors.rgba (demo.ArgbToRgba color)))
+    (when (update-2nd color
+                      (ImGui.ColorPicker3 ctx "##MyColor##5" $
+                                          (bor (ImGui.ColorEditFlags_PickerHueBar)
+                                               (ImGui.ColorEditFlags_NoSidePreview)
+                                               (ImGui.ColorEditFlags_NoInputs)
+                                               (ImGui.ColorEditFlags_NoAlpha))))
+      (set widgets.colors.rgba (demo.ArgbToRgba color)))
     (ImGui.SameLine ctx)
     (ImGui.SetNextItemWidth ctx w)
-    (set (rv color)
-         (ImGui.ColorPicker3 ctx "##MyColor##6" color
-                              (bor (ImGui.ColorEditFlags_PickerHueWheel)
-                                   (ImGui.ColorEditFlags_NoSidePreview)
-                                   (ImGui.ColorEditFlags_NoInputs)
-                                   (ImGui.ColorEditFlags_NoAlpha))))
-    (when rv (set widgets.colors.rgba (demo.ArgbToRgba color)))
+    (when (update-2nd color
+                      (ImGui.ColorPicker3 ctx "##MyColor##6" $
+                                          (bor (ImGui.ColorEditFlags_PickerHueWheel)
+                                               (ImGui.ColorEditFlags_NoSidePreview)
+                                               (ImGui.ColorEditFlags_NoInputs)
+                                               (ImGui.ColorEditFlags_NoAlpha))))
+      (set widgets.colors.rgba (demo.ArgbToRgba color)))
+
+    ;; HSV encoded support (to avoid RGB<>HSV round trips and singularities when S==0 or V==0)
     (ImGui.Spacing ctx)
     (ImGui.Text ctx "HSV encoded colors")
     (ImGui.SameLine ctx)
     (demo.HelpMarker "By default, colors are given to ColorEdit and ColorPicker in RGB, but ImGuiColorEditFlags_InputHSV allows you to store colors as HSV and pass them to ColorEdit and ColorPicker as HSV. This comes with the added benefit that you can manipulate hue values with the picker even when saturation or value are zero.")
     (ImGui.Text ctx "Color widget with InputHSV:")
-    (set (rv widgets.colors.hsva)
-         (ImGui.ColorEdit4 ctx "HSV shown as RGB##1" widgets.colors.hsva
-                            (bor (ImGui.ColorEditFlags_DisplayRGB)
-                                 (ImGui.ColorEditFlags_InputHSV)
-                                 (ImGui.ColorEditFlags_Float))))
-    (set (rv widgets.colors.hsva)
-         (ImGui.ColorEdit4 ctx "HSV shown as HSV##1" widgets.colors.hsva
-                            (bor (ImGui.ColorEditFlags_DisplayHSV)
-                                 (ImGui.ColorEditFlags_InputHSV)
-                                 (ImGui.ColorEditFlags_Float))))
+    (update-2nd widgets.colors.hsva (ImGui.ColorEdit4 ctx "HSV shown as RGB##1" $
+                                                      (bor (ImGui.ColorEditFlags_DisplayRGB)
+                                                           (ImGui.ColorEditFlags_InputHSV)
+                                                           (ImGui.ColorEditFlags_Float))))
+    (update-2nd widgets.colors.hsva (ImGui.ColorEdit4 ctx "HSV shown as HSV##1" $
+                                                      (bor (ImGui.ColorEditFlags_DisplayHSV)
+                                                           (ImGui.ColorEditFlags_InputHSV)
+                                                           (ImGui.ColorEditFlags_Float))))
     (local raw-hsv widgets.colors.raw_hsv)
-    (tset raw-hsv 1 (/ (band (rshift widgets.colors.hsva 24) 255) 255))
-    (tset raw-hsv 2 (/ (band (rshift widgets.colors.hsva 16) 255) 255))
-    (tset raw-hsv 3 (/ (band (rshift widgets.colors.hsva 8) 255) 255))
-    (tset raw-hsv 4 (/ (band widgets.colors.hsva 255) 255))
-    (when (ImGui.DragDoubleN ctx "Raw HSV values" raw-hsv 0.01 0 1)
+    (tset raw-hsv 1 (/ (band (rshift widgets.colors.hsva 24) 0xFF) 255.0)) ;; H
+    (tset raw-hsv 2 (/ (band (rshift widgets.colors.hsva 16) 0xFF) 255.0)) ;; S
+    (tset raw-hsv 3 (/ (band (rshift widgets.colors.hsva 8)  0xFF) 255.0)) ;; V
+    (tset raw-hsv 4 (/ (band         widgets.colors.hsva     0xFF) 255.0)) ;; A
+    (when (ImGui.DragDoubleN ctx "Raw HSV values" raw-hsv 0.01 0.0 1.0)
       (set widgets.colors.hsva
-           (bor (lshift (demo.round (* (. raw-hsv 1) 255)) 24)
-                (lshift (demo.round (* (. raw-hsv 2) 255)) 16)
-                (lshift (demo.round (* (. raw-hsv 3) 255)) 8)
-                (demo.round (* (. raw-hsv 4) 255)))))
+           (bor (-> (demo.round (* (. raw-hsv 1) 0xFF)) (lshift 24))
+                (-> (demo.round (* (. raw-hsv 2) 0xFF)) (lshift 16))
+                (-> (demo.round (* (. raw-hsv 3) 0xFF)) (lshift 8))
+                (-> (demo.round (* (. raw-hsv 4) 0xFF))))))
+
     (ImGui.TreePop ctx))
+
   (when (ImGui.TreeNode ctx "Drag/Slider Flags")
     (when (not widgets.sliders)
       (set widgets.sliders {:drag_d 0.5
@@ -1788,81 +1928,195 @@ We don't have a getter to avoidencouraging you to persistently save values that 
                             :flags (ImGui.SliderFlags_None)
                             :slider_d 0.5
                             :slider_i 50}))
-    (set (rv widgets.sliders.flags)
-         (ImGui.CheckboxFlags ctx :ImGuiSliderFlags_AlwaysClamp
-                               widgets.sliders.flags
-                               (ImGui.SliderFlags_AlwaysClamp)))
+
+    ;; Demonstrate using advanced flags for DragXXX and SliderXXX functions. Note that the flags are the same!
+    (update-2nd widgets.sliders.flags
+                (ImGui.CheckboxFlags ctx :ImGuiSliderFlags_AlwaysClamp $ (ImGui.SliderFlags_AlwaysClamp)))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Always clamp value to min/max bounds (if any) when input manually with CTRL+Click.")
-    (set (rv widgets.sliders.flags)
-         (ImGui.CheckboxFlags ctx :ImGuiSliderFlags_Logarithmic
-                               widgets.sliders.flags
-                               (ImGui.SliderFlags_Logarithmic)))
+    (update-2nd widgets.sliders.flags
+                (ImGui.CheckboxFlags ctx :ImGuiSliderFlags_Logarithmic $ (ImGui.SliderFlags_Logarithmic)))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Enable logarithmic editing (more precision for small values).")
-    (set (rv widgets.sliders.flags)
-         (ImGui.CheckboxFlags ctx :ImGuiSliderFlags_NoRoundToFormat
-                               widgets.sliders.flags
-                               (ImGui.SliderFlags_NoRoundToFormat)))
+    (update-2nd widgets.sliders.flags
+                (ImGui.CheckboxFlags ctx :ImGuiSliderFlags_NoRoundToFormat $ (ImGui.SliderFlags_NoRoundToFormat)))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Disable rounding underlying value to match precision of the format string (e.g. %.3f values are rounded to those 3 digits).")
-    (set (rv widgets.sliders.flags)
-         (ImGui.CheckboxFlags ctx :ImGuiSliderFlags_NoInput
-                               widgets.sliders.flags
-                               (ImGui.SliderFlags_NoInput)))
+    (update-2nd widgets.sliders.flags
+                (ImGui.CheckboxFlags ctx :ImGuiSliderFlags_NoInput $ (ImGui.SliderFlags_NoInput)))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Disable CTRL+Click or Enter key allowing to input text directly into the widget.")
-    (local (DBL_MIN DBL_MAX) (values 2.22507e-308 1.79769e+308))
-    (ImGui.Text ctx (: "Underlying double value: %f" :format
-                        widgets.sliders.drag_d))
-    (set (rv widgets.sliders.drag_d)
-         (ImGui.DragDouble ctx "DragDouble (0 -> 1)" widgets.sliders.drag_d
-                            0.005 0 1 "%.3f" widgets.sliders.flags))
-    (set (rv widgets.sliders.drag_d)
-         (ImGui.DragDouble ctx "DragDouble (0 -> +inf)" widgets.sliders.drag_d
-                            0.005 0 DBL_MAX "%.3f" widgets.sliders.flags))
-    (set (rv widgets.sliders.drag_d)
-         (ImGui.DragDouble ctx "DragDouble (-inf -> 1)" widgets.sliders.drag_d
-                            0.005 (- DBL_MAX) 1 "%.3f" widgets.sliders.flags))
-    (set (rv widgets.sliders.drag_d)
-         (ImGui.DragDouble ctx "DragDouble (-inf -> +inf)"
-                            widgets.sliders.drag_d 0.005 (- DBL_MAX) DBL_MAX
-                            "%.3f" widgets.sliders.flags))
-    (set (rv widgets.sliders.drag_i)
-         (ImGui.DragInt ctx "DragInt (0 -> 100)" widgets.sliders.drag_i 0.5 0
-                         100 "%d" widgets.sliders.flags))
-    (ImGui.Text ctx (: "Underlying float value: %f" :format
-                        widgets.sliders.slider_d))
-    (set (rv widgets.sliders.slider_d)
-         (ImGui.SliderDouble ctx "SliderDouble (0 -> 1)"
-                              widgets.sliders.slider_d 0 1 "%.3f"
-                              widgets.sliders.flags))
-    (set (rv widgets.sliders.slider_i)
-         (ImGui.SliderInt ctx "SliderInt (0 -> 100)" widgets.sliders.slider_i
-                           0 100 "%d" widgets.sliders.flags))
+
+
+    ;; Drags
+    (let [DBL_MIN 2.22507e-308
+          DBL_MAX 1.79769e+308]
+      (ImGui.Text ctx (: "Underlying double value: %f" :format widgets.sliders.drag_d))
+      (update-2nd widgets.sliders.drag_d
+                  (ImGui.DragDouble ctx "DragDouble (0 -> 1)" $ 0.005 0.0 1.0 "%.3f" widgets.sliders.flags))
+      (update-2nd widgets.sliders.drag_d
+                  (ImGui.DragDouble ctx "DragDouble (0 -> +inf)" $ 0.005 0.0 DBL_MAX "%.3f" widgets.sliders.flags))
+      (update-2nd widgets.sliders.drag_d
+                  (ImGui.DragDouble ctx "DragDouble (-inf -> 1)" $ 0.005 (- DBL_MAX) 1 "%.3f" widgets.sliders.flags))
+      (update-2nd widgets.sliders.drag_d
+                  (ImGui.DragDouble ctx "DragDouble (-inf -> +inf)" $ 0.005 (- DBL_MAX) DBL_MAX "%.3f" widgets.sliders.flags))
+      (update-2nd widgets.sliders.drag_i
+                  (ImGui.DragInt ctx "DragInt (0 -> 100)" $ 0.5 0 100 "%d" widgets.sliders.flags)))
+
+    ;; Sliders
+    (ImGui.Text ctx (: "Underlying float value: %f" :format widgets.sliders.slider_d))
+    (update-2nd widgets.sliders.slider_d
+                (ImGui.SliderDouble ctx "SliderDouble (0 -> 1)" $ 0 1 "%.3f" widgets.sliders.flags))
+    (update-2nd widgets.sliders.slider_i
+                (ImGui.SliderInt ctx "SliderInt (0 -> 100)" $ 0 100 "%d" widgets.sliders.flags))
+
     (ImGui.TreePop ctx))
+
   (when (ImGui.TreeNode ctx "Range Widgets")
-    (when (not widgets.range)
-      (set widgets.range {:begin_f 10 :begin_i 100 :end_f 90 :end_i 1000}))
-    (set (rv widgets.range.begin_f widgets.range.end_f)
+    (set-when-not widgets.range {:begin_f 10.0
+                                 :end_f 90.0
+                                 :begin_i 100
+                                 :end_i 1000})
+
+    (set (_ widgets.range.begin_f widgets.range.end_f)
          (ImGui.DragFloatRange2 ctx "range float" widgets.range.begin_f
-                                 widgets.range.end_f 0.25 0 100 "Min: %.1f %%"
-                                 "Max: %.1f %%" (ImGui.SliderFlags_AlwaysClamp)))
-    (set (rv widgets.range.begin_i widgets.range.end_i)
+                                widgets.range.end_f 0.25 0 100 "Min: %.1f %%"
+                                "Max: %.1f %%" (ImGui.SliderFlags_AlwaysClamp)))
+    (set (_ widgets.range.begin_i widgets.range.end_i)
          (ImGui.DragIntRange2 ctx "range int" widgets.range.begin_i
-                               widgets.range.end_i 5 0 1000 "Min: %d units"
-                               "Max: %d units"))
-    (set (rv widgets.range.begin_i widgets.range.end_i)
+                              widgets.range.end_i 5 0 1000 "Min: %d units"
+                              "Max: %d units"))
+    (set (_ widgets.range.begin_i widgets.range.end_i)
          (ImGui.DragIntRange2 ctx "range int (no bounds)"
-                               widgets.range.begin_i widgets.range.end_i 5 0 0
-                               "Min: %d units" "Max: %d units"))
+                              widgets.range.begin_i widgets.range.end_i 5 0 0
+                              "Min: %d units" "Max: %d units"))
     (ImGui.TreePop ctx))
+
+;;     if (ImGui.TreeNode("Data Types"))
+;;     {
+;;         // DragScalar/InputScalar/SliderScalar functions allow various data types
+;;         // - signed/unsigned
+;;         // - 8/16/32/64-bits
+;;         // - integer/float/double
+;;         // To avoid polluting the public API with all possible combinations, we use the ImGuiDataType enum
+;;         // to pass the type, and passing all arguments by pointer.
+;;         // This is the reason the test code below creates local variables to hold "zero" "one" etc. for each type.
+;;         // In practice, if you frequently use a given type that is not covered by the normal API entry points,
+;;         // you can wrap it yourself inside a 1 line function which can take typed argument as value instead of void*,
+;;         // and then pass their address to the generic function. For example:
+;;         //   bool MySliderU64(const char *label, u64* value, u64 min = 0, u64 max = 0, const char* format = "%lld")
+;;         //   {
+;;         //      return SliderScalar(label, ImGuiDataType_U64, value, &min, &max, format);
+;;         //   }
+;;
+;;         // Setup limits (as helper variables so we can take their address, as explained above)
+;;         // Note: SliderScalar() functions have a maximum usable range of half the natural type maximum, hence the /2.
+;;         #ifndef LLONG_MIN
+;;         ImS64 LLONG_MIN = -9223372036854775807LL - 1;
+;;         ImS64 LLONG_MAX = 9223372036854775807LL;
+;;         ImU64 ULLONG_MAX = (2ULL * 9223372036854775807LL + 1);
+;;         #endif
+;;         const char    s8_zero  = 0,   s8_one  = 1,   s8_fifty  = 50, s8_min  = -128,        s8_max = 127;
+;;         const ImU8    u8_zero  = 0,   u8_one  = 1,   u8_fifty  = 50, u8_min  = 0,           u8_max = 255;
+;;         const short   s16_zero = 0,   s16_one = 1,   s16_fifty = 50, s16_min = -32768,      s16_max = 32767;
+;;         const ImU16   u16_zero = 0,   u16_one = 1,   u16_fifty = 50, u16_min = 0,           u16_max = 65535;
+;;         const ImS32   s32_zero = 0,   s32_one = 1,   s32_fifty = 50, s32_min = INT_MIN/2,   s32_max = INT_MAX/2,    s32_hi_a = INT_MAX/2 - 100,    s32_hi_b = INT_MAX/2;
+;;         const ImU32   u32_zero = 0,   u32_one = 1,   u32_fifty = 50, u32_min = 0,           u32_max = UINT_MAX/2,   u32_hi_a = UINT_MAX/2 - 100,   u32_hi_b = UINT_MAX/2;
+;;         const ImS64   s64_zero = 0,   s64_one = 1,   s64_fifty = 50, s64_min = LLONG_MIN/2, s64_max = LLONG_MAX/2,  s64_hi_a = LLONG_MAX/2 - 100,  s64_hi_b = LLONG_MAX/2;
+;;         const ImU64   u64_zero = 0,   u64_one = 1,   u64_fifty = 50, u64_min = 0,           u64_max = ULLONG_MAX/2, u64_hi_a = ULLONG_MAX/2 - 100, u64_hi_b = ULLONG_MAX/2;
+;;         const float   f32_zero = 0.f, f32_one = 1.f, f32_lo_a = -10000000000.0f, f32_hi_a = +10000000000.0f;
+;;         const double  f64_zero = 0.,  f64_one = 1.,  f64_lo_a = -1000000000000000.0, f64_hi_a = +1000000000000000.0;
+;;
+;;         // State
+;;         static char   s8_v  = 127;
+;;         static ImU8   u8_v  = 255;
+;;         static short  s16_v = 32767;
+;;         static ImU16  u16_v = 65535;
+;;         static ImS32  s32_v = -1;
+;;         static ImU32  u32_v = (ImU32)-1;
+;;         static ImS64  s64_v = -1;
+;;         static ImU64  u64_v = (ImU64)-1;
+;;         static float  f32_v = 0.123f;
+;;         static double f64_v = 90000.01234567890123456789;
+;;
+;;         const float drag_speed = 0.2f;
+;;         static bool drag_clamp = false;
+;;         ImGui.SeparatorText("Drags");
+;;         ImGui.Checkbox("Clamp integers to 0..50", &drag_clamp);
+;;         ImGui.SameLine(); HelpMarker(
+;;             "As with every widget in dear imgui, we never modify values unless there is a user interaction.\n"
+;;             "You can override the clamping limits by using CTRL+Click to input a value.");
+;;         ImGui.DragScalar("drag s8",        ImGuiDataType_S8,     &s8_v,  drag_speed, drag_clamp ? &s8_zero  : NULL, drag_clamp ? &s8_fifty  : NULL);
+;;         ImGui.DragScalar("drag u8",        ImGuiDataType_U8,     &u8_v,  drag_speed, drag_clamp ? &u8_zero  : NULL, drag_clamp ? &u8_fifty  : NULL, "%u ms");
+;;         ImGui.DragScalar("drag s16",       ImGuiDataType_S16,    &s16_v, drag_speed, drag_clamp ? &s16_zero : NULL, drag_clamp ? &s16_fifty : NULL);
+;;         ImGui.DragScalar("drag u16",       ImGuiDataType_U16,    &u16_v, drag_speed, drag_clamp ? &u16_zero : NULL, drag_clamp ? &u16_fifty : NULL, "%u ms");
+;;         ImGui.DragScalar("drag s32",       ImGuiDataType_S32,    &s32_v, drag_speed, drag_clamp ? &s32_zero : NULL, drag_clamp ? &s32_fifty : NULL);
+;;         ImGui.DragScalar("drag s32 hex",   ImGuiDataType_S32,    &s32_v, drag_speed, drag_clamp ? &s32_zero : NULL, drag_clamp ? &s32_fifty : NULL, "0x%08X");
+;;         ImGui.DragScalar("drag u32",       ImGuiDataType_U32,    &u32_v, drag_speed, drag_clamp ? &u32_zero : NULL, drag_clamp ? &u32_fifty : NULL, "%u ms");
+;;         ImGui.DragScalar("drag s64",       ImGuiDataType_S64,    &s64_v, drag_speed, drag_clamp ? &s64_zero : NULL, drag_clamp ? &s64_fifty : NULL);
+;;         ImGui.DragScalar("drag u64",       ImGuiDataType_U64,    &u64_v, drag_speed, drag_clamp ? &u64_zero : NULL, drag_clamp ? &u64_fifty : NULL);
+;;         ImGui.DragScalar("drag float",     ImGuiDataType_Float,  &f32_v, 0.005f,  &f32_zero, &f32_one, "%f");
+;;         ImGui.DragScalar("drag float log", ImGuiDataType_Float,  &f32_v, 0.005f,  &f32_zero, &f32_one, "%f", ImGuiSliderFlags_Logarithmic);
+;;         ImGui.DragScalar("drag double",    ImGuiDataType_Double, &f64_v, 0.0005f, &f64_zero, NULL,     "%.10f grams");
+;;         ImGui.DragScalar("drag double log",ImGuiDataType_Double, &f64_v, 0.0005f, &f64_zero, &f64_one, "0 < %.10f < 1", ImGuiSliderFlags_Logarithmic);
+;;
+;;         ImGui.SeparatorText("Sliders");
+;;         ImGui.SliderScalar("slider s8 full",       ImGuiDataType_S8,     &s8_v,  &s8_min,   &s8_max,   "%d");
+;;         ImGui.SliderScalar("slider u8 full",       ImGuiDataType_U8,     &u8_v,  &u8_min,   &u8_max,   "%u");
+;;         ImGui.SliderScalar("slider s16 full",      ImGuiDataType_S16,    &s16_v, &s16_min,  &s16_max,  "%d");
+;;         ImGui.SliderScalar("slider u16 full",      ImGuiDataType_U16,    &u16_v, &u16_min,  &u16_max,  "%u");
+;;         ImGui.SliderScalar("slider s32 low",       ImGuiDataType_S32,    &s32_v, &s32_zero, &s32_fifty,"%d");
+;;         ImGui.SliderScalar("slider s32 high",      ImGuiDataType_S32,    &s32_v, &s32_hi_a, &s32_hi_b, "%d");
+;;         ImGui.SliderScalar("slider s32 full",      ImGuiDataType_S32,    &s32_v, &s32_min,  &s32_max,  "%d");
+;;         ImGui.SliderScalar("slider s32 hex",       ImGuiDataType_S32,    &s32_v, &s32_zero, &s32_fifty, "0x%04X");
+;;         ImGui.SliderScalar("slider u32 low",       ImGuiDataType_U32,    &u32_v, &u32_zero, &u32_fifty,"%u");
+;;         ImGui.SliderScalar("slider u32 high",      ImGuiDataType_U32,    &u32_v, &u32_hi_a, &u32_hi_b, "%u");
+;;         ImGui.SliderScalar("slider u32 full",      ImGuiDataType_U32,    &u32_v, &u32_min,  &u32_max,  "%u");
+;;         ImGui.SliderScalar("slider s64 low",       ImGuiDataType_S64,    &s64_v, &s64_zero, &s64_fifty,"%I64d");
+;;         ImGui.SliderScalar("slider s64 high",      ImGuiDataType_S64,    &s64_v, &s64_hi_a, &s64_hi_b, "%I64d");
+;;         ImGui.SliderScalar("slider s64 full",      ImGuiDataType_S64,    &s64_v, &s64_min,  &s64_max,  "%I64d");
+;;         ImGui.SliderScalar("slider u64 low",       ImGuiDataType_U64,    &u64_v, &u64_zero, &u64_fifty,"%I64u ms");
+;;         ImGui.SliderScalar("slider u64 high",      ImGuiDataType_U64,    &u64_v, &u64_hi_a, &u64_hi_b, "%I64u ms");
+;;         ImGui.SliderScalar("slider u64 full",      ImGuiDataType_U64,    &u64_v, &u64_min,  &u64_max,  "%I64u ms");
+;;         ImGui.SliderScalar("slider float low",     ImGuiDataType_Float,  &f32_v, &f32_zero, &f32_one);
+;;         ImGui.SliderScalar("slider float low log", ImGuiDataType_Float,  &f32_v, &f32_zero, &f32_one,  "%.10f", ImGuiSliderFlags_Logarithmic);
+;;         ImGui.SliderScalar("slider float high",    ImGuiDataType_Float,  &f32_v, &f32_lo_a, &f32_hi_a, "%e");
+;;         ImGui.SliderScalar("slider double low",    ImGuiDataType_Double, &f64_v, &f64_zero, &f64_one,  "%.10f grams");
+;;         ImGui.SliderScalar("slider double low log",ImGuiDataType_Double, &f64_v, &f64_zero, &f64_one,  "%.10f", ImGuiSliderFlags_Logarithmic);
+;;         ImGui.SliderScalar("slider double high",   ImGuiDataType_Double, &f64_v, &f64_lo_a, &f64_hi_a, "%e grams");
+;;
+;;         ImGui.SeparatorText("Sliders (reverse)");
+;;         ImGui.SliderScalar("slider s8 reverse",    ImGuiDataType_S8,   &s8_v,  &s8_max,    &s8_min, "%d");
+;;         ImGui.SliderScalar("slider u8 reverse",    ImGuiDataType_U8,   &u8_v,  &u8_max,    &u8_min, "%u");
+;;         ImGui.SliderScalar("slider s32 reverse",   ImGuiDataType_S32,  &s32_v, &s32_fifty, &s32_zero, "%d");
+;;         ImGui.SliderScalar("slider u32 reverse",   ImGuiDataType_U32,  &u32_v, &u32_fifty, &u32_zero, "%u");
+;;         ImGui.SliderScalar("slider s64 reverse",   ImGuiDataType_S64,  &s64_v, &s64_fifty, &s64_zero, "%I64d");
+;;         ImGui.SliderScalar("slider u64 reverse",   ImGuiDataType_U64,  &u64_v, &u64_fifty, &u64_zero, "%I64u ms");
+;;
+;;         static bool inputs_step = true;
+;;         ImGui.SeparatorText("Inputs");
+;;         ImGui.Checkbox("Show step buttons", &inputs_step);
+;;         ImGui.InputScalar("input s8",      ImGuiDataType_S8,     &s8_v,  inputs_step ? &s8_one  : NULL, NULL, "%d");
+;;         ImGui.InputScalar("input u8",      ImGuiDataType_U8,     &u8_v,  inputs_step ? &u8_one  : NULL, NULL, "%u");
+;;         ImGui.InputScalar("input s16",     ImGuiDataType_S16,    &s16_v, inputs_step ? &s16_one : NULL, NULL, "%d");
+;;         ImGui.InputScalar("input u16",     ImGuiDataType_U16,    &u16_v, inputs_step ? &u16_one : NULL, NULL, "%u");
+;;         ImGui.InputScalar("input s32",     ImGuiDataType_S32,    &s32_v, inputs_step ? &s32_one : NULL, NULL, "%d");
+;;         ImGui.InputScalar("input s32 hex", ImGuiDataType_S32,    &s32_v, inputs_step ? &s32_one : NULL, NULL, "%04X");
+;;         ImGui.InputScalar("input u32",     ImGuiDataType_U32,    &u32_v, inputs_step ? &u32_one : NULL, NULL, "%u");
+;;         ImGui.InputScalar("input u32 hex", ImGuiDataType_U32,    &u32_v, inputs_step ? &u32_one : NULL, NULL, "%08X");
+;;         ImGui.InputScalar("input s64",     ImGuiDataType_S64,    &s64_v, inputs_step ? &s64_one : NULL);
+;;         ImGui.InputScalar("input u64",     ImGuiDataType_U64,    &u64_v, inputs_step ? &u64_one : NULL);
+;;         ImGui.InputScalar("input float",   ImGuiDataType_Float,  &f32_v, inputs_step ? &f32_one : NULL);
+;;         ImGui.InputScalar("input double",  ImGuiDataType_Double, &f64_v, inputs_step ? &f64_one : NULL);
+;;
+;;         ImGui.TreePop();
+;;     }
+
   (when (ImGui.TreeNode ctx "Multi-component Widgets")
-    (when (not widgets.multi_component)
-      (set widgets.multi_component
-           {:vec4a (reaper.new_array [0.1 0.2 0.3 0.44])
-            :vec4d [0.1 0.2 0.3 0.44]
-            :vec4i [1 5 100 255]}))
+    (set-when-not widgets.multi_component
+                  {:vec4a (reaper.new_array [0.1 0.2 0.3 0.44])
+                   :vec4d [0.1 0.2 0.3 0.44]
+                   :vec4i [1 5 100 255]})
     (local vec4d widgets.multi_component.vec4d)
     (local vec4i widgets.multi_component.vec4i)
     (ImGui.SeparatorText ctx :2-wide)
@@ -1874,81 +2128,83 @@ We don't have a getter to avoidencouraging you to persistently save values that 
     (var vec4i2 nil)
     (var vec4i3 nil)
     (var vec4i4 nil)
-    (set-forcibly! (rv vec4d1 vec4d2)
+    (set-forcibly! (_ vec4d1 vec4d2)
                    (ImGui.InputDouble2 ctx "input double2" (. vec4d 1)
                                         (. vec4d 2)))
     (tset vec4d 1 vec4d1)
     (tset vec4d 2 vec4d2)
-    (set-forcibly! (rv vec4d1 vec4d2)
+    (set-forcibly! (_ vec4d1 vec4d2)
                    (ImGui.DragDouble2 ctx "drag double2" (. vec4d 1)
                                        (. vec4d 2) 0.01 0 1))
     (tset vec4d 1 vec4d1)
     (tset vec4d 2 vec4d2)
-    (set-forcibly! (rv vec4d1 vec4d2)
+    (set-forcibly! (_ vec4d1 vec4d2)
                    (ImGui.SliderDouble2 ctx "slider double2" (. vec4d 1)
                                          (. vec4d 2) 0 1))
     (tset vec4d 1 vec4d1)
     (tset vec4d 2 vec4d2)
-    (set-forcibly! (rv vec4i1 vec4i2)
+    (set-forcibly! (_ vec4i1 vec4i2)
                    (ImGui.InputInt2 ctx "input int2" (. vec4i 1) (. vec4i 2)))
     (tset vec4i 1 vec4i1)
     (tset vec4i 2 vec4i2)
-    (set-forcibly! (rv vec4i1 vec4i2)
+    (set-forcibly! (_ vec4i1 vec4i2)
                    (ImGui.DragInt2 ctx "drag int2" (. vec4i 1) (. vec4i 2) 1 0
                                     255))
     (tset vec4i 1 vec4i1)
     (tset vec4i 2 vec4i2)
-    (set-forcibly! (rv vec4i1 vec4i2)
+    (set-forcibly! (_ vec4i1 vec4i2)
                    (ImGui.SliderInt2 ctx "slider int2" (. vec4i 1) (. vec4i 2)
                                       0 255))
     (tset vec4i 1 vec4i1)
     (tset vec4i 2 vec4i2)
+
     (ImGui.SeparatorText ctx :3-wide)
-    (set-forcibly! (rv vec4d1 vec4d2 vec4d3)
+    (set-forcibly! (_ vec4d1 vec4d2 vec4d3)
                    (ImGui.InputDouble3 ctx "input double3" (. vec4d 1)
                                         (. vec4d 2) (. vec4d 3)))
     (tset vec4d 1 vec4d1)
     (tset vec4d 2 vec4d2)
     (tset vec4d 3 vec4d3)
-    (set-forcibly! (rv vec4d1 vec4d2 vec4d3)
+    (set-forcibly! (_ vec4d1 vec4d2 vec4d3)
                    (ImGui.DragDouble3 ctx "drag double3" (. vec4d 1)
                                        (. vec4d 2) (. vec4d 3) 0.01 0 1))
     (tset vec4d 1 vec4d1)
     (tset vec4d 2 vec4d2)
     (tset vec4d 3 vec4d3)
-    (set-forcibly! (rv vec4d1 vec4d2 vec4d3)
+    (set-forcibly! (_ vec4d1 vec4d2 vec4d3)
                    (ImGui.SliderDouble3 ctx "slider double3" (. vec4d 1)
                                          (. vec4d 2) (. vec4d 3) 0 1))
     (tset vec4d 1 vec4d1)
     (tset vec4d 2 vec4d2)
     (tset vec4d 3 vec4d3)
-    (set-forcibly! (rv vec4i1 vec4i2 vec4i3)
+    (set-forcibly! (_ vec4i1 vec4i2 vec4i3)
                    (ImGui.InputInt3 ctx "input int3" (. vec4i 1) (. vec4i 2)
                                      (. vec4i 3)))
     (tset vec4i 1 vec4i1)
     (tset vec4i 2 vec4i2)
     (tset vec4i 3 vec4i3)
-    (set-forcibly! (rv vec4i1 vec4i2 vec4i3)
+    (set-forcibly! (_ vec4i1 vec4i2 vec4i3)
                    (ImGui.DragInt3 ctx "drag int3" (. vec4i 1) (. vec4i 2)
                                     (. vec4i 3) 1 0 255))
     (tset vec4i 1 vec4i1)
     (tset vec4i 2 vec4i2)
     (tset vec4i 3 vec4i3)
-    (set-forcibly! (rv vec4i1 vec4i2 vec4i3)
+    (set-forcibly! (_ vec4i1 vec4i2 vec4i3)
                    (ImGui.SliderInt3 ctx "slider int3" (. vec4i 1) (. vec4i 2)
                                       (. vec4i 3) 0 255))
     (tset vec4i 1 vec4i1)
     (tset vec4i 2 vec4i2)
     (tset vec4i 3 vec4i3)
+
     (ImGui.SeparatorText ctx :4-wide)
-    (set-forcibly! (rv vec4d1 vec4d2 vec4d3 vec4d4)
+    (set-forcibly! (_ vec4d1 vec4d2 vec4d3 vec4d4)
                    (ImGui.InputDouble4 ctx "input double4" (. vec4d 1)
                                         (. vec4d 2) (. vec4d 3) (. vec4d 4)))
     (tset vec4d 1 vec4d1)
     (tset vec4d 2 vec4d2)
     (tset vec4d 3 vec4d3)
     (tset vec4d 4 vec4d4)
-    (set-forcibly! (rv vec4d1 vec4d2 vec4d3 vec4d4)
+    (set-forcibly! (_ vec4d1 vec4d2 vec4d3 vec4d4)
                    (ImGui.DragDouble4 ctx "drag double4" (. vec4d 1)
                                        (. vec4d 2) (. vec4d 3) (. vec4d 4) 0.01
                                        0 1))
@@ -1956,28 +2212,28 @@ We don't have a getter to avoidencouraging you to persistently save values that 
     (tset vec4d 2 vec4d2)
     (tset vec4d 3 vec4d3)
     (tset vec4d 4 vec4d4)
-    (set-forcibly! (rv vec4d1 vec4d2 vec4d3 vec4d4)
+    (set-forcibly! (_ vec4d1 vec4d2 vec4d3 vec4d4)
                    (ImGui.SliderDouble4 ctx "slider double4" (. vec4d 1)
                                          (. vec4d 2) (. vec4d 3) (. vec4d 4) 0 1))
     (tset vec4d 1 vec4d1)
     (tset vec4d 2 vec4d2)
     (tset vec4d 3 vec4d3)
     (tset vec4d 4 vec4d4)
-    (set-forcibly! (rv vec4i1 vec4i2 vec4i3 vec4i4)
+    (set-forcibly! (_ vec4i1 vec4i2 vec4i3 vec4i4)
                    (ImGui.InputInt4 ctx "input int4" (. vec4i 1) (. vec4i 2)
                                      (. vec4i 3) (. vec4i 4)))
     (tset vec4i 1 vec4i1)
     (tset vec4i 2 vec4i2)
     (tset vec4i 3 vec4i3)
     (tset vec4i 4 vec4i4)
-    (set-forcibly! (rv vec4i1 vec4i2 vec4i3 vec4i4)
+    (set-forcibly! (_ vec4i1 vec4i2 vec4i3 vec4i4)
                    (ImGui.DragInt4 ctx "drag int4" (. vec4i 1) (. vec4i 2)
                                     (. vec4i 3) (. vec4i 4) 1 0 255))
     (tset vec4i 1 vec4i1)
     (tset vec4i 2 vec4i2)
     (tset vec4i 3 vec4i3)
     (tset vec4i 4 vec4i4)
-    (set-forcibly! (rv vec4i1 vec4i2 vec4i3 vec4i4)
+    (set-forcibly! (_ vec4i1 vec4i2 vec4i3 vec4i4)
                    (ImGui.SliderInt4 ctx "slider int4" (. vec4i 1) (. vec4i 2)
                                       (. vec4i 3) (. vec4i 4) 0 255))
     (tset vec4i 1 vec4i1)
@@ -1985,268 +2241,266 @@ We don't have a getter to avoidencouraging you to persistently save values that 
     (tset vec4i 3 vec4i3)
     (tset vec4i 4 vec4i4)
     (ImGui.Spacing ctx)
+
     (ImGui.InputDoubleN ctx "input reaper.array" widgets.multi_component.vec4a)
-    (ImGui.DragDoubleN ctx "drag reaper.array" widgets.multi_component.vec4a
-                        0.01 0 1)
-    (ImGui.SliderDoubleN ctx "slider reaper.array"
-                          widgets.multi_component.vec4a 0 1)
+    (ImGui.DragDoubleN ctx "drag reaper.array" widgets.multi_component.vec4a 0.01 0.0 1.0)
+    (ImGui.SliderDoubleN ctx "slider reaper.array" widgets.multi_component.vec4a 0.0 1.0)
+
     (ImGui.TreePop ctx))
+
   (when (ImGui.TreeNode ctx "Vertical Sliders")
-    (when (not widgets.vsliders)
-      (set widgets.vsliders
-           {:int_value 0
-            :values [0 0.6 0.35 0.9 0.7 0.2 0]
-            :values2 [0.2 0.8 0.4 0.25]}))
-    (local spacing 4)
-    (ImGui.PushStyleVar ctx (ImGui.StyleVar_ItemSpacing) spacing spacing)
-    (set (rv widgets.vsliders.int_value)
-         (ImGui.VSliderInt ctx "##int" 18 160 widgets.vsliders.int_value 0 5))
-    (ImGui.SameLine ctx)
-    (ImGui.PushID ctx :set1)
-    (each [i v (ipairs widgets.vsliders.values)]
-      (when (> i 1) (ImGui.SameLine ctx))
-      (ImGui.PushID ctx i)
-      (ImGui.PushStyleColor ctx (ImGui.Col_FrameBg)
-                             (demo.HSV (/ (- i 1) 7) 0.5 0.5 1))
-      (ImGui.PushStyleColor ctx (ImGui.Col_FrameBgHovered)
-                             (demo.HSV (/ (- i 1) 7) 0.6 0.5 1))
-      (ImGui.PushStyleColor ctx (ImGui.Col_FrameBgActive)
-                             (demo.HSV (/ (- i 1) 7) 0.7 0.5 1))
-      (ImGui.PushStyleColor ctx (ImGui.Col_SliderGrab)
-                             (demo.HSV (/ (- i 1) 7) 0.9 0.9 1))
-      (var vi nil)
-      (set-forcibly! (rv vi) (ImGui.VSliderDouble ctx "##v" 18 160 v 0 1 " "))
-      (tset widgets.vsliders.values i vi)
-      (when (or (ImGui.IsItemActive ctx) (ImGui.IsItemHovered ctx))
-        (ImGui.SetTooltip ctx (: "%.3f" :format v)))
-      (ImGui.PopStyleColor ctx 4)
-      (ImGui.PopID ctx))
-    (ImGui.PopID ctx)
-    (ImGui.SameLine ctx)
-    (ImGui.PushID ctx :set2)
-    (local rows 3)
-    (local (small-slider-w small-slider-h)
-           (values 18 (/ (- 160 (* (- rows 1) spacing)) rows)))
-    (each [nx v2 (ipairs widgets.vsliders.values2)]
-      (when (> nx 1) (ImGui.SameLine ctx))
-      (ImGui.BeginGroup ctx)
-      (for [ny 0 (- rows 1)]
-        (ImGui.PushID ctx (+ (* nx rows) ny))
-        (set-forcibly! (rv v2)
-                       (ImGui.VSliderDouble ctx "##v" small-slider-w
-                                             small-slider-h v2 0 1 " "))
-        (when rv (tset widgets.vsliders.values2 nx v2))
-        (when (or (ImGui.IsItemActive ctx) (ImGui.IsItemHovered ctx))
-          (ImGui.SetTooltip ctx (: "%.3f" :format v2)))
+    (set-when-not widgets.vsliders
+                  {:int_value 0
+                   :values  [0.0  0.6  0.35 0.9 0.70 0.20 0.0]
+                   :values2 [0.20 0.80 0.40 0.25]})
+    (let [spacing 4]
+      (ImGui.PushStyleVar ctx (ImGui.StyleVar_ItemSpacing) spacing spacing)
+
+      (update-2nd widgets.vsliders.int_value (ImGui.VSliderInt ctx "##int" 18 160 $ 0 5))
+      (ImGui.SameLine ctx)
+
+      (ImGui.PushID ctx :set1)
+      (each [i v (ipairs widgets.vsliders.values)]
+        (when (> i 1) (ImGui.SameLine ctx))
+        (ImGui.PushID ctx i)
+        (ImGui.PushStyleColor ctx (ImGui.Col_FrameBg)        (demo.HSV (/ (- i 1) 7.0) 0.5 0.5 1.0))
+        (ImGui.PushStyleColor ctx (ImGui.Col_FrameBgHovered) (demo.HSV (/ (- i 1) 7.0) 0.6 0.5 1.0))
+        (ImGui.PushStyleColor ctx (ImGui.Col_FrameBgActive)  (demo.HSV (/ (- i 1) 7.0) 0.7 0.5 1.0))
+        (ImGui.PushStyleColor ctx (ImGui.Col_SliderGrab)     (demo.HSV (/ (- i 1) 7.0) 0.9 0.9 1.0))
+        (let [(_ vi) (ImGui.VSliderDouble ctx "##v" 18 160 v 0 1 " ")]
+          (tset widgets.vsliders.values i vi))
+        (when (or (ImGui.IsItemActive ctx)
+                  (ImGui.IsItemHovered ctx))
+          (ImGui.SetTooltip ctx (: "%.3f" :format v)))
+        (ImGui.PopStyleColor ctx 4)
         (ImGui.PopID ctx))
-      (ImGui.EndGroup ctx))
-    (ImGui.PopID ctx)
-    (ImGui.SameLine ctx)
-    (ImGui.PushID ctx :set3)
-    (for [i 1 4] (local v (. widgets.vsliders.values i))
-      (when (> i 1) (ImGui.SameLine ctx))
-      (ImGui.PushID ctx i)
-      (ImGui.PushStyleVar ctx (ImGui.StyleVar_GrabMinSize) 40)
-      (var vi nil)
-      (set-forcibly! (rv vi) (ImGui.VSliderDouble ctx "##v" 40 160 v 0 1 "%.2f
-sec"))
-      (tset widgets.vsliders.values i vi)
+      (ImGui.PopID ctx)
+
+      (ImGui.SameLine ctx)
+      (ImGui.PushID ctx :set2)
+      (let [rows 3
+            small-slider-w 18 
+            small-slider-h (/ (- 160 (* (- rows 1) spacing)) rows)] 
+        (each [nx v2 (ipairs widgets.vsliders.values2)]
+          (when (> nx 1) (ImGui.SameLine ctx))
+          (ImGui.BeginGroup ctx)
+          (for [ny 0 (- rows 1)]
+            (ImGui.PushID ctx (+ (* nx rows) ny))
+            (let [(rv v2) (ImGui.VSliderDouble ctx "##v" small-slider-w small-slider-h v2 0.0 1.0 " ")]
+              (when rv (tset widgets.vsliders.values2 nx v2))
+              (when (or (ImGui.IsItemActive ctx)
+                        (ImGui.IsItemHovered ctx))
+                (ImGui.SetTooltip ctx (: "%.3f" :format v2)))
+              (ImGui.PopID ctx)))
+          (ImGui.EndGroup ctx))
+        (ImGui.PopID ctx))
+
+      (ImGui.SameLine ctx)
+      (ImGui.PushID ctx :set3)
+      (for [i 1 4] (local v (. widgets.vsliders.values i))
+        (when (> i 1) (ImGui.SameLine ctx))
+        (ImGui.PushID ctx i)
+        (ImGui.PushStyleVar ctx (ImGui.StyleVar_GrabMinSize) 40)
+        (let [(_ vi) (ImGui.VSliderDouble ctx "##v" 40 160 v 0 1 "%.2f sec")]
+          (tset widgets.vsliders.values i vi))
+        (ImGui.PopStyleVar ctx)
+        (ImGui.PopID ctx))
+      (ImGui.PopID ctx)
       (ImGui.PopStyleVar ctx)
-      (ImGui.PopID ctx))
-    (ImGui.PopID ctx)
-    (ImGui.PopStyleVar ctx)
-    (ImGui.TreePop ctx))
+      (ImGui.TreePop ctx)))
+
   (when (ImGui.TreeNode ctx "Drag and Drop")
-    (when (not widgets.dragdrop)
-      (set widgets.dragdrop {:color1 16711731
-                             :color2 1723007104
-                             :files {}
-                             :items ["Item One"
-                                     "Item Two"
-                                     "Item Three"
-                                     "Item Four"
-                                     "Item Five"]
-                             :mode 0
-                             :names [:Bobby
-                                     :Beatrice
-                                     :Betty
-                                     :Brianna
-                                     :Barry
-                                     :Bernard
-                                     :Bibi
-                                     :Blaine
-                                     :Bryn]}))
+    (set-when-not widgets.dragdrop
+                  {:color1 0xFF0033
+                   :color2 0x66B30080
+                   :files {}
+                   :items ["Item One" "Item Two" "Item Three" "Item Four" "Item Five"]
+                   :mode 0
+                   :names [:Bobby :Beatrice :Betty :Brianna :Barry :Bernard :Bibi :Blaine :Bryn]})
+
     (when (ImGui.TreeNode ctx "Drag and drop in standard widgets")
+      ;; ColorEdit widgets automatically act as drag source and drag target.
+      ;; They are using standardized payload types accessible using
+      ;; ImGui_AcceptDragDropPayloadRGB or ImGui_AcceptDragDropPayloadRGBA
+      ;; to allow your own widgets to use colors in their drag and drop interaction.
+      ;; Also see 'Demo->Widgets->Color/Picker Widgets->Palette' demo.
       (demo.HelpMarker "You can drag from the color squares.")
-      (set (rv widgets.dragdrop.color1)
-           (ImGui.ColorEdit3 ctx "color 1" widgets.dragdrop.color1))
-      (set (rv widgets.dragdrop.color2)
-           (ImGui.ColorEdit4 ctx "color 2" widgets.dragdrop.color2))
+      (update-2nd widgets.dragdrop.color1 (ImGui.ColorEdit3 ctx "color 1" $))
+      (update-2nd widgets.dragdrop.color2 (ImGui.ColorEdit4 ctx "color 2" $))
       (ImGui.TreePop ctx))
+
     (when (ImGui.TreeNode ctx "Drag and drop to copy/swap items")
-      (local (mode-copy mode-move mode-swap) (values 0 1 2))
-      (when (ImGui.RadioButton ctx :Copy (= widgets.dragdrop.mode mode-copy))
-        (set widgets.dragdrop.mode mode-copy))
-      (ImGui.SameLine ctx)
-      (when (ImGui.RadioButton ctx :Move (= widgets.dragdrop.mode mode-move))
-        (set widgets.dragdrop.mode mode-move))
-      (ImGui.SameLine ctx)
-      (when (ImGui.RadioButton ctx :Swap (= widgets.dragdrop.mode mode-swap))
-        (set widgets.dragdrop.mode mode-swap))
-      (each [n name (ipairs widgets.dragdrop.names)]
-        (ImGui.PushID ctx n)
-        (when (not= (% (- n 1) 3) 0)
-          (ImGui.SameLine ctx))
-        (ImGui.Button ctx name 60 60)
-        (when (ImGui.BeginDragDropSource ctx (ImGui.DragDropFlags_None))
-          (ImGui.SetDragDropPayload ctx :DND_DEMO_CELL (tostring n))
-          (when (= widgets.dragdrop.mode mode-copy)
-            (ImGui.Text ctx (: "Copy %s" :format name)))
-          (when (= widgets.dragdrop.mode mode-move)
-            (ImGui.Text ctx (: "Move %s" :format name)))
-          (when (= widgets.dragdrop.mode mode-swap)
-            (ImGui.Text ctx (: "Swap %s" :format name)))
-          (ImGui.EndDragDropSource ctx))
-        (when (ImGui.BeginDragDropTarget ctx)
-          (var payload nil)
-          (set (rv payload) (ImGui.AcceptDragDropPayload ctx :DND_DEMO_CELL))
-          (when rv
-            (local payload-n (tonumber payload))
-            (when (= widgets.dragdrop.mode mode-copy)
-              (tset widgets.dragdrop.names n
-                    (. widgets.dragdrop.names payload-n)))
-            (when (= widgets.dragdrop.mode mode-move)
-              (tset widgets.dragdrop.names n
-                    (. widgets.dragdrop.names payload-n))
-              (tset widgets.dragdrop.names payload-n ""))
-            (when (= widgets.dragdrop.mode mode-swap)
-              (tset widgets.dragdrop.names n
-                    (. widgets.dragdrop.names payload-n))
-              (tset widgets.dragdrop.names payload-n name)))
-          (ImGui.EndDragDropTarget ctx))
-        (ImGui.PopID ctx))
-      (ImGui.TreePop ctx))
+      (let [mode-copy 0
+            mode-move 1
+            mode-swap 2]
+        (when (ImGui.RadioButton ctx :Copy (= widgets.dragdrop.mode mode-copy))
+          (set widgets.dragdrop.mode mode-copy))
+        (ImGui.SameLine ctx)
+        (when (ImGui.RadioButton ctx :Move (= widgets.dragdrop.mode mode-move))
+          (set widgets.dragdrop.mode mode-move))
+        (ImGui.SameLine ctx)
+        (when (ImGui.RadioButton ctx :Swap (= widgets.dragdrop.mode mode-swap))
+          (set widgets.dragdrop.mode mode-swap))
+        (each [n name (ipairs widgets.dragdrop.names)]
+          (ImGui.PushID ctx n)
+          (when (not= (% (- n 1) 3) 0)
+            (ImGui.SameLine ctx))
+          (ImGui.Button ctx name 60 60)
+
+          ;; Our buttons are both drag sources and drag targets here!
+          (when (ImGui.BeginDragDropSource ctx (ImGui.DragDropFlags_None))
+            ;; Set payload to carry the index of our item (could be anything)
+            (ImGui.SetDragDropPayload ctx :DND_DEMO_CELL (tostring n))
+
+            ;; Display preview (could be anything, e.g. when dragging an image we could decide to display
+            ;; the filename and a small preview of the image, etc.)
+            (case widgets.dragdrop.mode
+              mode-copy (ImGui.Text ctx (: "Copy %s" :format name))
+              mode-move (ImGui.Text ctx (: "Move %s" :format name))
+              mode-swap (ImGui.Text ctx (: "Swap %s" :format name)))
+            (ImGui.EndDragDropSource ctx))
+          (when (ImGui.BeginDragDropTarget ctx)
+            (let [(rv payload) (ImGui.AcceptDragDropPayload ctx :DND_DEMO_CELL)]
+              (when rv
+                (let [payload (tonumber payload)]
+                  (case widgets.dragdrop.mode 
+                    mode-copy (tset widgets.dragdrop.names n (. widgets.dragdrop.names payload))
+                    mode-move (do 
+                                (tset widgets.dragdrop.names n (. widgets.dragdrop.names payload))
+                                (tset widgets.dragdrop.names payload ""))
+                    mode-swap (do
+                                (tset widgets.dragdrop.names n (. widgets.dragdrop.names payload))
+                                (tset widgets.dragdrop.names payload name)))))
+              (ImGui.EndDragDropTarget ctx)))
+          (ImGui.PopID ctx))
+        (ImGui.TreePop ctx)))
+
     (when (ImGui.TreeNode ctx "Drag to reorder items (simple)")
+      ;; Simple reordering
       (demo.HelpMarker "We don't use the drag and drop api at all here! Instead we query when the item is held but not hovered, and order items accordingly.")
       (each [n item (ipairs widgets.dragdrop.items)]
         (ImGui.Selectable ctx item)
-        (when (and (ImGui.IsItemActive ctx) (not (ImGui.IsItemHovered ctx)))
-          (local mouse-delta
-                 (select 2
-                         (ImGui.GetMouseDragDelta ctx
-                                                   (ImGui.MouseButton_Left))))
-          (local n-next (+ n (or (and (< mouse-delta 0) (- 1)) 1)))
-          (when (and (>= n-next 1) (<= n-next (length widgets.dragdrop.items)))
-            (tset widgets.dragdrop.items n (. widgets.dragdrop.items n-next))
-            (tset widgets.dragdrop.items n-next item)
-            (ImGui.ResetMouseDragDelta ctx (ImGui.MouseButton_Left)))))
+
+        (when (and (ImGui.IsItemActive ctx)
+                   (not (ImGui.IsItemHovered ctx)))
+          (let [mouse-delta (select 2 (ImGui.GetMouseDragDelta ctx (ImGui.MouseButton_Left)))
+                n-next (+ n (or (and (< mouse-delta 0) (- 1)) 1))]
+            (when (<= 1 n-next (length widgets.dragdrop.items))
+              (tset widgets.dragdrop.items n (. widgets.dragdrop.items n-next))
+              (tset widgets.dragdrop.items n-next item)
+              (ImGui.ResetMouseDragDelta ctx (ImGui.MouseButton_Left))))))
       (ImGui.TreePop ctx))
+
     (when (ImGui.TreeNode ctx "Drag and drop files")
       (when (ImGui.BeginChildFrame ctx "##drop_files" (- FLT_MIN) 100)
         (if (= (length widgets.dragdrop.files) 0)
-            (ImGui.Text ctx "Drag and drop files here...")
-            (do
-              (ImGui.Text ctx
-                           (: "Received %d file(s):" :format
-                              (length widgets.dragdrop.files)))
-              (ImGui.SameLine ctx)
-              (when (ImGui.SmallButton ctx :Clear)
-                (set widgets.dragdrop.files {}))))
+          (ImGui.Text ctx "Drag and drop files here...")
+          (do
+            (ImGui.Text ctx (: "Received %d file(s):" :format (length widgets.dragdrop.files)))
+            (ImGui.SameLine ctx)
+            (when (ImGui.SmallButton ctx :Clear)
+              (set widgets.dragdrop.files {}))))
         (each [_ file (ipairs widgets.dragdrop.files)] (ImGui.Bullet ctx)
           (ImGui.TextWrapped ctx file))
         (ImGui.EndChildFrame ctx))
+
       (when (ImGui.BeginDragDropTarget ctx)
-        (var (rv count) (ImGui.AcceptDragDropPayloadFiles ctx))
-        (when rv
-          (set widgets.dragdrop.files {})
-          (for [i 0 (- count 1)] (var filename nil)
-            (set (rv filename) (ImGui.GetDragDropPayloadFile ctx i))
-            (table.insert widgets.dragdrop.files filename)))
-        (ImGui.EndDragDropTarget ctx))
+        (let [(rv count) (ImGui.AcceptDragDropPayloadFiles ctx)]
+          (when rv
+            (set widgets.dragdrop.files {})
+            (for [i 0 (- count 1)]
+              (let [(_ filename) (ImGui.GetDragDropPayloadFile ctx i)]
+                (table.insert widgets.dragdrop.files filename))))
+        (ImGui.EndDragDropTarget ctx)))
+
       (ImGui.TreePop ctx))
+
     (ImGui.TreePop ctx))
-  (when (ImGui.TreeNode ctx
-                         "Querying Item Status (Edited/Active/Hovered etc.)")
-    (when (not widgets.query_item)
-      (set widgets.query_item {:b false
-                               :color 4286578943
-                               :current 1
-                               :d4a [1 0.5 0 1]
-                               :item_type 1
-                               :str ""}))
+
+  (when (ImGui.TreeNode ctx "Querying Item Status (Edited/Active/Hovered etc.)")
+    (set-when-not widgets.query_item
+                  {:b false
+                   :color 0xFF8000FF
+                   :current 1
+                   :d4a [1.0 0.5 0.0 1.0]
+                   :item_type 1
+                   :str ""})
+
+    ;; Select an item type
     (set (rv widgets.query_item.item_type)
          (ImGui.Combo ctx "Item Type" widgets.query_item.item_type
-                       "Text\000Button\000Button (w/ repeat)\000Checkbox\000SliderDouble\000InputText\000InputTextMultiline\000InputDouble\000InputDouble3\000ColorEdit4\000Selectable\000MenuItem\000TreeNode\000TreeNode (w/ double-click)\000Combo\000ListBox\000"))
+                      "Text\0Button\0Button (w/ repeat)\0Checkbox\0SliderDouble\0\z
+                      InputText\0InputTextMultiline\0InputDouble\0InputDouble3\0ColorEdit4\0\z
+                      Selectable\0MenuItem\0TreeNode\0TreeNode (w/ double-click)\0Combo\0ListBox\0"))
+
     (ImGui.SameLine ctx)
-    (demo.HelpMarker "Testing how various types of items are interacting with the IsItemXXX functions. Note that the bool return value of most ImGui function is generally equivalent to calling ImGui.IsItemHovered().")
-    (when widgets.query_item.item_disabled (ImGui.BeginDisabled ctx true))
-    (local item-type widgets.query_item.item_type)
-    (when (= item-type 0) (ImGui.Text ctx "ITEM: Text"))
-    (when (= item-type 1) (set rv (ImGui.Button ctx "ITEM: Button")))
-    (when (= item-type 2) (ImGui.PushButtonRepeat ctx true)
-      (set rv (ImGui.Button ctx "ITEM: Button"))
-      (ImGui.PopButtonRepeat ctx))
-    (when (= item-type 3)
-      (set (rv widgets.query_item.b)
-           (ImGui.Checkbox ctx "ITEM: Checkbox" widgets.query_item.b)))
-    (when (= item-type 4)
-      (var da41 nil)
-      (set-forcibly! (rv da41)
-                     (ImGui.SliderDouble ctx "ITEM: SliderDouble"
-                                          (. widgets.query_item.d4a 1) 0 1))
-      (tset widgets.query_item.d4a 1 da41))
-    (when (= item-type 5)
-      (set (rv widgets.query_item.str)
-           (ImGui.InputText ctx "ITEM: InputText" widgets.query_item.str)))
-    (when (= item-type 6)
-      (set (rv widgets.query_item.str)
-           (ImGui.InputTextMultiline ctx "ITEM: InputTextMultiline"
-                                      widgets.query_item.str)))
-    (when (= item-type 7)
-      (var d4a1 nil)
-      (set-forcibly! (rv d4a1)
-                     (ImGui.InputDouble ctx "ITEM: InputDouble"
-                                         (. widgets.query_item.d4a 1) 1))
-      (tset widgets.query_item.d4a 1 d4a1))
-    (when (= item-type 8)
-      (local d4a widgets.query_item.d4a)
-      (var d4a1 nil)
-      (var d4a2 nil)
-      (var d4a3 nil)
-      (set-forcibly! (rv d4a1 d4a2 d4a3)
-                     (ImGui.InputDouble3 ctx "ITEM: InputDouble3" (. d4a 1)
-                                          (. d4a 2) (. d4a 3)))
-      (tset d4a 1 d4a1)
-      (tset d4a 2 d4a2)
-      (tset d4a 3 d4a3))
-    (when (= item-type 9)
-      (set (rv widgets.query_item.color)
-           (ImGui.ColorEdit4 ctx "ITEM: ColorEdit" widgets.query_item.color)))
-    (when (= item-type 10) (set rv (ImGui.Selectable ctx "ITEM: Selectable")))
-    (when (= item-type 11) (set rv (ImGui.MenuItem ctx "ITEM: MenuItem")))
-    (when (= item-type 12) (set rv (ImGui.TreeNode ctx "ITEM: TreeNode"))
-      (when rv (ImGui.TreePop ctx)))
-    (when (= item-type 13)
-      (set rv
-           (ImGui.TreeNode ctx
-                            "ITEM: TreeNode w/ ImGuiTreeNodeFlags_OpenOnDoubleClick"
-                            (bor (ImGui.TreeNodeFlags_OpenOnDoubleClick)
-                                 (ImGui.TreeNodeFlags_NoTreePushOnOpen)))))
-    (when (= item-type 14)
-      (set (rv widgets.query_item.current)
-           (ImGui.Combo ctx "ITEM: Combo" widgets.query_item.current
-                         "Apple\000Banana\000Cherry\000Kiwi\000")))
-    (when (= item-type 15)
-      (set (rv widgets.query_item.current)
-           (ImGui.ListBox ctx "ITEM: ListBox" widgets.query_item.current
-                           "Apple\000Banana\000Cherry\000Kiwi\000")))
-    (local hovered-delay-none (ImGui.IsItemHovered ctx))
-    (local hovered-delay-short
-           (ImGui.IsItemHovered ctx (ImGui.HoveredFlags_DelayShort)))
-    (local hovered-delay-normal
-           (ImGui.IsItemHovered ctx (ImGui.HoveredFlags_DelayNormal)))
-    (ImGui.BulletText ctx
-                       (: "Return value = %s
+    (demo.HelpMarker 
+      "Testing how various types of items are interacting with the IsItemXXX \z
+       functions. Note that the bool return value of most ImGui function is \z
+       generally equivalent to calling ImGui.IsItemHovered().")
+
+    (when widgets.query_item.item_disabled
+      (ImGui.BeginDisabled ctx true))
+
+    ;; Submit selected items so we can query their status in the code following it.
+    (let [rv
+          (case widgets.query_item.item_type
+            ;; Testing text items with no identifier/interaction
+            0 (ImGui.Text ctx "ITEM: Text")
+            ;; Testing button
+            1 (ImGui.Button ctx "ITEM: Button")
+            ;; Testing button (with repeater)
+            2 (let [_ (ImGui.PushButtonRepeat ctx true)
+                    rv (ImGui.Button ctx "ITEM: Button")
+                    _ (ImGui.PopButtonRepeat ctx)]
+                rv)
+            ;; Testing checkbox
+            3 (update-2nd widgets.query_item.b (ImGui.Checkbox ctx "ITEM: Checkbox" $))
+            ;; Testing basic item
+            4 (let [(rv da41) (ImGui.SliderDouble ctx "ITEM: SliderDouble" (. widgets.query_item.d4a 1) 0 1)]
+                (tset widgets.query_item.d4a 1 da41)
+                rv)
+            ;; Testing input text (which handles tabbing)
+            5 (update-2nd widgets.query_item.str (ImGui.InputText ctx "ITEM: InputText" $))
+            ;; Testing input text (which uses a child window)
+            6 (update-2nd widgets.query_item.str (ImGui.InputTextMultiline ctx "ITEM: InputTextMultiline" $))
+            ;; Testing +/- buttons on scalar input
+            7 (let [(rv d4a1) (ImGui.InputDouble ctx "ITEM: InputDouble" (. widgets.query_item.d4a 1) 1)]
+                (tset widgets.query_item.d4a 1 d4a1)
+                rv)
+            ;; Testing multi-component items (IsItemXXX flags are reported merged)
+            8 (let [d4a widgets.query_item.d4a
+                    (rv d4a1 d4a2 d4a3) (ImGui.InputDouble3 ctx "ITEM: InputDouble3" (. d4a 1) (. d4a 2) (. d4a 3))]
+                (tset d4a 1 d4a1)
+                (tset d4a 2 d4a2)
+                (tset d4a 3 d4a3)
+                rv)
+            ;; Testing multi-component items (IsItemXXX flags are reported merged)
+            9 (update-2nd widgets.query_item.color (ImGui.ColorEdit4 ctx "ITEM: ColorEdit" $))
+            ;; Testing selectable item
+            10 (ImGui.Selectable ctx "ITEM: Selectable")
+            ;; Testing menu item (they use ImGuiButtonFlags_PressedOnRelease button policy)
+            11 (ImGui.MenuItem ctx "ITEM: MenuItem")
+            ;; Testing tree node
+            12 (let [rv (ImGui.TreeNode ctx "ITEM: TreeNode")]
+                 (when rv
+                   (ImGui.TreePop ctx))
+                 rv)
+            ;; Testing tree node with ImGuiButtonFlags_PressedOnDoubleClick button policy.
+            13 (ImGui.TreeNode ctx "ITEM: TreeNode w/ ImGuiTreeNodeFlags_OpenOnDoubleClick"
+                               (bor (ImGui.TreeNodeFlags_OpenOnDoubleClick)
+                                    (ImGui.TreeNodeFlags_NoTreePushOnOpen)))
+            14 (update-2nd widgets.query_item.current (ImGui.Combo ctx "ITEM: Combo" $ "Apple\000Banana\000Cherry\000Kiwi\000"))
+            15 (update-2nd widgets.query_item.current (ImGui.ListBox ctx "ITEM: ListBox" $ "Apple\000Banana\000Cherry\000Kiwi\000")))
+
+          hovered-delay-none (ImGui.IsItemHovered ctx)
+          hovered-delay-short (ImGui.IsItemHovered ctx (ImGui.HoveredFlags_DelayShort))
+          hovered-delay-normal (ImGui.IsItemHovered ctx (ImGui.HoveredFlags_DelayNormal))]
+      ;; Display the values of IsItemHovered() and other common item state functions.
+      ;; Note that the ImGuiHoveredFlags_XXX flags can be combined.
+      ;; Because BulletText is an item itself and that would affect the output of IsItemXXX functions,
+      ;; we query every state in a single call to avoid storing them and to simplify the code.
+      (ImGui.BulletText ctx (: "Return value = %s
 IsItemFocused() = %s
 IsItemHovered() = %s
 IsItemHovered(_AllowWhenBlockedByPopup) = %s
@@ -2264,7 +2518,8 @@ IsItemClicked() = %s
 IsItemToggledOpen() = %s
 GetItemRectMin() = (%.1f, %.1f)
 GetItemRectMax() = (%.1f, %.1f)
-GetItemRectSize() = (%.1f, %.1f)" :format rv
+GetItemRectSize() = (%.1f, %.1f)" :format
+                             rv
                           (ImGui.IsItemFocused ctx) (ImGui.IsItemHovered ctx)
                           (ImGui.IsItemHovered ctx
                                                 (ImGui.HoveredFlags_AllowWhenBlockedByPopup))
@@ -2290,7 +2545,7 @@ GetItemRectSize() = (%.1f, %.1f)" :format rv
                           (select 2 (ImGui.GetItemRectSize ctx))))
     (ImGui.BulletText ctx (: "w/ Hovering Delay: None = %s, Fast = %s, Normal = %s"
                               :format hovered-delay-none hovered-delay-short
-                              hovered-delay-normal))
+                              hovered-delay-normal)))
     (when widgets.query_item.item_disabled (ImGui.EndDisabled ctx))
     (ImGui.InputText ctx :unused "" (ImGui.InputTextFlags_ReadOnly))
     (ImGui.SameLine ctx)
@@ -2461,9 +2716,7 @@ IsItemActive() after begin = %s (== is window being clicked/moved)
     (each [i line (ipairs lines)]
       (when (ImGui.TextFilter_PassFilter widgets.filtering.inst line)
         (ImGui.BulletText ctx line)))
-    (ImGui.TreePop ctx))   
-    )
-)
+    (ImGui.TreePop ctx)))
 
 (fn demo.ShowDemoWindowLayout []
   (when (ImGui.CollapsingHeader ctx "Layout & Scrolling")
