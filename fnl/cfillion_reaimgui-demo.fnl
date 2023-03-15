@@ -5260,33 +5260,37 @@ Hovering the colored canvas will call SetNextFrameWantCaptureXXX.")
               :SeparatorTextAlign
               :SeparatorTextPadding]]
     (each [i name (demo.EachEnum :StyleVar)]
-      (local rv [(ImGui.GetStyleVar ctx i)])
-      (var is-vec2 false)
-      (each [_ vec2-name (ipairs vec2)]
-        (when (= vec2-name name) (set is-vec2 true) (lua :break)))
-      (tset data.vars i (or (and is-vec2 rv) (. rv 1))))
+      (let [rv [(ImGui.GetStyleVar ctx i)]]
+        (var is-vec2 false)
+        (each [_ vec2-name (ipairs vec2)]
+          (when (= vec2-name name)
+            (set is-vec2 true)
+            (lua :break)))
+        (tset data.vars i (if is-vec2 rv (. rv 1)))))
     (each [i (demo.EachEnum :Col)]
       (tset data.colors i (ImGui.GetStyleColor ctx i)))
     data))
 
 (fn demo.CopyStyleData [source target]
   (each [i value (pairs source.vars)]
-    (if (= (type value) :table) (tset target.vars i [(table.unpack value)])
-        (tset target.vars i value)))
-  (each [i value (pairs source.colors)] (tset target.colors i value)))
+    (tset target.vars i (if (= (type value) :table)
+                          [(table.unpack value)]
+                          value)))
+  (each [i value (pairs source.colors)]
+    (tset target.colors i value)))
 
 (fn demo.PushStyle []
   (when app.style_editor
     (set app.style_editor.push_count (+ app.style_editor.push_count 1))
     (each [i value (pairs app.style_editor.style.vars)]
-      (if (= (type value) :table)
-          (ImGui.PushStyleVar ctx i (table.unpack value))
-          (ImGui.PushStyleVar ctx i value)))
+      (ImGui.PushStyleVar ctx i (if (= :table (type value))
+                                  (table.unpack value)
+                                  value)))
     (each [i value (pairs app.style_editor.style.colors)]
       (ImGui.PushStyleColor ctx i value))))
 
 (fn demo.PopStyle []
-  (when (and app.style_editor (> app.style_editor.push_count 0))
+  (when (-?> app.style_editor (> 0))
     (set app.style_editor.push_count (- app.style_editor.push_count 1))
     (ImGui.PopStyleColor ctx (length (. cache :Col)))
     (ImGui.PopStyleVar ctx (length (. cache :StyleVar)))))
@@ -5525,10 +5529,8 @@ Right-click to open edit options menu.")
   (ImGui.BulletText ctx "Double-click on title bar to collapse window.")
   (ImGui.BulletText ctx "Click and drag on lower corner to resize window
 (double-click to auto fit window to its contents).")
-  (ImGui.BulletText ctx
-                     "CTRL+Click on a slider or drag box to input value as text.")
-  (ImGui.BulletText ctx
-                     "TAB/SHIFT+TAB to cycle through keyboard editable fields.")
+  (ImGui.BulletText ctx "CTRL+Click on a slider or drag box to input value as text.")
+  (ImGui.BulletText ctx "TAB/SHIFT+TAB to cycle through keyboard editable fields.")
   (ImGui.BulletText ctx "CTRL+Tab to select a window.")
   (ImGui.BulletText ctx "While inputing text:\n")
   (ImGui.Indent ctx)
@@ -5543,8 +5545,7 @@ Right-click to open edit options menu.")
   (ImGui.BulletText ctx "Arrow keys to navigate.")
   (ImGui.BulletText ctx "Space to activate a widget.")
   (ImGui.BulletText ctx "Return to input text into a widget.")
-  (ImGui.BulletText ctx
-                     "Escape to deactivate a widget, close popup, exit child window.")
+  (ImGui.BulletText ctx "Escape to deactivate a widget, close popup, exit child window.")
   (ImGui.BulletText ctx "Alt to jump to the menu layer of a window.")
   (ImGui.Unindent ctx))
 
@@ -5610,464 +5611,529 @@ Right-click to open edit options menu.")
 
 (fn Example-app-log.add_log [self fmt ...]
   (let [text (fmt:format ...)]
-    (each [line (text:gmatch "[^\r\n]+")] (table.insert self.lines line))))
+    (each [line (text:gmatch "[^\r\n]+")]
+      (table.insert self.lines line))))
 
 (fn Example-app-log.draw [self title p-open]
-  (var (rv p-open) (ImGui.Begin self.ctx title p-open))
-  (when (not rv)
-    (let [___antifnl_rtn_1___ p-open] (lua "return ___antifnl_rtn_1___")))
-  (when (not (ImGui.ValidatePtr self.filter.inst :ImGui_TextFilter*))
-    (set self.filter.inst (ImGui.CreateTextFilter self.filter.text)))
-  (when (ImGui.BeginPopup self.ctx :Options)
-    (set (rv self.auto_scroll)
-         (ImGui.Checkbox self.ctx :Auto-scroll self.auto_scroll))
-    (ImGui.EndPopup self.ctx))
-  (when (ImGui.Button self.ctx :Options) (ImGui.OpenPopup self.ctx :Options))
-  (ImGui.SameLine self.ctx)
-  (local clear (ImGui.Button self.ctx :Clear))
-  (ImGui.SameLine self.ctx)
-  (local copy (ImGui.Button self.ctx :Copy))
-  (ImGui.SameLine self.ctx)
-  (when (ImGui.TextFilter_Draw self.filter.inst ctx :Filter (- 100))
-    (set self.filter.text (ImGui.TextFilter_Get self.filter.inst)))
-  (ImGui.Separator self.ctx)
-  (when (ImGui.BeginChild self.ctx :scrolling 0 0 false
-                           (ImGui.WindowFlags_HorizontalScrollbar))
-    (when clear (self:clear))
-    (when copy (ImGui.LogToClipboard self.ctx))
-    (ImGui.PushStyleVar self.ctx (ImGui.StyleVar_ItemSpacing) 0 0)
-    (if (ImGui.TextFilter_IsActive self.filter.inst)
-        (each [line-no line (ipairs self.lines)]
-          (when (ImGui.TextFilter_PassFilter self.filter.inst line)
-            (ImGui.Text ctx line)))
-        (let [clipper (ImGui.CreateListClipper self.ctx)]
-          (ImGui.ListClipper_Begin clipper (length self.lines))
-          (while (ImGui.ListClipper_Step clipper)
-            (local (display-start display-end)
-                   (ImGui.ListClipper_GetDisplayRange clipper))
-            (for [line-no display-start (- display-end 1)]
-              (ImGui.Text self.ctx (. self.lines (+ line-no 1)))))
-          (ImGui.ListClipper_End clipper)))
-    (ImGui.PopStyleVar self.ctx)
-    (when (and self.auto_scroll
-               (>= (ImGui.GetScrollY self.ctx) (ImGui.GetScrollMaxY self.ctx)))
-      (ImGui.SetScrollHereY self.ctx 1))
-    (ImGui.EndChild self.ctx))
-  (ImGui.End self.ctx)
-  p-open)
+  (let [(rv p-open) (ImGui.Begin self.ctx title p-open)]
+    (when rv
+      (when (not (ImGui.ValidatePtr self.filter.inst :ImGui_TextFilter*))
+        (set self.filter.inst (ImGui.CreateTextFilter self.filter.text)))
+      (when (ImGui.BeginPopup self.ctx :Options)
+        (update-2nd self.auto_scroll (ImGui.Checkbox self.ctx :Auto-scroll $))
+        (ImGui.EndPopup self.ctx))
+      (when (ImGui.Button self.ctx :Options)
+        (ImGui.OpenPopup self.ctx :Options))
+      (ImGui.SameLine self.ctx)
+      (local clear (ImGui.Button self.ctx :Clear))
+      (ImGui.SameLine self.ctx)
+      (local copy (ImGui.Button self.ctx :Copy))
+      (ImGui.SameLine self.ctx)
+      (when (ImGui.TextFilter_Draw self.filter.inst ctx :Filter (- 100))
+        (set self.filter.text (ImGui.TextFilter_Get self.filter.inst)))
+      (ImGui.Separator self.ctx)
+      (when (ImGui.BeginChild self.ctx :scrolling 0 0 false (ImGui.WindowFlags_HorizontalScrollbar))
+        (when clear (self:clear))
+        (when copy (ImGui.LogToClipboard self.ctx))
+        (ImGui.PushStyleVar self.ctx (ImGui.StyleVar_ItemSpacing) 0 0)
+        (if (ImGui.TextFilter_IsActive self.filter.inst)
+          (each [line-no line (ipairs self.lines)]
+            (when (ImGui.TextFilter_PassFilter self.filter.inst line)
+              (ImGui.Text ctx line)))
+          (let [clipper (ImGui.CreateListClipper self.ctx)]
+            (ImGui.ListClipper_Begin clipper (length self.lines))
+            (while (ImGui.ListClipper_Step clipper)
+              (local (display-start display-end)
+                (ImGui.ListClipper_GetDisplayRange clipper))
+              (for [line-no display-start (- display-end 1)]
+                (ImGui.Text self.ctx (. self.lines (+ line-no 1)))))
+            (ImGui.ListClipper_End clipper)))
+        (ImGui.PopStyleVar self.ctx)
+        (when (and self.auto_scroll
+                   (>= (ImGui.GetScrollY self.ctx) (ImGui.GetScrollMaxY self.ctx)))
+          (ImGui.SetScrollHereY self.ctx 1))
+        (ImGui.EndChild self.ctx))
+      (ImGui.End self.ctx))
+    p-open))
 
 (fn demo.ShowExampleAppLog []
-  (when (not app.log) (set app.log (Example-app-log:new ctx))
-    (set app.log.counter 0))
+  (when (not app.log)
+    (set app.log (doto (Example-app-log:new ctx)
+                   (tset :counter 0))))
   (ImGui.SetNextWindowSize ctx 500 400 (ImGui.Cond_FirstUseEver))
-  (local (rv open) (ImGui.Begin ctx "Example: Log" true))
-  (when (not rv) (lua "return open"))
-  (when (ImGui.SmallButton ctx "[Debug] Add 5 entries")
-    (local categories [:info :warn :error])
-    (local words [:Bumfuzzled
-                  :Cattywampus
-                  :Snickersnee
-                  :Abibliophobia
-                  :Absquatulate
-                  :Nincompoop
-                  :Pauciloquent])
-    (for [n 0 (- 5 1)]
-      (local category (. categories (+ (% app.log.counter (length categories))
-                                       1)))
-      (local word (. words (+ (% app.log.counter (length words)) 1)))
-      (app.log:add_log "[%05d] [%s] Hello, current time is %.1f, here's a word: '%s'
-" (ImGui.GetFrameCount ctx) category
-                       (ImGui.GetTime ctx) word)
-      (set app.log.counter (+ app.log.counter 1))))
-  (ImGui.End ctx)
-  (app.log:draw "Example: Log")
-  open)
+  (let [(rv open) (ImGui.Begin ctx "Example: Log" true)]
+    (when rv
+      (when (ImGui.SmallButton ctx "[Debug] Add 5 entries")
+        (local categories [:info :warn :error])
+        (local words [:Bumfuzzled
+                      :Cattywampus
+                      :Snickersnee
+                      :Abibliophobia
+                      :Absquatulate
+                      :Nincompoop
+                      :Pauciloquent])
+        (for [n 0 (- 5 1)]
+          (local category (. categories (+ (% app.log.counter (length categories))
+                                           1)))
+          (local word (. words (+ (% app.log.counter (length words)) 1)))
+          (app.log:add_log "[%05d] [%s] Hello, current time is %.1f, here's a word: '%s'
+          " (ImGui.GetFrameCount ctx) category
+                           (ImGui.GetTime ctx) word)
+          (set app.log.counter (+ app.log.counter 1))))
+      (ImGui.End ctx)
+      (app.log:draw "Example: Log"))
+    open))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; [SECTION] Example App: Simple Layout / ShowExampleAppLayout()
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Demonstrate create a window with multiple child windows.
 (fn demo.ShowExampleAppLayout []
-  (when (not app.layout) (set app.layout {:selected 0}))
+  (set-when-not app.layout {:selected 0})
   (ImGui.SetNextWindowSize ctx 500 440 (ImGui.Cond_FirstUseEver))
   (var (rv open) (ImGui.Begin ctx "Example: Simple layout" true
-                               (ImGui.WindowFlags_MenuBar)))
-  (when (not rv) (lua "return open"))
-  (when (ImGui.BeginMenuBar ctx)
-    (when (ImGui.BeginMenu ctx :File)
-      (when (ImGui.MenuItem ctx :Close :Ctrl+W) (set open false))
-      (ImGui.EndMenu ctx))
-    (ImGui.EndMenuBar ctx))
-  (when (ImGui.BeginChild ctx "left pane" 150 0 true)
-    (for [i 0 (- 100 1)]
-      (when (ImGui.Selectable ctx (: "MyObject %d" :format i)
-                               (= app.layout.selected i))
-        (set app.layout.selected i)))
-    (ImGui.EndChild ctx))
-  (ImGui.SameLine ctx)
-  (ImGui.BeginGroup ctx)
-  (when (ImGui.BeginChild ctx "item view" 0
-                           (- (ImGui.GetFrameHeightWithSpacing ctx)))
-    (ImGui.Text ctx (: "MyObject: %d" :format app.layout.selected))
-    (ImGui.Separator ctx)
-    (when (ImGui.BeginTabBar ctx "##Tabs" (ImGui.TabBarFlags_None))
-      (when (ImGui.BeginTabItem ctx :Description)
-        (ImGui.TextWrapped ctx
-                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ")
-        (ImGui.EndTabItem ctx))
-      (when (ImGui.BeginTabItem ctx :Details)
-        (ImGui.Text ctx "ID: 0123456789")
-        (ImGui.EndTabItem ctx))
-      (ImGui.EndTabBar ctx))
-    (ImGui.EndChild ctx))
-  (when (ImGui.Button ctx :Revert) nil)
-  (ImGui.SameLine ctx)
-  (when (ImGui.Button ctx :Save) nil)
-  (ImGui.EndGroup ctx)
-  (ImGui.End ctx)
+                              (ImGui.WindowFlags_MenuBar)))
+  (when rv
+    (when (ImGui.BeginMenuBar ctx)
+      (when (ImGui.BeginMenu ctx :File)
+        (when (ImGui.MenuItem ctx :Close :Ctrl+W)
+          (set open false))
+        (ImGui.EndMenu ctx))
+      (ImGui.EndMenuBar ctx))
+
+    ;; Left
+    (when (ImGui.BeginChild ctx "left pane" 150 0 true)
+      (for [i 0 (- 100 1)]
+        (when (ImGui.Selectable ctx (: "MyObject %d" :format i) (= app.layout.selected i))
+          (set app.layout.selected i)))
+      (ImGui.EndChild ctx))
+    (ImGui.SameLine ctx)
+
+    ;; Right
+    (ImGui.BeginGroup ctx)
+    (when (ImGui.BeginChild ctx "item view" 0 (- (ImGui.GetFrameHeightWithSpacing ctx)))
+      (ImGui.Text ctx (: "MyObject: %d" :format app.layout.selected))
+      (ImGui.Separator ctx)
+      (when (ImGui.BeginTabBar ctx "##Tabs" (ImGui.TabBarFlags_None))
+        (when (ImGui.BeginTabItem ctx :Description)
+          (ImGui.TextWrapped ctx "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ")
+          (ImGui.EndTabItem ctx))
+        (when (ImGui.BeginTabItem ctx :Details)
+          (ImGui.Text ctx "ID: 0123456789")
+          (ImGui.EndTabItem ctx))
+        (ImGui.EndTabBar ctx))
+      (ImGui.EndChild ctx))
+    (when (ImGui.Button ctx :Revert) :TODO)
+    (ImGui.SameLine ctx)
+    (when (ImGui.Button ctx :Save) :TODO)
+    (ImGui.EndGroup ctx)
+    (ImGui.End ctx))
   open)
 
-(fn demo.ShowPlaceholderObject [prefix uid]
-  (let [rv nil]
-    (ImGui.PushID ctx uid)
-    (ImGui.TableNextRow ctx)
-    (ImGui.TableSetColumnIndex ctx 0)
-    (ImGui.AlignTextToFramePadding ctx)
-    (local node-open
-           (ImGui.TreeNodeEx ctx :Object (: "%s_%u" :format prefix uid)))
-    (ImGui.TableSetColumnIndex ctx 1)
-    (ImGui.Text ctx "my sailor is rich")
-    (when node-open
-      (for [i 0 (- (length app.property_editor.placeholder_members) 1)]
-        (ImGui.PushID ctx i)
-        (if (< i 2) (demo.ShowPlaceholderObject :Child 424242)
-            (do
-              (ImGui.TableNextRow ctx)
-              (ImGui.TableSetColumnIndex ctx 0)
-              (ImGui.AlignTextToFramePadding ctx)
-              (local flags
-                (bor (ImGui.TreeNodeFlags_Leaf)
-                     (ImGui.TreeNodeFlags_NoTreePushOnOpen)
-                     (ImGui.TreeNodeFlags_Bullet)))
-              (ImGui.TreeNodeEx ctx :Field (: "Field_%d" :format i) flags)
-              (ImGui.TableSetColumnIndex ctx 1)
-              (ImGui.SetNextItemWidth ctx (- FLT_MIN))
-              (if (>= i 5) (do
-                             (set-forcibly! (rv pmi)
-                                            (ImGui.InputDouble ctx "##value"
-                                                                (. app.property_editor.placeholder_members
-                                                                   i)
-                                                                1))
-                             (tset app.property_editor.placeholder_members i
-                                   pmi))
-                  (do
-                    (set-forcibly! (rv pmi)
-                                   (ImGui.DragDouble ctx "##value"
-                                                      (. app.property_editor.placeholder_members
-                                                         i)
-                                                      0.01))
-                    (tset app.property_editor.placeholder_members i pmi)))))
-        (ImGui.PopID ctx))
-      (ImGui.TreePop ctx))
-    (ImGui.PopID ctx)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; [SECTION] Example App: Property Editor / ShowExampleAppPropertyEditor()
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(fn demo.ShowPlaceholderObject [prefix uid]
+  ;; Use object uid as identifier. Most commonly you could also use the object pointer as a base ID.
+  (ImGui.PushID ctx uid)
+  ;; Text and Tree nodes are less high than framed widgets, using AlignTextToFramePadding() we add vertical spacing to make the tree lines equal high.
+  (ImGui.TableNextRow ctx)
+  (ImGui.TableSetColumnIndex ctx 0)
+  (ImGui.AlignTextToFramePadding ctx)
+  (local node-open (ImGui.TreeNodeEx ctx :Object (: "%s_%u" :format prefix uid)))
+  (ImGui.TableSetColumnIndex ctx 1)
+  (ImGui.Text ctx "my sailor is rich")
+  (when node-open
+    (for [i 0 (- (length app.property_editor.placeholder_members) 1)]
+      (ImGui.PushID ctx i) ;; Use field index as identifier.
+      (if (< i 2) (demo.ShowPlaceholderObject :Child 424242)
+        (do
+          ;; Here we use a TreeNode to highlight on hover (we could use e.g. Selectable as well)
+          (ImGui.TableNextRow ctx)
+          (ImGui.TableSetColumnIndex ctx 0)
+          (ImGui.AlignTextToFramePadding ctx)
+          (let [flags (bor (ImGui.TreeNodeFlags_Leaf)
+                           (ImGui.TreeNodeFlags_NoTreePushOnOpen)
+                           (ImGui.TreeNodeFlags_Bullet))]
+            (ImGui.TreeNodeEx ctx :Field (: "Field_%d" :format i) flags))
+          (ImGui.TableSetColumnIndex ctx 1)
+          (ImGui.SetNextItemWidth ctx (- FLT_MIN))
+          (set-forcibly! (_ pmi)
+                         (ImGui.DragDouble ctx "##value"
+                                           (. app.property_editor.placeholder_members i)
+                                           (if (>= i 5) 1 0.01)))
+          (tset app.property_editor.placeholder_members i pmi)))
+      (ImGui.PopID ctx))
+    (ImGui.TreePop ctx))
+  (ImGui.PopID ctx))
+
+;; Demonstrate create a simple property editor.
 (fn demo.ShowExampleAppPropertyEditor []
   (when (not app.property_editor)
     (set app.property_editor {:placeholder_members [0 0 1 3.1416 100 999 0 0]}))
   (ImGui.SetNextWindowSize ctx 430 450 (ImGui.Cond_FirstUseEver))
-  (local (rv open) (ImGui.Begin ctx "Example: Property editor" true))
-  (when (not rv) (lua "return open"))
-  (demo.HelpMarker "This example shows how you may implement a property editor using two columns.
-All objects/fields data are dummies here.
-Remember that in many simple cases, you can use ImGui.SameLine(xxx) to position
-your cursor horizontally instead of using the Columns() API.")
-  (ImGui.PushStyleVar ctx (ImGui.StyleVar_FramePadding) 2 2)
-  (when (ImGui.BeginTable ctx :split 2
-                           (bor (ImGui.TableFlags_BordersOuter)
-                                (ImGui.TableFlags_Resizable)))
-    (for [obj-i 0 (- 4 1)] (demo.ShowPlaceholderObject :Object obj-i))
-    (ImGui.EndTable ctx))
-  (ImGui.PopStyleVar ctx)
-  (ImGui.End ctx)
-  open)
+  (let [(rv open) (ImGui.Begin ctx "Example: Property editor" true)]
+    (when rv
+      (demo.HelpMarker "This example shows how you may implement a property editor using two columns.
+      All objects/fields data are dummies here.
+      Remember that in many simple cases, you can use ImGui.SameLine(xxx) to position
+      your cursor horizontally instead of using the Columns() API.")
+      (ImGui.PushStyleVar ctx (ImGui.StyleVar_FramePadding) 2 2)
+      (when (ImGui.BeginTable ctx :split 2
+                              (bor (ImGui.TableFlags_BordersOuter)
+                                   (ImGui.TableFlags_Resizable)))
 
+        ;; Iterate placeholder objects (all the same data)
+        (for [obj-i 0 (- 4 1)]
+          (demo.ShowPlaceholderObject :Object obj-i)
+          ;; ImGui.Separator(ctx)
+          )
+        (ImGui.EndTable ctx))
+      (ImGui.PopStyleVar ctx)
+      (ImGui.End ctx))
+    open))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; [SECTION] Example App: Long Text / ShowExampleAppLongText()
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Demonstrate/test rendering huge amount of text, and the incidence of clipping.
 (fn demo.ShowExampleAppLongText []
-  (when (not app.long_text) (set app.long_text {:lines 0 :log "" :test_type 0}))
+  (set-when-not app.long_text {:lines 0 :log "" :test_type 0})
   (ImGui.SetNextWindowSize ctx 520 600 (ImGui.Cond_FirstUseEver))
-  (var (rv open) (ImGui.Begin ctx "Example: Long text display" true))
-  (when (not rv) (lua "return open"))
-  (ImGui.Text ctx "Printing unusually long amount of text.")
-  (set (rv app.long_text.test_type)
-       (ImGui.Combo ctx "Test type" app.long_text.test_type
-                     "Single call to Text()\000Multiple calls to Text(), clipped\000Multiple calls to Text(), not clipped (slow)\000"))
-  (ImGui.Text ctx
-               (: "Buffer contents: %d lines, %d bytes" :format
-                  app.long_text.lines (app.long_text.log:len)))
-  (when (ImGui.Button ctx :Clear) (set app.long_text.log "")
-    (set app.long_text.lines 0))
-  (ImGui.SameLine ctx)
-  (when (ImGui.Button ctx "Add 1000 lines")
-    (var new-lines "")
-    (for [i 0 (- 1000 1)]
-      (set new-lines (.. new-lines (: "%i The quick brown fox jumps over the lazy dog
-" :format (+ app.long_text.lines i)))))
-    (set app.long_text.log (.. app.long_text.log new-lines))
-    (set app.long_text.lines (+ app.long_text.lines 1000)))
-  (when (ImGui.BeginChild ctx :Log)
-    (if (= app.long_text.test_type 0) (ImGui.Text ctx app.long_text.log)
-        (= app.long_text.test_type 1)
-        (do
-          (ImGui.PushStyleVar ctx (ImGui.StyleVar_ItemSpacing) 0 0)
-          (local clipper (ImGui.CreateListClipper ctx))
-          (ImGui.ListClipper_Begin clipper app.long_text.lines)
-          (while (ImGui.ListClipper_Step clipper)
-            (local (display-start display-end)
-                   (ImGui.ListClipper_GetDisplayRange clipper))
-            (for [i display-start (- display-end 1)]
+  (let [(rv open) (ImGui.Begin ctx "Example: Long text display" true)]
+    (when rv
+      (ImGui.Text ctx "Printing unusually long amount of text.")
+      (update-2nd app.long_text.test_type
+                  (ImGui.Combo ctx "Test type" $
+                               "Single call to Text()\0\z
+                                Multiple calls to Text(), clipped\0\z
+                                Multiple calls to Text(), not clipped (slow)\0"))
+      (ImGui.Text ctx (: "Buffer contents: %d lines, %d bytes" :format
+                         app.long_text.lines (app.long_text.log:len)))
+      (when (ImGui.Button ctx :Clear) (set app.long_text.log "")
+        (set app.long_text.lines 0))
+      (ImGui.SameLine ctx)
+      (when (ImGui.Button ctx "Add 1000 lines")
+        (var new-lines "")
+        (for [i 0 (- 1000 1)]
+          (set new-lines (.. new-lines (: "%i The quick brown fox jumps over the lazy dog
+          " :format (+ app.long_text.lines i)))))
+        (set app.long_text.log (.. app.long_text.log new-lines))
+        (set app.long_text.lines (+ app.long_text.lines 1000)))
+      (when (ImGui.BeginChild ctx :Log)
+        (case app.long_text.test_type
+          0
+          ;; Single call to TextUnformatted() with a big buffer
+          (ImGui.Text ctx app.long_text.log)
+
+          1
+          ;; Multiple calls to Text(), manually coarsely clipped - demonstrate how to use the ImGui_ListClipper helper.
+          (do
+            (ImGui.PushStyleVar ctx (ImGui.StyleVar_ItemSpacing) 0 0)
+            (local clipper (ImGui.CreateListClipper ctx))
+            (ImGui.ListClipper_Begin clipper app.long_text.lines)
+            (while (ImGui.ListClipper_Step clipper)
+              (local (display-start display-end)
+                (ImGui.ListClipper_GetDisplayRange clipper))
+              (for [i display-start (- display-end 1)]
+                (ImGui.Text ctx (: "%i The quick brown fox jumps over the lazy dog"
+                                   :format i))))
+            (ImGui.PopStyleVar ctx))
+
+          2
+          ;; Multiple calls to Text(), not clipped (slow)
+          (do
+            (ImGui.PushStyleVar ctx (ImGui.StyleVar_ItemSpacing) 0 0)
+            (for [i 0 app.long_text.lines]
               (ImGui.Text ctx (: "%i The quick brown fox jumps over the lazy dog"
-                                  :format i))))
-          (ImGui.PopStyleVar ctx)) (= app.long_text.test_type 2)
-        (do
-          (ImGui.PushStyleVar ctx (ImGui.StyleVar_ItemSpacing) 0 0)
-          (for [i 0 app.long_text.lines]
-            (ImGui.Text ctx (: "%i The quick brown fox jumps over the lazy dog"
-                                :format i)))
-          (ImGui.PopStyleVar ctx)))
-    (ImGui.EndChild ctx))
-  (ImGui.End ctx)
-  open)
+                                 :format i)))
+            (ImGui.PopStyleVar ctx)))
+        (ImGui.EndChild ctx))
+      (ImGui.End ctx))
+    open))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; [SECTION] Example App: Auto Resize / ShowExampleAppAutoResize()
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Demonstrate creating a window which gets auto-resized according to its content.
 (fn demo.ShowExampleAppAutoResize []
-  (when (not app.auto_resize) (set app.auto_resize {:lines 10}))
-  (var (rv open)
-       (ImGui.Begin ctx "Example: Auto-resizing window" true
-                     (ImGui.WindowFlags_AlwaysAutoResize)))
-  (when (not rv) (lua "return open"))
-  (ImGui.Text ctx
-               "Window will resize every-frame to the size of its content.
-Note that you probably don't want to query the window size to
-output your content because that would create a feedback loop.")
-  (set (rv app.auto_resize.lines)
-       (ImGui.SliderInt ctx "Number of lines" app.auto_resize.lines 1 20))
-  (for [i 1 app.auto_resize.lines]
-    (ImGui.Text ctx (: "%sThis is line %d" :format (: " " :rep (* i 4)) i)))
-  (ImGui.End ctx)
-  open)
+  (set-when-not app.auto_resize {:lines 10})
+  (let [(rv open) (ImGui.Begin ctx "Example: Auto-resizing window" true (ImGui.WindowFlags_AlwaysAutoResize))]
+    (when rv
+      (ImGui.Text ctx
+                  "Window will resize every-frame to the size of its content.
+                  Note that you probably don't want to query the window size to
+                  output your content because that would create a feedback loop.")
+      (update-2nd app.auto_resize.lines (ImGui.SliderInt ctx "Number of lines" $ 1 20))
+      (for [i 1 app.auto_resize.lines]
+        (ImGui.Text ctx (: "%sThis is line %d" :format (: " " :rep (* i 4)) i))) ;; Pad with space to extend size horizontally
+      (ImGui.End ctx))
+    open))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; [SECTION] Example App: Constrained Resize / ShowExampleAppConstrainedResize()
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Demonstrate creating a window with custom resize constraints.
+;; Note that size constraints currently don't work on a docked window.
 (fn demo.ShowExampleAppConstrainedResize []
-  (when (not app.constrained_resize)
-    (set app.constrained_resize
-         {:auto_resize false :display_lines 10 :type 0 :window_padding true}))
-  (when (= app.constrained_resize.type 0)
-    (ImGui.SetNextWindowSizeConstraints ctx 100 100 500 500))
-  (when (= app.constrained_resize.type 1)
-    (ImGui.SetNextWindowSizeConstraints ctx 100 100 FLT_MAX FLT_MAX))
-  (when (= app.constrained_resize.type 2)
-    (ImGui.SetNextWindowSizeConstraints ctx (- 1) 0 (- 1) FLT_MAX))
-  (when (= app.constrained_resize.type 3)
-    (ImGui.SetNextWindowSizeConstraints ctx 0 (- 1) FLT_MAX (- 1)))
-  (when (= app.constrained_resize.type 4)
-    (ImGui.SetNextWindowSizeConstraints ctx 400 (- 1) 500 (- 1)))
+  ;; struct CustomConstraints
+  ;; {
+  ;;   // Helper functions to demonstrate programmatic constraints
+  ;;   // FIXME: This doesn't take account of decoration size (e.g. title bar), library should make this easier.
+  ;;   static void AspectRatio(ImGuiSizeCallbackData* data)    { float aspect_ratio = *(float*)data->UserData; data->DesiredSize.x = IM_MAX(data->CurrentSize.x, data->CurrentSize.y); data->DesiredSize.y = (float)(int)(data->DesiredSize.x / aspect_ratio); }
+  ;;   static void Square(ImGuiSizeCallbackData* data)         { data->DesiredSize.x = data->DesiredSize.y = IM_MAX(data->CurrentSize.x, data->CurrentSize.y); }
+  ;;   static void Step(ImGuiSizeCallbackData* data)           { float step = *(float*)data->UserData; data->DesiredSize = ImVec2((int)(data->CurrentSize.x / step + 0.5f) * step, (int)(data->CurrentSize.y / step + 0.5f) * step); }
+  ;; };
+
+  (set-when-not app.constrained_resize
+                {:auto_resize false
+                 :display_lines 10
+                 :type 0 ;; imgui's demo defaults to 5 (aspect ratio)
+                 :window_padding true})
+  ;; Submit constraint
+  ;; float aspect_ratio = 16.0f / 9.0f;
+  ;; float fixed_step = 100.0f;
+  (case app.constrained_resize.type 
+    ;; Between 100x100 and 500x500
+    0 (ImGui.SetNextWindowSizeConstraints ctx 100 100 500 500)
+     ;; Width > 100, Height > 100
+     1 (ImGui.SetNextWindowSizeConstraints ctx 100 100 FLT_MAX FLT_MAX)
+     ;; Vertical only
+     2 (ImGui.SetNextWindowSizeConstraints ctx -1 0 -1 FLT_MAX)
+     ;; Horizontal only
+     3 (ImGui.SetNextWindowSizeConstraints ctx 0 -1 FLT_MAX -1)
+     ;; Width Between and 400 and 500
+     4 (ImGui.SetNextWindowSizeConstraints ctx 400 -1 500 -1)
+  ;; if app.constrained_resize.type == 5 then ImGui.SetNextWindowSizeConstraints(ctx,   0,   0, FLT_MAX, FLT_MAX, CustomConstraints::AspectRatio, (void*)&aspect_ratio);   // Aspect ratio
+  ;; if app.constrained_resize.type == 6 then ImGui.SetNextWindowSizeConstraints(ctx,   0,   0, FLT_MAX, FLT_MAX, CustomConstraints::Square);                              // Always Square
+  ;; if app.constrained_resize.type == 7 then ImGui.SetNextWindowSizeConstraints(ctx,   0,   0, FLT_MAX, FLT_MAX, CustomConstraints::Step, (void*)&fixed_step);            // Fixed Step
+  )
+
+  ;; Submit window
   (when (not app.constrained_resize.window_padding)
     (ImGui.PushStyleVar ctx (ImGui.StyleVar_WindowPadding) 0 0))
-  (local window-flags (or (and app.constrained_resize.auto_resize
-                               (ImGui.WindowFlags_AlwaysAutoResize))
-                          0))
-  (local (visible open) (ImGui.Begin ctx "Example: Constrained Resize" true
-                                      window-flags))
-  (when (not app.constrained_resize.window_padding) (ImGui.PopStyleVar ctx))
-  (when (not visible) (lua "return open"))
-  (if (ImGui.IsKeyDown ctx (ImGui.Mod_Shift))
-      (let [(avail-size-w avail-size-h) (ImGui.GetContentRegionAvail ctx)
-            (pos-x pos-y) (ImGui.GetCursorScreenPos ctx)]
-        (ImGui.ColorButton ctx :viewport 2134081535
-                            (bor (ImGui.ColorEditFlags_NoTooltip)
-                                 (ImGui.ColorEditFlags_NoDragDrop))
-                            avail-size-w avail-size-h)
-        (ImGui.SetCursorScreenPos ctx (+ pos-x 10) (+ pos-y 10))
-        (ImGui.Text ctx (: "%.2f x %.2f" :format avail-size-w avail-size-h)))
-      (do
-        (ImGui.Text ctx "(Hold SHIFT to display a dummy viewport)")
-        (when (ImGui.IsWindowDocked ctx)
-          (ImGui.Text ctx
-                       "Warning: Sizing Constraints won't work if the window is docked!"))
-        (when (ImGui.Button ctx "Set 200x200")
-          (ImGui.SetWindowSize ctx 200 200))
-        (ImGui.SameLine ctx)
-        (when (ImGui.Button ctx "Set 500x500")
-          (ImGui.SetWindowSize ctx 500 500))
-        (ImGui.SameLine ctx)
-        (when (ImGui.Button ctx "Set 800x200")
-          (ImGui.SetWindowSize ctx 800 200))
-        (ImGui.SetNextItemWidth ctx (* (ImGui.GetFontSize ctx) 20))
-        (set-forcibly! (rv app.constrained_resize.type)
-                       (ImGui.Combo ctx :Constraint
-                                     app.constrained_resize.type
-                                     "Between 100x100 and 500x500\000At least 100x100\000Resize vertical only\000Resize horizontal only\000Width Between 400 and 500\000"))
-        (ImGui.SetNextItemWidth ctx (* (ImGui.GetFontSize ctx) 20))
-        (set-forcibly! (rv app.constrained_resize.display_lines)
-                       (ImGui.DragInt ctx :Lines
-                                       app.constrained_resize.display_lines 0.2
-                                       1 100))
-        (set-forcibly! (rv app.constrained_resize.auto_resize)
-                       (ImGui.Checkbox ctx :Auto-resize
-                                        app.constrained_resize.auto_resize))
-        (set-forcibly! (rv app.constrained_resize.window_padding)
-                       (ImGui.Checkbox ctx "Window padding"
-                                        app.constrained_resize.window_padding))
-        (for [i 1 app.constrained_resize.display_lines]
-          (ImGui.Text ctx
-                       (: "%sHello, sailor! Making this line long enough for the example."
-                          :format (: " " :rep (* i 4)))))))
-  (ImGui.End ctx)
-  open)
+  (let [window-flags (if app.constrained_resize.auto_resize
+                       (ImGui.WindowFlags_AlwaysAutoResize)
+                       0)
+        (visible open) (ImGui.Begin ctx "Example: Constrained Resize" true window-flags)]
+    (when (not app.constrained_resize.window_padding)
+      (ImGui.PopStyleVar ctx))
+    (when visible
+      (if (ImGui.IsKeyDown ctx (ImGui.Mod_Shift))
+        ;; Display a dummy viewport (in your real app you would likely use ImageButton() to display a texture.
+        (let [(avail-size-w avail-size-h) (ImGui.GetContentRegionAvail ctx)
+              (pos-x pos-y) (ImGui.GetCursorScreenPos ctx)]
+          (ImGui.ColorButton ctx :viewport 2134081535
+                             (bor (ImGui.ColorEditFlags_NoTooltip)
+                                  (ImGui.ColorEditFlags_NoDragDrop))
+                             avail-size-w avail-size-h)
+          (ImGui.SetCursorScreenPos ctx (+ pos-x 10) (+ pos-y 10))
+          (ImGui.Text ctx (: "%.2f x %.2f" :format avail-size-w avail-size-h)))
+        (do
+          (ImGui.Text ctx "(Hold SHIFT to display a dummy viewport)")
+          (when (ImGui.IsWindowDocked ctx)
+            (ImGui.Text ctx
+                        "Warning: Sizing Constraints won't work if the window is docked!"))
+          (when (ImGui.Button ctx "Set 200x200")
+            (ImGui.SetWindowSize ctx 200 200))
+          (ImGui.SameLine ctx)
+          (when (ImGui.Button ctx "Set 500x500")
+            (ImGui.SetWindowSize ctx 500 500))
+          (ImGui.SameLine ctx)
+          (when (ImGui.Button ctx "Set 800x200")
+            (ImGui.SetWindowSize ctx 800 200))
+          (ImGui.SetNextItemWidth ctx (* (ImGui.GetFontSize ctx) 20))
+          (update-2nd app.constrained_resize.type
+                      (ImGui.Combo ctx :Constraint $
+                                   "Between 100x100 and 500x500\0\z
+                                   At least 100x100\0\z
+                                   Resize vertical only\0\z
+                                   Resize horizontal only\0\z
+                                   Width Between 400 and 500\0"))
 
+          ;;Custom: Aspect Ratio 16:9\0\z
+          ;;Custom: Always Square\0\z
+          ;;Custom: Fixed Steps (100)\0')
+          (ImGui.SetNextItemWidth ctx (* (ImGui.GetFontSize ctx) 20))
+          (update-2nd app.constrained_resize.display_lines (ImGui.DragInt ctx :Lines $ 0.2 1 100))
+          (update-2nd app.constrained_resize.auto_resize (ImGui.Checkbox ctx :Auto-resize $))
+          (update-2nd app.constrained_resize.window_padding (ImGui.Checkbox ctx "Window padding" $))
+          (for [i 1 app.constrained_resize.display_lines]
+            (ImGui.Text ctx (: "%sHello, sailor! Making this line long enough for the example."
+                               :format (: " " :rep (* i 4)))))))
+      (ImGui.End ctx))
+    open))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; [SECTION] Example App: Simple overlay / ShowExampleAppSimpleOverlay()
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Demonstrate creating a simple static window with no decoration
+;; + a context;menu to choose which corner of the screen to use.
 (fn demo.ShowExampleAppSimpleOverlay []
-  (when (not app.simple_overlay) (set app.simple_overlay {:location 0}))
+  (set-when-not app.simple_overlay {:location 0})
   (var window-flags (bor (ImGui.WindowFlags_NoDecoration)
                          (ImGui.WindowFlags_NoDocking)
                          (ImGui.WindowFlags_AlwaysAutoResize)
                          (ImGui.WindowFlags_NoSavedSettings)
                          (ImGui.WindowFlags_NoFocusOnAppearing)
                          (ImGui.WindowFlags_NoNav)))
-  (if (>= app.simple_overlay.location 0)
-      (let [PAD 10
-            viewport (ImGui.GetMainViewport ctx)
-            (work-pos-x work-pos-y) (ImGui.Viewport_GetWorkPos viewport)
-            (work-size-w work-size-h) (ImGui.Viewport_GetWorkSize viewport)]
-        (var (window-pos-x window-pos-y window-pos-pivot-x window-pos-pivot-y)
-             nil)
-        (set window-pos-x (or (and (not= (band app.simple_overlay.location 1) 0)
-                                   (- (+ work-pos-x work-size-w) PAD))
-                              (+ work-pos-x PAD)))
-        (set window-pos-y (or (and (not= (band app.simple_overlay.location 2) 0)
-                                   (- (+ work-pos-y work-size-h) PAD))
-                              (+ work-pos-y PAD)))
-        (set window-pos-pivot-x (or (and (not= (band app.simple_overlay.location
-                                                     1)
-                                               0)
-                                         1)
-                                    0))
-        (set window-pos-pivot-y (or (and (not= (band app.simple_overlay.location
-                                                     2)
-                                               0)
-                                         1)
-                                    0))
-        (ImGui.SetNextWindowPos ctx window-pos-x window-pos-y
-                                 (ImGui.Cond_Always) window-pos-pivot-x
-                                 window-pos-pivot-y)
-        (set window-flags (bor window-flags (ImGui.WindowFlags_NoMove))))
-      (= app.simple_overlay.location (- 2))
-      (let [(center-x center-y) (ImGui.Viewport_GetCenter (ImGui.GetMainViewport ctx))]
-        (ImGui.SetNextWindowPos ctx center-x center-y (ImGui.Cond_Always) 0.5
-                                 0.5)
-        (set window-flags (bor window-flags (ImGui.WindowFlags_NoMove)))))
-  (ImGui.SetNextWindowBgAlpha ctx 0.35)
+  (if
+    (>= app.simple_overlay.location 0)
+    (let [PAD 10
+          viewport (ImGui.GetMainViewport ctx)
+          (work-pos-x work-pos-y) (ImGui.Viewport_GetWorkPos viewport) ;; Use work area to avoid menu-bar/task-bar, if any!
+          (work-size-w work-size-h) (ImGui.Viewport_GetWorkSize viewport)
+          window-pos-x (or (and (not= (band app.simple_overlay.location 1) 0)
+                                (- (+ work-pos-x work-size-w) PAD))
+                           (+ work-pos-x PAD))
+          window-pos-y (or (and (not= (band app.simple_overlay.location 2) 0)
+                                (- (+ work-pos-y work-size-h) PAD))
+                           (+ work-pos-y PAD))
+          window-pos-pivot-x (if (= 0 (band 1 app.simple_overlay.location))
+                               0 1)
+          window-pos-pivot-y (if (= 0 (band 2 app.simple_overlay.location))
+                               0 1)]
+      (ImGui.SetNextWindowPos ctx window-pos-x window-pos-y
+                              (ImGui.Cond_Always) window-pos-pivot-x
+                              window-pos-pivot-y)
+
+      ;; ImGui::SetNextWindowViewport(viewport->ID) TODO?
+      (set window-flags (bor window-flags (ImGui.WindowFlags_NoMove))))
+
+    ;; Center window
+    (= app.simple_overlay.location -2)
+    (let [(center-x center-y) (ImGui.Viewport_GetCenter (ImGui.GetMainViewport ctx))]
+      (ImGui.SetNextWindowPos ctx center-x center-y (ImGui.Cond_Always) 0.5
+                              0.5)
+      (set window-flags (bor window-flags (ImGui.WindowFlags_NoMove)))))
+
+  (ImGui.SetNextWindowBgAlpha ctx 0.35) ;; Transparent background
+
   (var (rv open) (ImGui.Begin ctx "Example: Simple overlay" true window-flags))
   (when (not rv) (lua "return open"))
   (ImGui.Text ctx "Simple overlay\n(right-click to change position)")
   (ImGui.Separator ctx)
   (if (ImGui.IsMousePosValid ctx)
-      (ImGui.Text ctx (: "Mouse Position: (%.1f,%.1f)" :format
-                          (ImGui.GetMousePos ctx)))
-      (ImGui.Text ctx "Mouse Position: <invalid>"))
+    (ImGui.Text ctx (: "Mouse Position: (%.1f,%.1f)" :format (ImGui.GetMousePos ctx)))
+    (ImGui.Text ctx "Mouse Position: <invalid>"))
   (when (ImGui.BeginPopupContextWindow ctx)
-    (when (ImGui.MenuItem ctx :Custom nil
-                           (= app.simple_overlay.location (- 1)))
-      (set app.simple_overlay.location (- 1)))
-    (when (ImGui.MenuItem ctx :Center nil
-                           (= app.simple_overlay.location (- 2)))
-      (set app.simple_overlay.location (- 2)))
+    (when (ImGui.MenuItem ctx :Custom nil (= app.simple_overlay.location -1))
+      (set app.simple_overlay.location -1))
+    (when (ImGui.MenuItem ctx :Center nil (= app.simple_overlay.location -2))
+      (set app.simple_overlay.location -2))
     (when (ImGui.MenuItem ctx :Top-left nil (= app.simple_overlay.location 0))
       (set app.simple_overlay.location 0))
     (when (ImGui.MenuItem ctx :Top-right nil (= app.simple_overlay.location 1))
       (set app.simple_overlay.location 1))
-    (when (ImGui.MenuItem ctx :Bottom-left nil
-                           (= app.simple_overlay.location 2))
+    (when (ImGui.MenuItem ctx :Bottom-left nil (= app.simple_overlay.location 2))
       (set app.simple_overlay.location 2))
-    (when (ImGui.MenuItem ctx :Bottom-right nil
-                           (= app.simple_overlay.location 3))
+    (when (ImGui.MenuItem ctx :Bottom-right nil (= app.simple_overlay.location 3))
       (set app.simple_overlay.location 3))
-    (when (ImGui.MenuItem ctx :Close) (set open false))
+    (when (ImGui.MenuItem ctx :Close)
+      (set open false))
     (ImGui.EndPopup ctx))
   (ImGui.End ctx)
   open)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; [SECTION] Example App: Fullscreen window / ShowExampleAppFullscreen()
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Demonstrate creating a window covering the entire screen/viewport
 (fn demo.ShowExampleAppFullscreen []
   (when (not app.fullscreen)
     (set app.fullscreen {:flags (bor (ImGui.WindowFlags_NoDecoration)
                                      (ImGui.WindowFlags_NoMove)
                                      (ImGui.WindowFlags_NoSavedSettings))
                          :use_work_area true}))
+  ;; We demonstrate using the full viewport area or the work area (without menu-bars, task-bars etc.)
+  ;; Based on your use case you may want one or the other.
   (local viewport (ImGui.GetMainViewport ctx))
-  (local get-viewport-pos (or (and app.fullscreen.use_work_area
-                                   ImGui.Viewport_GetWorkPos)
-                              ImGui.Viewport_GetPos))
+  (local get-viewport-pos (if app.fullscreen.use_work_area
+                            ImGui.Viewport_GetWorkPos
+                            ImGui.Viewport_GetPos))
   (local get-viewport-size
          (or (and app.fullscreen.use_work_area ImGui.Viewport_GetWorkSize)
              ImGui.Viewport_GetSize))
   (ImGui.SetNextWindowPos ctx (get-viewport-pos viewport))
   (ImGui.SetNextWindowSize ctx (get-viewport-size viewport))
-  (var (rv open) (ImGui.Begin ctx "Example: Fullscreen window" true
-                               app.fullscreen.flags))
-  (when (not rv) (lua "return open"))
-  (set (rv app.fullscreen.use_work_area)
-       (ImGui.Checkbox ctx "Use work area instead of main area"
-                        app.fullscreen.use_work_area))
-  (ImGui.SameLine ctx)
-  (demo.HelpMarker "Main Area = entire viewport,
-Work Area = entire viewport minus sections used by the main menu bars, task bars etc.
+  (var (rv open) (ImGui.Begin ctx "Example: Fullscreen window" true app.fullscreen.flags))
+  (when rv
+    (set (rv app.fullscreen.use_work_area)
+         (ImGui.Checkbox ctx "Use work area instead of main area"
+                         app.fullscreen.use_work_area))
+    (ImGui.SameLine ctx)
+    (demo.HelpMarker "Main Area = entire viewport,
+    Work Area = entire viewport minus sections used by the main menu bars, task bars etc.
 
-Enable the main-menu bar in Examples menu to see the difference.")
-  (set (rv app.fullscreen.flags)
-       (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoBackground
-                             app.fullscreen.flags
-                             (ImGui.WindowFlags_NoBackground)))
-  (set (rv app.fullscreen.flags)
-       (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoDecoration
-                             app.fullscreen.flags
-                             (ImGui.WindowFlags_NoDecoration)))
-  (ImGui.Indent ctx)
-  (set (rv app.fullscreen.flags)
-       (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoTitleBar
-                             app.fullscreen.flags
-                             (ImGui.WindowFlags_NoTitleBar)))
-  (set (rv app.fullscreen.flags)
-       (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoCollapse
-                             app.fullscreen.flags
-                             (ImGui.WindowFlags_NoCollapse)))
-  (set (rv app.fullscreen.flags)
-       (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoScrollbar
-                             app.fullscreen.flags
-                             (ImGui.WindowFlags_NoScrollbar)))
-  (ImGui.Unindent ctx)
-  (when (ImGui.Button ctx "Close this window") (set open false))
-  (ImGui.End ctx)
+    Enable the main-menu bar in Examples menu to see the difference.")
+    (update-2nd app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoBackground $ (ImGui.WindowFlags_NoBackground)))
+    (update-2nd app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoDecoration $ (ImGui.WindowFlags_NoDecoration)))
+    (ImGui.Indent ctx)
+    (update-2nd app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoTitleBar $ (ImGui.WindowFlags_NoTitleBar)))
+    (update-2nd app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoCollapse $ (ImGui.WindowFlags_NoCollapse)))
+    (update-2nd app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoScrollbar $ (ImGui.WindowFlags_NoScrollbar)))
+    (ImGui.Unindent ctx)
+    (when (ImGui.Button ctx "Close this window")
+      (set open false))
+    (ImGui.End ctx))
   open)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; [SECTION] Example App: Manipulating window titles / ShowExampleAppWindowTitles()
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Demonstrate the use of "##" and "###" in identifiers to manipulate ID generation.
+;; This applies to all regular items as well.
+;; Read FAQ section "How can I have multiple widgets with the same label?" for details.
 (fn demo.ShowExampleAppWindowTitles []
   (let [viewport (ImGui.GetMainViewport ctx)
         base-pos [(ImGui.Viewport_GetPos viewport)]]
-    (ImGui.SetNextWindowPos ctx (+ (. base-pos 1) 100) (+ (. base-pos 2) 100)
-                             (ImGui.Cond_FirstUseEver))
+    ;; By default, Windows are uniquely identified by their title.
+    ;; You can use the "##" and "###" markers to manipulate the display/ID.
+
+    ;; Using "##" to display same title but have unique identifier.
+    (ImGui.SetNextWindowPos ctx
+                            (+ (. base-pos 1) 100)
+                            (+ (. base-pos 2) 100)
+                            (ImGui.Cond_FirstUseEver))
     (when (ImGui.Begin ctx "Same title as another window##1")
-      (ImGui.Text ctx
-                   "This is window 1.
+      (ImGui.Text ctx "This is window 1.
 My title is the same as window 2, but my identifier is unique.")
       (ImGui.End ctx))
-    (ImGui.SetNextWindowPos ctx (+ (. base-pos 1) 100) (+ (. base-pos 2) 200)
-                             (ImGui.Cond_FirstUseEver))
+    (ImGui.SetNextWindowPos ctx
+                            (+ (. base-pos 1) 100)
+                            (+ (. base-pos 2) 200)
+                            (ImGui.Cond_FirstUseEver))
     (when (ImGui.Begin ctx "Same title as another window##2")
-      (ImGui.Text ctx
-                   "This is window 2.
+      (ImGui.Text ctx "This is window 2.
 My title is the same as window 1, but my identifier is unique.")
       (ImGui.End ctx))
+
+    ;; Using "###" to display a changing title but keep a static identifier "AnimatedTitle"
     (ImGui.SetNextWindowPos ctx (+ (. base-pos 1) 100) (+ (. base-pos 2) 300)
                              (ImGui.Cond_FirstUseEver))
     (global spinners ["|" "/" "-" "\\"])
-    (local spinner (band (math.floor (/ (ImGui.GetTime ctx) 0.25)) 3))
-    (when (ImGui.Begin ctx
-                        (: "Animated title %s %d###AnimatedTitle" :format
-                           (. spinners (+ spinner 1)) (ImGui.GetFrameCount ctx)))
+    (local spinner (-> (ImGui.GetTime ctx)
+                       (/ 0.25)
+                       math.floor
+                       (band 3)))
+    (when (ImGui.Begin ctx (: "Animated title %s %d###AnimatedTitle" :format
+                              (. spinners (+ spinner 1)) (ImGui.GetFrameCount ctx)))
       (ImGui.Text ctx "This window has a changing title.")
       (ImGui.End ctx))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; [SECTION] Example App: Custom Rendering using ImDrawList API / ShowExampleAppCustomRendering()
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Demonstrate using the low-level ImDrawList to draw custom shapes.
 (fn demo.ShowExampleAppCustomRendering []
   (when (not app.rendering)
     (set app.rendering {:adding_line false
