@@ -6139,7 +6139,7 @@ My title is the same as window 1, but my identifier is unique.")
     (set app.rendering {:adding_line false
                         :circle_segments_override false
                         :circle_segments_override_v 12
-                        :col 4294928127
+                        :col 0xffff66ff
                         :curve_segments_override false
                         :curve_segments_override_v 8
                         :draw_bg true
@@ -6157,19 +6157,23 @@ My title is the same as window 1, but my identifier is unique.")
     (when (ImGui.BeginTabItem ctx :Primitives)
       (ImGui.PushItemWidth ctx (* (- (ImGui.GetFontSize ctx)) 15))
       (local draw-list (ImGui.GetWindowDrawList ctx))
+      ;; Draw gradients
+      ;; (note that those are currently exacerbating our sRGB/Linear issues)
+      ;; Calling ImGui.GetColor[Ex]() multiplies the given colors by the current Style Alpha
       (ImGui.Text ctx :Gradients)
       (local gradient-size
              [(ImGui.CalcItemWidth ctx) (ImGui.GetFrameHeight ctx)])
       (local p0 [(ImGui.GetCursorScreenPos ctx)])
       (local p1 [(+ (. p0 1) (. gradient-size 1))
                  (+ (. p0 2) (. gradient-size 2))])
-      (local col-a (ImGui.GetColorEx ctx 255))
-      (local col-b (ImGui.GetColorEx ctx 4294967295))
-      (ImGui.DrawList_AddRectFilledMultiColor draw-list (. p0 1) (. p0 2)
-                                               (. p1 1) (. p1 2) col-a col-b
-                                               col-b col-a)
-      (ImGui.InvisibleButton ctx "##gradient1" (. gradient-size 1)
-                              (. gradient-size 2))
+      (local col-a (ImGui.GetColorEx ctx 0x00FF00FF))
+      (local col-b (ImGui.GetColorEx ctx 0xFF0000FF))
+      (ImGui.DrawList_AddRectFilledMultiColor draw-list
+                                              (. p0 1) (. p0 2)
+                                              (. p1 1) (. p1 2)
+                                              col-a col-b
+                                              col-b col-a)
+      (ImGui.InvisibleButton ctx "##gradient1" (. gradient-size 1) (. gradient-size 2))
       (local p0 [(ImGui.GetCursorScreenPos ctx)])
       (local p1 [(+ (. p0 1) (. gradient-size 1))
                  (+ (. p0 2) (. gradient-size 2))])
@@ -6180,34 +6184,27 @@ My title is the same as window 1, but my identifier is unique.")
                                                col-b col-a)
       (ImGui.InvisibleButton ctx "##gradient2" (. gradient-size 1)
                               (. gradient-size 2))
+      ;; Draw a bunch of primitives
       (local item-inner-spacing-x
              (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemInnerSpacing)))
       (ImGui.Text ctx "All primitives")
-      (set (rv app.rendering.sz)
-           (ImGui.DragDouble ctx :Size app.rendering.sz 0.2 2 100 "%.0f"))
-      (set (rv app.rendering.thickness)
-           (ImGui.DragDouble ctx :Thickness app.rendering.thickness 0.05 1 8
-                              "%.02f"))
-      (set (rv app.rendering.ngon_sides)
-           (ImGui.SliderInt ctx "N-gon sides" app.rendering.ngon_sides 3 12))
-      (set (rv app.rendering.circle_segments_override)
-           (ImGui.Checkbox ctx "##circlesegmentoverride"
-                            app.rendering.circle_segments_override))
+      (update-2nd app.rendering.sz (ImGui.DragDouble ctx :Size $ 0.2 2 100 "%.0f"))
+      (update-2nd app.rendering.thickness (ImGui.DragDouble ctx :Thickness $ 0.05 1 8 "%.02f"))
+      (update-2nd app.rendering.ngon_sides (ImGui.SliderInt ctx "N-gon sides" $ 3 12))
+      (update-2nd app.rendering.circle_segments_override (ImGui.Checkbox ctx "##circlesegmentoverride" $))
       (ImGui.SameLine ctx 0 item-inner-spacing-x)
       (set (rv app.rendering.circle_segments_override_v)
            (ImGui.SliderInt ctx "Circle segments override"
                              app.rendering.circle_segments_override_v 3 40))
       (when rv (set app.rendering.circle_segments_override true))
-      (set (rv app.rendering.curve_segments_override)
-           (ImGui.Checkbox ctx "##curvessegmentoverride"
-                            app.rendering.curve_segments_override))
+      (update-2nd app.rendering.curve_segments_override (ImGui.Checkbox ctx "##curvessegmentoverride" $))
       (ImGui.SameLine ctx 0 item-inner-spacing-x)
       (set (rv app.rendering.curve_segments_override_v)
            (ImGui.SliderInt ctx "Curves segments override"
                              app.rendering.curve_segments_override_v 3 40))
       (when rv (set app.rendering.curve_segments_override true))
-      (set (rv app.rendering.col)
-           (ImGui.ColorEdit4 ctx :Color app.rendering.col))
+      (update-2nd app.rendering.col (ImGui.ColorEdit4 ctx :Color $))
+
       (local p [(ImGui.GetCursorScreenPos ctx)])
       (local spacing 10)
       (local corners-tl-br
@@ -6225,49 +6222,72 @@ My title is the same as window 1, but my identifier is unique.")
       (var x (+ (. p 1) 4))
       (var y (+ (. p 2) 4))
       (for [n 1 2]
+        ;; First line uses a thickness of 1.0, second line uses the configurable thickness
         (local th (or (and (= n 1) 1) app.rendering.thickness))
+        ;; N-gon
         (ImGui.DrawList_AddNgon draw-list (+ x (* sz 0.5)) (+ y (* sz 0.5))
-                                 (* sz 0.5) col app.rendering.ngon_sides th)
+                                (* sz 0.5) col app.rendering.ngon_sides th)
         (set x (+ (+ x sz) spacing))
+        ;; Circle
         (ImGui.DrawList_AddCircle draw-list (+ x (* sz 0.5)) (+ y (* sz 0.5))
                                    (* sz 0.5) col circle-segments th)
         (set x (+ (+ x sz) spacing))
+        ;; Square
         (ImGui.DrawList_AddRect draw-list x y (+ x sz) (+ y sz) col 0
                                  (ImGui.DrawFlags_None) th)
         (set x (+ (+ x sz) spacing))
+        ;; Square with all rounded corners
         (ImGui.DrawList_AddRect draw-list x y (+ x sz) (+ y sz) col rounding
                                  (ImGui.DrawFlags_None) th)
         (set x (+ (+ x sz) spacing))
+        ;; Square with two rounded corners
         (ImGui.DrawList_AddRect draw-list x y (+ x sz) (+ y sz) col rounding
                                  corners-tl-br th)
         (set x (+ (+ x sz) spacing))
+        ;; Triangle
+
         (ImGui.DrawList_AddTriangle draw-list (+ x (* sz 0.5)) y (+ x sz)
                                      (- (+ y sz) 0.5) x (- (+ y sz) 0.5) col th)
         (set x (+ (+ x sz) spacing))
+        ;; ImGui.DrawList_AddTriangle(draw_list, x+sz*0.2, y, x, y+sz-0.5, x+sz*0.4, y+sz-0.5, col, th);      x = x + sz*0.4 + spacing -- Thin triangle
+        ;; Horizontal line (note: drawing a filled rectangle will be faster!)
         (ImGui.DrawList_AddLine draw-list x y (+ x sz) y col th)
         (set x (+ (+ x sz) spacing))
+        ;; Vertical line (note: drawing a filled rectangle will be faster!)
         (ImGui.DrawList_AddLine draw-list x y x (+ y sz) col th)
         (set x (+ x spacing))
+        ;; Diagonal line
         (ImGui.DrawList_AddLine draw-list x y (+ x sz) (+ y sz) col th)
         (set x (+ (+ x sz) spacing))
+
+        ;; Quadratic Bezier Curve (3 control points)
         (local cp3 [[x (+ y (* sz 0.6))]
                     [(+ x (* sz 0.5)) (- y (* sz 0.4))]
                     [(+ x sz) (+ y sz)]])
-        (ImGui.DrawList_AddBezierQuadratic draw-list (. (. cp3 1) 1)
-                                            (. (. cp3 1) 2) (. (. cp3 2) 1)
-                                            (. (. cp3 2) 2) (. (. cp3 3) 1)
-                                            (. (. cp3 3) 2) col th
-                                            curve-segments)
-        (set x (+ (+ x sz) spacing))
+        (ImGui.DrawList_AddBezierQuadratic draw-list
+                                           (. (. cp3 1) 1)
+                                           (. (. cp3 1) 2)
+                                           (. (. cp3 2) 1)
+                                           (. (. cp3 2) 2)
+                                           (. (. cp3 3) 1)
+                                           (. (. cp3 3) 2) col th
+                                           curve-segments)
+        (set x (+ x sz spacing))
+
+        ;; Cubic Bezier Curve (4 control points)
         (local cp4 [[x y]
                     [(+ x (* sz 1.3)) (+ y (* sz 0.3))]
                     [(- (+ x sz) (* sz 1.3)) (- (+ y sz) (* sz 0.3))]
                     [(+ x sz) (+ y sz)]])
-        (ImGui.DrawList_AddBezierCubic draw-list (. (. cp4 1) 1)
-                                        (. (. cp4 1) 2) (. (. cp4 2) 1)
-                                        (. (. cp4 2) 2) (. (. cp4 3) 1)
-                                        (. (. cp4 3) 2) (. (. cp4 4) 1)
-                                        (. (. cp4 4) 2) col th curve-segments)
+        (ImGui.DrawList_AddBezierCubic draw-list 
+                                       (. (. cp4 1) 1)
+                                       (. (. cp4 1) 2)
+                                       (. (. cp4 2) 1)
+                                       (. (. cp4 2) 2)
+                                       (. (. cp4 3) 1)
+                                       (. (. cp4 3) 2)
+                                       (. (. cp4 4) 1)
+                                       (. (. cp4 4) 2) col th curve-segments)
         (set x (+ (. p 1) 4))
         (set y (+ (+ y sz) spacing)))
       (ImGui.DrawList_AddNgonFilled draw-list (+ x (* sz 0.5))
