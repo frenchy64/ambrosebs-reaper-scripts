@@ -7731,12 +7731,22 @@ package.preload["anticompiler"] = package.preload["anticompiler"] or function(..
   local sequence = _local_119_["sequence"]
   local multi_sym_3f = _local_119_["multi-sym?"]
   local sym_char_3f = _local_119_["sym-char?"]
+  local list_3f = _local_119_["list?"]
   local unpack = (table.unpack or _G.unpack)
   local function map(tbl, f, with_last_3f)
     local len = #tbl
     local out = {}
     for i, v in ipairs(tbl) do
       table.insert(out, f(v, (with_last_3f and (i == len))))
+    end
+    return out
+  end
+  local function mapcat(tbl, f)
+    local out = {}
+    for _, v in ipairs(tbl) do
+      for _0, v0 in ipairs(f(v)) do
+        table.insert(out, v0)
+      end
     end
     return out
   end
@@ -7911,41 +7921,89 @@ package.preload["anticompiler"] = package.preload["anticompiler"] or function(..
       return list(sym("lua"), ("return " .. table.concat(map(args, view), ", ")))
     end
   end
-  local function binary(compile, scope, _154_, ast)
-    local _arg_155_ = _154_
-    local left = _arg_155_["left"]
-    local right = _arg_155_["right"]
-    local operator = _arg_155_["operator"]
-    local operators = {["=="] = "=", ["~="] = "not=", ["#"] = "length", ["~"] = "bxor", ["<<"] = "lshift", [">>"] = "rshift", ["&"] = "band", ["|"] = "bor"}
-    return list(sym((operators[operator] or operator)), compile(scope, left), compile(scope, right))
+  local function flatten_associative(associative_op_sym, frm)
+    if (list_3f(frm) and (3 <= #frm) and (frm[1] == associative_op_sym)) then
+      local tbl_17_auto = {}
+      local i_18_auto = #tbl_17_auto
+      for i, frm0 in ipairs(frm) do
+        local val_19_auto
+        if (1 ~= i) then
+          val_19_auto = frm0
+        else
+          val_19_auto = nil
+        end
+        if (nil ~= val_19_auto) then
+          i_18_auto = (i_18_auto + 1)
+          do end (tbl_17_auto)[i_18_auto] = val_19_auto
+        else
+        end
+      end
+      return tbl_17_auto
+    else
+      return {frm}
+    end
   end
-  local function unary(compile, scope, _156_, ast)
-    local _arg_157_ = _156_
-    local argument = _arg_157_["argument"]
-    local operator = _arg_157_["operator"]
-    local operators = {["~"] = "bnot"}
-    return list(sym((operators[operator] or operator)), compile(scope, argument))
+  local associative_operators
+  do
+    local tbl_14_auto = {}
+    for _, op in pairs({"band", "bor", "bxor", "+", "*"}) do
+      local k_15_auto, v_16_auto = op, op
+      if ((k_15_auto ~= nil) and (v_16_auto ~= nil)) then
+        tbl_14_auto[k_15_auto] = v_16_auto
+      else
+      end
+    end
+    associative_operators = tbl_14_auto
   end
-  local function call(compile, scope, _158_)
+  local function binary(compile, scope, _158_, ast)
     local _arg_159_ = _158_
-    local arguments = _arg_159_["arguments"]
-    local callee = _arg_159_["callee"]
+    local left = _arg_159_["left"]
+    local right = _arg_159_["right"]
+    local operator = _arg_159_["operator"]
+    local operators = {["=="] = "=", ["~="] = "not=", ["#"] = "length", ["~"] = "bxor", ["<<"] = "lshift", [">>"] = "rshift", ["&"] = "band", ["|"] = "bor"}
+    local op_str = (operators[operator] or operator)
+    local op_sym = sym(op_str)
+    local compile0
     local function _160_(...)
       return compile(scope, ...)
     end
-    return list(compile(scope, callee), unpack(map(arguments, _160_)))
+    compile0 = _160_
+    if associative_operators[op_str] then
+      local function _161_(_241)
+        return flatten_associative(op_sym, compile0(_241))
+      end
+      return list(op_sym, unpack(mapcat({left, right}, _161_)))
+    else
+      return list(op_sym, compile0(left), compile0(right))
+    end
   end
-  local function send(compile, scope, _161_)
-    local _arg_162_ = _161_
-    local receiver = _arg_162_["receiver"]
-    local method = _arg_162_["method"]
-    local arguments = _arg_162_["arguments"]
-    local target = compile(scope, receiver)
-    local args
-    local function _163_(...)
+  local function unary(compile, scope, _163_, ast)
+    local _arg_164_ = _163_
+    local argument = _arg_164_["argument"]
+    local operator = _arg_164_["operator"]
+    local operators = {["~"] = "bnot"}
+    return list(sym((operators[operator] or operator)), compile(scope, argument))
+  end
+  local function call(compile, scope, _165_)
+    local _arg_166_ = _165_
+    local arguments = _arg_166_["arguments"]
+    local callee = _arg_166_["callee"]
+    local function _167_(...)
       return compile(scope, ...)
     end
-    args = map(arguments, _163_)
+    return list(compile(scope, callee), unpack(map(arguments, _167_)))
+  end
+  local function send(compile, scope, _168_)
+    local _arg_169_ = _168_
+    local receiver = _arg_169_["receiver"]
+    local method = _arg_169_["method"]
+    local arguments = _arg_169_["arguments"]
+    local target = compile(scope, receiver)
+    local args
+    local function _170_(...)
+      return compile(scope, ...)
+    end
+    args = map(arguments, _170_)
     if sym_3f(target) then
       return list(sym((tostring(target) .. ":" .. method.name)), unpack(args))
     else
@@ -7953,34 +8011,34 @@ package.preload["anticompiler"] = package.preload["anticompiler"] or function(..
     end
   end
   local function any_computed_3f(ast)
-    local function _165_()
+    local function _172_()
       if (ast.object.kind == "MemberExpression") then
         return any_computed_3f(ast.object)
       else
         return true
       end
     end
-    return (ast.computed or (ast.object and (ast.object.kind ~= "Identifier") and _165_()))
+    return (ast.computed or (ast.object and (ast.object.kind ~= "Identifier") and _172_()))
   end
   local function member(compile, scope, ast)
     if any_computed_3f(ast) then
-      local function _166_()
+      local function _173_()
         if ast.computed then
           return compile(scope, ast.property)
         else
           return view(compile(scope, ast.property))
         end
       end
-      return list(sym("."), compile(scope, ast.object), _166_())
+      return list(sym("."), compile(scope, ast.object), _173_())
     else
       return sym((tostring(compile(scope, ast.object)) .. "." .. ast.property.name))
     end
   end
-  local function if_2a(compile, scope, _168_, tail_3f)
-    local _arg_169_ = _168_
-    local tests = _arg_169_["tests"]
-    local cons = _arg_169_["cons"]
-    local alternate = _arg_169_["alternate"]
+  local function if_2a(compile, scope, _175_, tail_3f)
+    local _arg_176_ = _175_
+    local tests = _arg_176_["tests"]
+    local cons = _arg_176_["cons"]
+    local alternate = _arg_176_["alternate"]
     for _, v in ipairs(cons) do
       if (0 == #v) then
         table.insert(v, sym("nil"))
@@ -7989,92 +8047,92 @@ package.preload["anticompiler"] = package.preload["anticompiler"] or function(..
     end
     local subscope = make_scope(scope)
     if (not alternate and (1 == #tests)) then
-      local function _171_(...)
+      local function _178_(...)
         return compile(subscope, ...)
       end
-      return list(sym("when"), compile(scope, tests[1]), unpack(map(cons[1], _171_, tail_3f)))
+      return list(sym("when"), compile(scope, tests[1]), unpack(map(cons[1], _178_, tail_3f)))
     else
       local out = list(sym("if"))
       for i, test in ipairs(tests) do
         table.insert(out, compile(scope, test))
         local c = cons[i]
-        local function _173_()
+        local function _180_()
           if (1 == #c) then
             return compile(subscope, c[1], tail_3f)
           else
-            local function _172_(...)
+            local function _179_(...)
               return compile(subscope, ...)
             end
-            return list(sym("do"), unpack(map(c, _172_, tail_3f)))
+            return list(sym("do"), unpack(map(c, _179_, tail_3f)))
           end
         end
-        table.insert(out, _173_())
+        table.insert(out, _180_())
       end
       if alternate then
-        local function _175_()
+        local function _182_()
           if (1 == #alternate) then
             return compile(subscope, alternate[1], tail_3f)
           else
-            local function _174_(...)
+            local function _181_(...)
               return compile(subscope, ...)
             end
-            return list(sym("do"), unpack(map(alternate, _174_, tail_3f)))
+            return list(sym("do"), unpack(map(alternate, _181_, tail_3f)))
           end
         end
-        table.insert(out, _175_())
+        table.insert(out, _182_())
       else
       end
       return out
     end
   end
-  local function concat(compile, scope, _178_)
-    local _arg_179_ = _178_
-    local terms = _arg_179_["terms"]
-    local function _180_(...)
+  local function concat(compile, scope, _185_)
+    local _arg_186_ = _185_
+    local terms = _arg_186_["terms"]
+    local function _187_(...)
       return compile(scope, ...)
     end
-    return list(sym(".."), unpack(map(terms, _180_)))
+    return list(sym(".."), unpack(map(terms, _187_)))
   end
-  local function each_2a(compile, scope, _181_)
-    local _arg_182_ = _181_
-    local namelist = _arg_182_["namelist"]
-    local explist = _arg_182_["explist"]
-    local body = _arg_182_["body"]
+  local function each_2a(compile, scope, _188_)
+    local _arg_189_ = _188_
+    local namelist = _arg_189_["namelist"]
+    local explist = _arg_189_["explist"]
+    local body = _arg_189_["body"]
     local subscope = make_scope(scope)
     local binding
-    local function _183_(...)
+    local function _190_(...)
       return compile(scope, ...)
     end
-    binding = map(namelist.names, _183_)
+    binding = map(namelist.names, _190_)
     add_to_scope(subscope, "param", binding)
-    local function _184_(...)
+    local function _191_(...)
       return compile(scope, ...)
     end
-    for _, form in ipairs(map(explist, _184_)) do
+    for _, form in ipairs(map(explist, _191_)) do
       table.insert(binding, form)
     end
-    local function _185_(...)
+    local function _192_(...)
       return compile(subscope, ...)
     end
-    return list(sym("each"), binding, unpack(map(body, _185_)))
+    return list(sym("each"), binding, unpack(map(body, _192_)))
   end
   local function tset_2a(compile, scope, left, right_out, ast)
     if (1 < #left) then
       error(("Unsupported form; tset cannot set multiple values on line " .. (ast.line or "?")))
     else
     end
-    local _187_
+    local _194_
     if (not left[1].computed and (left[1].property.kind == "Identifier")) then
-      _187_ = left[1].property.name
+      _194_ = left[1].property.name
     else
-      _187_ = compile(scope, left[1].property)
+      _194_ = compile(scope, left[1].property)
     end
-    return list(sym("tset"), compile(scope, left[1].object), _187_, right_out)
+    return list(sym("tset"), compile(scope, left[1].object), _194_, right_out)
   end
   local function varize_local_21(scope, name)
-    local _189_ = scope[name]
-    if ((_G.type(_189_) == "table") and (nil ~= (_189_).ast)) then
-      local ast = (_189_).ast
+    local _196_ = scope[name]
+    if ((_G.type(_196_) == "table") and (nil ~= (_196_).ast)) then
+      local ast = (_196_).ast
       ast[1] = "var"
       return nil
     else
@@ -8083,54 +8141,54 @@ package.preload["anticompiler"] = package.preload["anticompiler"] or function(..
   end
   local function setter_for(scope, names)
     local kinds
-    local function _191_(_241)
-      local _192_ = (scope[_241] or _241)
-      if ((_G.type(_192_) == "table") and (nil ~= (_192_).kind)) then
-        local kind = (_192_).kind
+    local function _198_(_241)
+      local _199_ = (scope[_241] or _241)
+      if ((_G.type(_199_) == "table") and (nil ~= (_199_).kind)) then
+        local kind = (_199_).kind
         return kind
       elseif true then
-        local _ = _192_
+        local _ = _199_
         return "global"
       else
         return nil
       end
     end
-    kinds = map(names, _191_)
+    kinds = map(names, _198_)
     local kinds0
     do
-      local _194_ = distinct(kinds)
-      table.sort(_194_)
-      kinds0 = _194_
+      local _201_ = distinct(kinds)
+      table.sort(_201_)
+      kinds0 = _201_
     end
-    local _195_ = kinds0
-    if ((_G.type(_195_) == "table") and ((_195_)[1] == "MemberExpression") and ((_195_)[2] == "local")) then
-      local function _196_(...)
+    local _202_ = kinds0
+    if ((_G.type(_202_) == "table") and ((_202_)[1] == "MemberExpression") and ((_202_)[2] == "local")) then
+      local function _203_(...)
         return varize_local_21(scope, ...)
       end
-      map(names, _196_)
+      map(names, _203_)
       return "set"
     else
-      local function _197_()
-        local _ = _195_
+      local function _204_()
+        local _ = _202_
         return (1 < #kinds0)
       end
-      if (true and _197_()) then
-        local _ = _195_
+      if (true and _204_()) then
+        local _ = _202_
         return "set-forcibly!"
-      elseif ((_G.type(_195_) == "table") and ((_195_)[1] == "local")) then
-        local function _198_(...)
+      elseif ((_G.type(_202_) == "table") and ((_202_)[1] == "local")) then
+        local function _205_(...)
           return varize_local_21(scope, ...)
         end
-        map(names, _198_)
+        map(names, _205_)
         return "set"
-      elseif ((_G.type(_195_) == "table") and ((_195_)[1] == "MemberExpression")) then
+      elseif ((_G.type(_202_) == "table") and ((_202_)[1] == "MemberExpression")) then
         return "set"
-      elseif ((_G.type(_195_) == "table") and ((_195_)[1] == "function")) then
+      elseif ((_G.type(_202_) == "table") and ((_202_)[1] == "function")) then
         return "set-forcibly!"
-      elseif ((_G.type(_195_) == "table") and ((_195_)[1] == "param")) then
+      elseif ((_G.type(_202_) == "table") and ((_202_)[1] == "param")) then
         return "set-forcibly!"
       elseif true then
-        local _ = _195_
+        local _ = _202_
         return "global"
       else
         return nil
@@ -8140,14 +8198,14 @@ package.preload["anticompiler"] = package.preload["anticompiler"] or function(..
   local function computed__3emultisym_21(target)
     if target.computed then
       do
-        local _200_ = target.property
-        if ((_G.type(_200_) == "table") and ((_200_).kind == "Literal") and (nil ~= (_200_).value)) then
-          local value = (_200_).value
+        local _207_ = target.property
+        if ((_G.type(_207_) == "table") and ((_207_).kind == "Literal") and (nil ~= (_207_).value)) then
+          local value = (_207_).value
           for char in value:gmatch(".") do
             assert(sym_char_3f(char), ("Illegal assignment: " .. value))
           end
-        elseif ((_G.type(_200_) == "table") and (nil ~= (_200_).kind)) then
-          local kind = (_200_).kind
+        elseif ((_G.type(_207_) == "table") and (nil ~= (_207_).kind)) then
+          local kind = (_207_).kind
           error(("Cannot assign to " .. kind))
         else
         end
@@ -8160,104 +8218,104 @@ package.preload["anticompiler"] = package.preload["anticompiler"] or function(..
     end
   end
   local function assignment(compile, scope, ast)
-    local _let_203_ = ast
-    local left = _let_203_["left"]
-    local right = _let_203_["right"]
+    local _let_210_ = ast
+    local left = _let_210_["left"]
+    local right = _let_210_["right"]
     local right_out
     if (1 == #right) then
       right_out = compile(scope, right[1])
     elseif (0 == #right) then
       right_out = sym("nil")
     else
-      local function _204_(...)
+      local function _211_(...)
         return compile(scope, ...)
       end
-      right_out = list(sym("values"), unpack(map(right, _204_)))
+      right_out = list(sym("values"), unpack(map(right, _211_)))
     end
     if any_computed_3f(left[1]) then
       return tset_2a(compile, scope, left, right_out, ast)
     else
       local setter
-      local function _206_(_241)
+      local function _213_(_241)
         return (_241.name or _241)
       end
-      setter = setter_for(scope, map(left, _206_))
+      setter = setter_for(scope, map(left, _213_))
       map(left, computed__3emultisym_21)
-      local _207_
+      local _214_
       if (1 == #left) then
-        _207_ = compile(scope, left[1])
+        _214_ = compile(scope, left[1])
       else
-        local function _208_(...)
+        local function _215_(...)
           return compile(scope, ...)
         end
-        _207_ = list(unpack(map(left, _208_)))
+        _214_ = list(unpack(map(left, _215_)))
       end
-      return list(sym(setter), _207_, right_out)
+      return list(sym(setter), _214_, right_out)
     end
   end
-  local function while_2a(compile, scope, _211_)
-    local _arg_212_ = _211_
-    local test = _arg_212_["test"]
-    local body = _arg_212_["body"]
+  local function while_2a(compile, scope, _218_)
+    local _arg_219_ = _218_
+    local test = _arg_219_["test"]
+    local body = _arg_219_["body"]
     local subscope = make_scope(scope)
-    local function _213_(...)
+    local function _220_(...)
       return compile(subscope, ...)
     end
-    return list(sym("while"), compile(scope, test), unpack(map(body, _213_)))
+    return list(sym("while"), compile(scope, test), unpack(map(body, _220_)))
   end
-  local function repeat_2a(compile, scope, _214_)
-    local _arg_215_ = _214_
-    local test = _arg_215_["test"]
-    local body = _arg_215_["body"]
-    local function _218_()
-      local _216_
-      local function _217_(...)
+  local function repeat_2a(compile, scope, _221_)
+    local _arg_222_ = _221_
+    local test = _arg_222_["test"]
+    local body = _arg_222_["body"]
+    local function _225_()
+      local _223_
+      local function _224_(...)
         return compile(scope, ...)
       end
-      _216_ = map(body, _217_)
-      table.insert(_216_, list(sym("when"), compile(scope, test), list(sym("lua"), "break")))
-      return _216_
+      _223_ = map(body, _224_)
+      table.insert(_223_, list(sym("when"), compile(scope, test), list(sym("lua"), "break")))
+      return _223_
     end
-    return list(sym("while"), true, unpack(_218_()))
+    return list(sym("while"), true, unpack(_225_()))
   end
-  local function for_2a(compile, scope, _219_)
-    local _arg_220_ = _219_
-    local init = _arg_220_["init"]
-    local last = _arg_220_["last"]
-    local step = _arg_220_["step"]
-    local body = _arg_220_["body"]
+  local function for_2a(compile, scope, _226_)
+    local _arg_227_ = _226_
+    local init = _arg_227_["init"]
+    local last = _arg_227_["last"]
+    local step = _arg_227_["step"]
+    local body = _arg_227_["body"]
     local i = compile(scope, init.id)
     local subscope = make_scope(scope)
     add_to_scope(subscope, "param", {i})
-    local function _222_()
-      local _221_ = compile(scope, step)
-      if (_221_ == 1) then
+    local function _229_()
+      local _228_ = compile(scope, step)
+      if (_228_ == 1) then
         return nil
-      elseif (nil ~= _221_) then
-        local step_compiled = _221_
+      elseif (nil ~= _228_) then
+        local step_compiled = _228_
         return step_compiled
       else
         return nil
       end
     end
-    local function _224_(...)
+    local function _231_(...)
       return compile(subscope, ...)
     end
-    return list(sym("for"), {i, compile(scope, init.value), compile(scope, last), _222_()}, unpack(map(body, _224_)))
+    return list(sym("for"), {i, compile(scope, init.value), compile(scope, last), _229_()}, unpack(map(body, _231_)))
   end
-  local function table_2a(compile, scope, _225_)
-    local _arg_226_ = _225_
-    local keyvals = _arg_226_["keyvals"]
+  local function table_2a(compile, scope, _232_)
+    local _arg_233_ = _232_
+    local keyvals = _arg_233_["keyvals"]
     local out
     if next(keyvals) then
       out = sequence()
     else
       out = {}
     end
-    for _, _228_ in pairs(keyvals) do
-      local _each_229_ = _228_
-      local v = _each_229_[1]
-      local k = _each_229_[2]
+    for _, _235_ in pairs(keyvals) do
+      local _each_236_ = _235_
+      local v = _each_236_[1]
+      local k = _each_236_[2]
       if k then
         out[compile(scope, k)] = compile(scope, v)
         setmetatable(out, nil)
@@ -8267,14 +8325,14 @@ package.preload["anticompiler"] = package.preload["anticompiler"] or function(..
     end
     return out
   end
-  local function do_2a(compile, scope, _231_, tail_3f)
-    local _arg_232_ = _231_
-    local body = _arg_232_["body"]
+  local function do_2a(compile, scope, _238_, tail_3f)
+    local _arg_239_ = _238_
+    local body = _arg_239_["body"]
     local subscope = make_scope(scope)
-    local function _233_(...)
+    local function _240_(...)
       return compile(subscope, ...)
     end
-    return list(sym("do"), unpack(map(body, _233_, tail_3f)))
+    return list(sym("do"), unpack(map(body, _240_, tail_3f)))
   end
   local function _break(compile, scope, ast)
     return list(sym("lua"), "break")
@@ -8288,78 +8346,78 @@ package.preload["anticompiler"] = package.preload["anticompiler"] or function(..
   end
   local function compile(scope, ast, tail_3f)
     if os.getenv("DEBUG") then
-      print(ast.kind, " ", (ast.line or "?"))
+      print(ast.kind)
     else
     end
-    local _236_ = ast.kind
-    if (_236_ == "Chunk") then
+    local _243_ = ast.kind
+    if (_243_ == "Chunk") then
       local scope0 = make_scope(nil)
-      local function _237_(...)
+      local function _244_(...)
         return compile(scope0, ...)
       end
-      return map(ast.body, _237_, true)
-    elseif (_236_ == "LocalDeclaration") then
+      return map(ast.body, _244_, true)
+    elseif (_243_ == "LocalDeclaration") then
       return local_declaration(compile, scope, ast)
-    elseif (_236_ == "FunctionDeclaration") then
+    elseif (_243_ == "FunctionDeclaration") then
       return declare_function(compile, scope, ast)
-    elseif (_236_ == "FunctionExpression") then
+    elseif (_243_ == "FunctionExpression") then
       return _function(compile, scope, ast)
-    elseif (_236_ == "BinaryExpression") then
+    elseif (_243_ == "BinaryExpression") then
       return binary(compile, scope, ast)
-    elseif (_236_ == "ConcatenateExpression") then
+    elseif (_243_ == "ConcatenateExpression") then
       return concat(compile, scope, ast)
-    elseif (_236_ == "CallExpression") then
+    elseif (_243_ == "CallExpression") then
       return call(compile, scope, ast)
-    elseif (_236_ == "LogicalExpression") then
+    elseif (_243_ == "LogicalExpression") then
       return binary(compile, scope, ast)
-    elseif (_236_ == "AssignmentExpression") then
+    elseif (_243_ == "AssignmentExpression") then
       return assignment(compile, scope, ast)
-    elseif (_236_ == "SendExpression") then
+    elseif (_243_ == "SendExpression") then
       return send(compile, scope, ast)
-    elseif (_236_ == "MemberExpression") then
+    elseif (_243_ == "MemberExpression") then
       return member(compile, scope, ast)
-    elseif (_236_ == "UnaryExpression") then
+    elseif (_243_ == "UnaryExpression") then
       return unary(compile, scope, ast)
-    elseif (_236_ == "ExpressionValue") then
+    elseif (_243_ == "ExpressionValue") then
       return compile(scope, ast.value)
-    elseif (_236_ == "ExpressionStatement") then
+    elseif (_243_ == "ExpressionStatement") then
       return compile(scope, ast.expression)
-    elseif (_236_ == "IfStatement") then
+    elseif (_243_ == "IfStatement") then
       return if_2a(compile, scope, ast, tail_3f)
-    elseif (_236_ == "DoStatement") then
+    elseif (_243_ == "DoStatement") then
       return do_2a(compile, scope, ast, tail_3f)
-    elseif (_236_ == "ForInStatement") then
+    elseif (_243_ == "ForInStatement") then
       return each_2a(compile, scope, ast)
-    elseif (_236_ == "WhileStatement") then
+    elseif (_243_ == "WhileStatement") then
       return while_2a(compile, scope, ast)
-    elseif (_236_ == "RepeatStatement") then
+    elseif (_243_ == "RepeatStatement") then
       return repeat_2a(compile, scope, ast)
-    elseif (_236_ == "ForStatement") then
+    elseif (_243_ == "ForStatement") then
       return for_2a(compile, scope, ast)
-    elseif (_236_ == "BreakStatement") then
+    elseif (_243_ == "BreakStatement") then
       return _break(compile, scope, ast)
-    elseif (_236_ == "ReturnStatement") then
+    elseif (_243_ == "ReturnStatement") then
       if tail_3f then
         return vals(compile, scope, ast)
       else
         return early_return(compile, scope, ast)
       end
-    elseif (_236_ == "Identifier") then
+    elseif (_243_ == "Identifier") then
       return identifier(ast)
-    elseif (_236_ == "Table") then
+    elseif (_243_ == "Table") then
       return table_2a(compile, scope, ast)
-    elseif (_236_ == "Literal") then
+    elseif (_243_ == "Literal") then
       if (nil == ast.value) then
         return sym("nil")
       else
         return ast.value
       end
-    elseif (_236_ == "Vararg") then
+    elseif (_243_ == "Vararg") then
       return sym("...")
-    elseif (_236_ == nil) then
+    elseif (_243_ == nil) then
       return sym("nil")
     elseif true then
-      local _ = _236_
+      local _ = _243_
       return unsupported(ast)
     else
       return nil
@@ -8431,11 +8489,11 @@ package.preload["letter"] = package.preload["letter"] or function(...)
     return (("table" == type(node)) and ("do" == tostring(node[1])) and ("table" == type(node[2])) and ("local" == tostring(node[2][1])))
   end
   local function fn_local_node_3f(node)
-    local function _245_()
+    local function _252_()
       local first_body = node[body_start(node)]
       return (("table" == type(first_body)) and ("local" == tostring(first_body[1])))
     end
-    return (("table" == type(node)) and ("fn" == tostring(node[1])) and _245_())
+    return (("table" == type(node)) and ("fn" == tostring(node[1])) and _252_())
   end
   local function letter(idx, node)
     if fn_local_node_3f(node) then
@@ -8589,19 +8647,19 @@ package.preload["fnlfmt"] = package.preload["fnlfmt"] or function(...)
       indent = (start_indent + #callee)
     end
     local second
-    local function _261_()
-      local t_262_ = syntax
-      if (nil ~= t_262_) then
-        t_262_ = (t_262_)[callee]
+    local function _268_()
+      local t_269_ = syntax
+      if (nil ~= t_269_) then
+        t_269_ = (t_269_)[callee]
       else
       end
-      if (nil ~= t_262_) then
-        t_262_ = (t_262_)["binding-form?"]
+      if (nil ~= t_269_) then
+        t_269_ = (t_269_)["binding-form?"]
       else
       end
-      return t_262_
+      return t_269_
     end
-    if (_261_() and ("unquote" ~= tostring(t[2][1]))) then
+    if (_268_() and ("unquote" ~= tostring(t[2][1]))) then
       second = view_binding(t[2], view, inspector, (indent + 1), ("let" == callee), "[", "]")
     else
       second = view(t[2], inspector, indent)
@@ -8630,7 +8688,7 @@ package.preload["fnlfmt"] = package.preload["fnlfmt"] or function(...)
   local function originally_same_lines_3f(t, n1, n2)
     local first = t[n1]
     local second = t[n2]
-    return (("table" == type(second)) and (function(_268_,_269_,_270_) return (_268_ == _269_) and (_269_ == _270_) end)(line(t),line(first),line(second)))
+    return (("table" == type(second)) and (function(_275_,_276_,_277_) return (_275_ == _276_) and (_276_ == _277_) end)(line(t),line(first),line(second)))
   end
   local function scalar_3f(form)
     return (fennel["sym?"](form) or fennel["comment?"](form) or fennel["varg?"](form) or ("table" ~= type(form)))
@@ -8706,14 +8764,14 @@ package.preload["fnlfmt"] = package.preload["fnlfmt"] or function(...)
     return table.insert(out, (" " .. view_binding({select(2, unpack(t))}, view, inspector, indent, true, "", "")))
   end
   local function if_pair(view, a, b, c)
-    local function _277_()
+    local function _284_()
       if fennel["comment?"](c) then
         return (" " .. view(c))
       else
         return ""
       end
     end
-    return (view(a) .. " " .. view(b) .. _277_())
+    return (view(a) .. " " .. view(b) .. _284_())
   end
   local function pairwise_if_3f(t, indent, i, view)
     if (#strip_comments(t) < 5) then
@@ -8725,13 +8783,13 @@ package.preload["fnlfmt"] = package.preload["fnlfmt"] or function(...)
     elseif (80 < (indent + 1 + #if_pair(view, select(i, unpack(t))))) then
       return false
     else
-      local _278_
+      local _285_
       if fennel.comment(t[(i + 2)]) then
-        _278_ = (i + 3)
+        _285_ = (i + 3)
       else
-        _278_ = (i + 2)
+        _285_ = (i + 2)
       end
-      return pairwise_if_3f(t, indent, _278_, view)
+      return pairwise_if_3f(t, indent, _285_, view)
     end
   end
   local function view_maybe_body(t, view, inspector, indent, start_indent, out, callee)
@@ -8757,19 +8815,19 @@ package.preload["fnlfmt"] = package.preload["fnlfmt"] or function(...)
   local maybe_body = {["->"] = true, ["->>"] = true, ["-?>"] = true, ["-?>>"] = true, doto = true, ["if"] = true}
   local renames = {["#"] = "length", ["~="] = "not="}
   local function body_form_3f(callee)
-    local function _283_()
-      local t_284_ = syntax
-      if (nil ~= t_284_) then
-        t_284_ = (t_284_)[callee]
+    local function _290_()
+      local t_291_ = syntax
+      if (nil ~= t_291_) then
+        t_291_ = (t_291_)[callee]
       else
       end
-      if (nil ~= t_284_) then
-        t_284_ = (t_284_)["body-form?"]
+      if (nil ~= t_291_) then
+        t_291_ = (t_291_)["body-form?"]
       else
       end
-      return t_284_
+      return t_291_
     end
-    return (_283_() or callee:find("%.with-") or callee:find("^with-") or callee:find("%.def") or callee:find("^def"))
+    return (_290_() or callee:find("%.with-") or callee:find("^with-") or callee:find("%.def") or callee:find("^def"))
   end
   local function view_list(t, view, inspector, start_indent)
     if sugars[tostring(t[1])] then
@@ -8797,21 +8855,21 @@ package.preload["fnlfmt"] = package.preload["fnlfmt"] or function(...)
     end
   end
   local slength
-  local function _290_(...)
-    local _291_ = rawget(_G, "utf8")
-    if (nil ~= _291_) then
-      return (_291_).len
+  local function _297_(...)
+    local _298_ = rawget(_G, "utf8")
+    if (nil ~= _298_) then
+      return (_298_).len
     else
-      return _291_
+      return _298_
     end
   end
-  local function _293_(_241)
+  local function _300_(_241)
     return #_241
   end
-  slength = (_290_(...) or _293_)
+  slength = (_297_(...) or _300_)
   local function maybe_attach_comment(x, indent, cs)
     if (cs and (0 < #cs)) then
-      local _294_
+      local _301_
       do
         local tbl_17_auto = {}
         local i_18_auto = #tbl_17_auto
@@ -8823,9 +8881,9 @@ package.preload["fnlfmt"] = package.preload["fnlfmt"] or function(...)
           else
           end
         end
-        _294_ = tbl_17_auto
+        _301_ = tbl_17_auto
       end
-      return (table.concat(_294_, ("\n" .. string.rep(" ", indent))) .. ("\n" .. string.rep(" ", indent)) .. x)
+      return (table.concat(_301_, ("\n" .. string.rep(" ", indent))) .. ("\n" .. string.rep(" ", indent)) .. x)
     else
       return x
     end
@@ -8842,39 +8900,39 @@ package.preload["fnlfmt"] = package.preload["fnlfmt"] or function(...)
       k = view(key, inspector, (indent + 1), true)
     end
     local v = view(val, inspector, (indent + slength(k) + 1))
-    local function _299_()
-      local t_298_ = mt
-      if (nil ~= t_298_) then
-        t_298_ = (t_298_).comments
+    local function _306_()
+      local t_305_ = mt
+      if (nil ~= t_305_) then
+        t_305_ = (t_305_).comments
       else
       end
-      if (nil ~= t_298_) then
-        t_298_ = (t_298_).keys
+      if (nil ~= t_305_) then
+        t_305_ = (t_305_).keys
       else
       end
-      if (nil ~= t_298_) then
-        t_298_ = (t_298_)[key]
+      if (nil ~= t_305_) then
+        t_305_ = (t_305_)[key]
       else
       end
-      return t_298_
+      return t_305_
     end
-    local function _304_()
-      local t_303_ = mt
-      if (nil ~= t_303_) then
-        t_303_ = (t_303_).comments
+    local function _311_()
+      local t_310_ = mt
+      if (nil ~= t_310_) then
+        t_310_ = (t_310_).comments
       else
       end
-      if (nil ~= t_303_) then
-        t_303_ = (t_303_).values
+      if (nil ~= t_310_) then
+        t_310_ = (t_310_).values
       else
       end
-      if (nil ~= t_303_) then
-        t_303_ = (t_303_)[val]
+      if (nil ~= t_310_) then
+        t_310_ = (t_310_)[val]
       else
       end
-      return t_303_
+      return t_310_
     end
-    return (maybe_attach_comment(k, indent, _299_()) .. " " .. maybe_attach_comment(v, indent, _304_()))
+    return (maybe_attach_comment(k, indent, _306_()) .. " " .. maybe_attach_comment(v, indent, _311_()))
   end
   local function view_multiline_kv(pair_strs, indent, last_comments)
     if (last_comments and (0 < #last_comments)) then
@@ -8898,8 +8956,8 @@ package.preload["fnlfmt"] = package.preload["fnlfmt"] or function(...)
     local indent0 = (indent + 1)
     local mt = getmetatable(t)
     local keys
-    local function _310_()
-      local _311_
+    local function _317_()
+      local _318_
       do
         local tbl_17_auto = {}
         local i_18_auto = #tbl_17_auto
@@ -8911,12 +8969,12 @@ package.preload["fnlfmt"] = package.preload["fnlfmt"] or function(...)
           else
           end
         end
-        _311_ = tbl_17_auto
+        _318_ = tbl_17_auto
       end
-      table.sort(_311_, sorter)
-      return _311_
+      table.sort(_318_, sorter)
+      return _318_
     end
-    keys = (mt.keys or _310_())
+    keys = (mt.keys or _317_())
     local pair_strs
     do
       local tbl_17_auto = {}
@@ -8932,36 +8990,36 @@ package.preload["fnlfmt"] = package.preload["fnlfmt"] or function(...)
       pair_strs = tbl_17_auto
     end
     local oneline = ("{" .. table.concat(pair_strs, " ") .. "}")
-    local function _314_()
-      local t_315_ = mt
-      if (nil ~= t_315_) then
-        t_315_ = (t_315_).comments
+    local function _321_()
+      local t_322_ = mt
+      if (nil ~= t_322_) then
+        t_322_ = (t_322_).comments
       else
       end
-      if (nil ~= t_315_) then
-        t_315_ = (t_315_).last
+      if (nil ~= t_322_) then
+        t_322_ = (t_322_).last
       else
       end
-      if (nil ~= t_315_) then
-        t_315_ = (t_315_)[1]
+      if (nil ~= t_322_) then
+        t_322_ = (t_322_)[1]
       else
       end
-      return t_315_
+      return t_322_
     end
-    if (oneline:match("\n") or _314_() or ((indent0 + #oneline) > inspector["line-length"])) then
-      local function _320_()
-        local t_319_ = mt
-        if (nil ~= t_319_) then
-          t_319_ = (t_319_).comments
+    if (oneline:match("\n") or _321_() or ((indent0 + #oneline) > inspector["line-length"])) then
+      local function _327_()
+        local t_326_ = mt
+        if (nil ~= t_326_) then
+          t_326_ = (t_326_).comments
         else
         end
-        if (nil ~= t_319_) then
-          t_319_ = (t_319_).last
+        if (nil ~= t_326_) then
+          t_326_ = (t_326_).last
         else
         end
-        return t_319_
+        return t_326_
       end
-      return view_multiline_kv(pair_strs, indent0, _320_())
+      return view_multiline_kv(pair_strs, indent0, _327_())
     else
       return oneline
     end
@@ -8983,12 +9041,12 @@ package.preload["fnlfmt"] = package.preload["fnlfmt"] or function(...)
   local function set_fennelview_metamethod(_idx, form)
     if not scalar_3f(form) then
       if (not fennel["list?"](form) and not fennel["sequence?"](form)) then
-        local _325_ = getmetatable(form)
-        if (nil ~= _325_) then
-          local mt = _325_
+        local _332_ = getmetatable(form)
+        if (nil ~= _332_) then
+          local mt = _332_
           mt["__fennelview"] = view_kv
         elseif true then
-          local _ = _325_
+          local _ = _332_
           setmetatable(form, {__fennelview = view_kv})
         else
         end
@@ -9003,9 +9061,9 @@ package.preload["fnlfmt"] = package.preload["fnlfmt"] or function(...)
     return (s:find("^[-%w?^_!$%&*+./|<=>]+$") and not s:find("^[-?^_!$%&*+./@|<=>%\\]+$"))
   end
   local function fnlfmt(ast)
-    local _let_329_ = getmetatable(fennel.list())
-    local list_mt = _let_329_
-    local __fennelview = _let_329_["__fennelview"]
+    local _let_336_ = getmetatable(fennel.list())
+    local list_mt = _let_336_
+    local __fennelview = _let_336_["__fennelview"]
     local _
     list_mt.__fennelview = view_list
     _ = nil
@@ -9022,16 +9080,16 @@ package.preload["fnlfmt"] = package.preload["fnlfmt"] or function(...)
     do end (io.stderr):write(string.format("File not found: %s\n", filename))
     return os.exit(1)
   end
-  local function format_file(filename, _330_)
-    local _arg_331_ = _330_
-    local no_comments = _arg_331_["no-comments"]
+  local function format_file(filename, _337_)
+    local _arg_338_ = _337_
+    local no_comments = _arg_338_["no-comments"]
     local f
     do
-      local _332_ = filename
-      if (_332_ == "-") then
+      local _339_ = filename
+      if (_339_ == "-") then
         f = io.stdin
       elseif true then
-        local _ = _332_
+        local _ = _339_
         f = (io.open(filename, "r") or abort(filename))
       else
         f = nil
@@ -9109,12 +9167,12 @@ if ((debug and debug.getinfo) and (debug.getinfo(3) == nil)) then
     return os.exit(1)
   end
 else
-  local function _339_(str, source)
+  local function _346_(str, source)
     local out = {}
     for _, code in ipairs(compile(reader.string(str), (source or "*source"))) do
       table.insert(out, fnlfmt.fnlfmt(code))
     end
     return table.concat(out, "\n")
   end
-  return _339_
+  return _346_
 end

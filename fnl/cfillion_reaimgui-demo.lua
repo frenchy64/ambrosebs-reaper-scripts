@@ -156,13 +156,13 @@ function demo.HelpMarker(desc)
   end
 end
 
---function demo.RgbaToArgb(rgba)
---  return (rgba >> 8 & 0x00FFFFFF) | (rgba << 24 & 0xFF000000)
---end
---
---function demo.ArgbToRgba(argb)
---  return (argb << 8 & 0xFFFFFF00) | (argb >> 24 & 0xFF)
---end
+function demo.RgbaToArgb(rgba)
+  return (rgba >> 8 & 0x00FFFFFF) | (rgba << 24 & 0xFF000000)
+end
+
+function demo.ArgbToRgba(argb)
+  return (argb << 8 & 0xFFFFFF00) | (argb >> 24 & 0xFF)
+end
 
 function demo.round(n)
   return math.floor(n + .5)
