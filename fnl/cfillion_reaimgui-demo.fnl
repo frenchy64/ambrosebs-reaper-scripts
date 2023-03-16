@@ -3712,12 +3712,12 @@ GetItemRectSize() = (%.1f, %.1f)"
         (< a.id b.id)
         (let [;; Here we identify columns using the ColumnUserID value that we ourselves passed to TableSetupColumn()
               ;; We could also choose to identify columns based on their index (col_idx), which is simpler!
-              key (case col-user-id
-                    My-item-column-iD_ID :id
-                    My-item-column-iD_Name :name
-                    My-item-column-iD_Quantity :quantity
-                    My-item-column-iD_Description :name
-                    (error "unknown user column ID"))
+              key (or (case col-user-id
+                        My-item-column-iD_ID :id
+                        My-item-column-iD_Name :name
+                        My-item-column-iD_Quantity :quantity
+                        My-item-column-iD_Description :name)
+                      (error "unknown user column ID"))
               is-ascending (= sort-direction (ImGui.SortDirection_Ascending))]
           (if
             (< (. a key) (. b key)) is-ascending
@@ -3727,13 +3727,12 @@ GetItemRectSize() = (%.1f, %.1f)"
 (fn demo.PushStyleCompact []
   (let [(frame-padding-x frame-padding-y) (ImGui.GetStyleVar ctx (ImGui.StyleVar_FramePadding))
         (item-spacing-x item-spacing-y) (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemSpacing))]
-    (ImGui.PushStyleVar ctx (ImGui.StyleVar_FramePadding) frame-padding-x
-                         (math.floor (* frame-padding-y 0.6)))
-    (ImGui.PushStyleVar ctx (ImGui.StyleVar_ItemSpacing) item-spacing-x
-                         (math.floor (* item-spacing-y 0.6)))))
+    (ImGui.PushStyleVar ctx (ImGui.StyleVar_FramePadding) frame-padding-x (math.floor (* frame-padding-y 0.6)))
+    (ImGui.PushStyleVar ctx (ImGui.StyleVar_ItemSpacing) item-spacing-x (math.floor (* item-spacing-y 0.6)))))
 
 (fn demo.PopStyleCompact [] (ImGui.PopStyleVar ctx 2))
 
+;; Show a combo box with a choice of sizing policies
 (fn demo.EditTableSizingFlags [flags]
   (let [policies [{:name :Default
                    :tooltip "Use default sizing policy:
@@ -3756,15 +3755,15 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
         sizing-mask (bor (ImGui.TableFlags_SizingFixedFit)
                          (ImGui.TableFlags_SizingFixedSame)
                          (ImGui.TableFlags_SizingStretchProp)
-                         (ImGui.TableFlags_SizingStretchSame))]
-    (var idx 1)
-    (while (< idx (length policies))
-      (when (= (. (. policies idx) :value) (band flags sizing-mask))
-        (lua :break))
-      (set idx (+ idx 1)))
+                         (ImGui.TableFlags_SizingStretchSame))
+        idx (faccumulate [acc 1
+                          idx 2 (length policies)
+                          &until (= (. policies acc :value)
+                                    (band flags sizing-mask))]
+              idx)]
     (var preview-text "")
     (when (<= idx (length policies))
-      (set preview-text (. (. policies idx) :name))
+      (set preview-text (. policies idx :name))
       (when (> idx 1)
         (set preview-text (preview-text:sub (+ (: :ImGuiTableFlags :len) 1)))))
     (when (ImGui.BeginCombo ctx "Sizing Policy" preview-text)
