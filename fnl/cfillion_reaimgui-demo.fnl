@@ -2,6 +2,8 @@
 ;;
 ;;This file can be imported in other scripts to help during development:
 
+(import-macros {: doimgui : update-2nd-array : set-when-not} :imgui-macros)
+
 (comment
 (local demo
        (dofile (.. (reaper.GetResourcePath)
@@ -216,22 +218,7 @@
 ;; ; ShowDemoWindowInputs()
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(macro update-2nd [s f]
-  `(do
-     (var v1# nil)
-     (set (v1# ,s) (let [,(sym "$") ,s] ,f))
-     v1#))
 
-(macro update-2nd-array [s i f]
-  `(do
-     (var v1# nil)
-     (var v2# nil)
-     (set (v1# v2#) (let [,(sym "$") (. ,s i)] ,f))
-     (tset ,s ,i v2#)
-     v1#))
-
-(macro set-when-not [s v]
-  `(when (not ,s) (set ,s ,v)))
 
 ;; Demonstrate most Dear ImGui features (this is big function!)
 ;; You may execute this function to experiment with the UI and understand what it does.
@@ -314,29 +301,29 @@
     (when (ImGui.BeginMenu ctx :Menu) (demo.ShowExampleMenuFile)
       (ImGui.EndMenu ctx))
     (when (ImGui.BeginMenu ctx :Examples)
-      ;;(update-2nd show_app.main_menu_bar (ImGui.MenuItem ctx "Main menu bar" nil $ false))
-      (update-2nd show-app.console            (ImGui.MenuItem ctx :Console nil $ false))
-      (update-2nd show-app.log                (ImGui.MenuItem ctx :Log nil $))
-      (update-2nd show-app.layout             (ImGui.MenuItem ctx "Simple layout" nil $))
-      (update-2nd show-app.property_editor    (ImGui.MenuItem ctx "Property editor" nil $))
-      (update-2nd show-app.long_text          (ImGui.MenuItem ctx "Long text display" nil $))
-      (update-2nd show-app.auto_resize        (ImGui.MenuItem ctx "Auto-resizing window" nil $))
-      (update-2nd show-app.constrained_resize (ImGui.MenuItem ctx "Constrained-resizing window" nil $))
-      (update-2nd show-app.simple_overlay     (ImGui.MenuItem ctx "Simple overlay" nil $))
-      (update-2nd show-app.fullscreen         (ImGui.MenuItem ctx "Fullscreen window" nil $))
-      (update-2nd show-app.window_titles      (ImGui.MenuItem ctx "Manipulating window titles" nil $))
-      (update-2nd show-app.custom_rendering   (ImGui.MenuItem ctx "Custom rendering" nil $))
+      ;;(doimgui show_app.main_menu_bar (ImGui.MenuItem ctx "Main menu bar" nil $ false))
+      (doimgui show-app.console            (ImGui.MenuItem ctx :Console nil $ false))
+      (doimgui show-app.log                (ImGui.MenuItem ctx :Log nil $))
+      (doimgui show-app.layout             (ImGui.MenuItem ctx "Simple layout" nil $))
+      (doimgui show-app.property_editor    (ImGui.MenuItem ctx "Property editor" nil $))
+      (doimgui show-app.long_text          (ImGui.MenuItem ctx "Long text display" nil $))
+      (doimgui show-app.auto_resize        (ImGui.MenuItem ctx "Auto-resizing window" nil $))
+      (doimgui show-app.constrained_resize (ImGui.MenuItem ctx "Constrained-resizing window" nil $))
+      (doimgui show-app.simple_overlay     (ImGui.MenuItem ctx "Simple overlay" nil $))
+      (doimgui show-app.fullscreen         (ImGui.MenuItem ctx "Fullscreen window" nil $))
+      (doimgui show-app.window_titles      (ImGui.MenuItem ctx "Manipulating window titles" nil $))
+      (doimgui show-app.custom_rendering   (ImGui.MenuItem ctx "Custom rendering" nil $))
       ;; _,show_app.dockspace =
       ;;   ImGui.MenuItem(ctx, 'Dockspace', nil, show_app.dockspace, false)
-      (update-2nd show-app.documents          (ImGui.MenuItem ctx :Documents nil $ false))
+      (doimgui show-app.documents          (ImGui.MenuItem ctx :Documents nil $ false))
       (ImGui.EndMenu ctx))
     ;; if ImGui.MenuItem(ctx, 'MenuItem') then end -- You can also use MenuItem() inside a menu bar!
     (when (ImGui.BeginMenu ctx :Tools)
-      (update-2nd show-app.metrics      (ImGui.MenuItem ctx :Metrics/Debugger nil $))
-      (update-2nd show-app.debug_log    (ImGui.MenuItem ctx "Debug Log" nil $))
-      (update-2nd show-app.stack_tool   (ImGui.MenuItem ctx "Stack Tool" nil $))
-      (update-2nd show-app.style_editor (ImGui.MenuItem ctx "Style Editor" nil $))
-      (update-2nd show-app.about        (ImGui.MenuItem ctx "About Dear ImGui" nil $))
+      (doimgui show-app.metrics      (ImGui.MenuItem ctx :Metrics/Debugger nil $))
+      (doimgui show-app.debug_log    (ImGui.MenuItem ctx "Debug Log" nil $))
+      (doimgui show-app.stack_tool   (ImGui.MenuItem ctx "Stack Tool" nil $))
+      (doimgui show-app.style_editor (ImGui.MenuItem ctx "Style Editor" nil $))
+      (doimgui show-app.about        (ImGui.MenuItem ctx "About Dear ImGui" nil $))
       (ImGui.EndMenu ctx))
     (when (ImGui.SmallButton ctx :Documentation)
       (local doc (: "%s/Data/reaper_imgui_doc.html" :format (reaper.GetResourcePath)))
@@ -382,15 +369,15 @@
       (ImGui.SeparatorText ctx :General)
       ;; ImGui.CheckboxFlags("io.ConfigFlags: NavEnableGamepad",     &io.ConfigFlags, ImGuiConfigFlags_NavEnableGamepad)
       ;; ImGui.SameLine(ctx); demo.HelpMarker("Enable gamepad controls. Require backend to set io.BackendFlags |= ImGuiBackendFlags_HasGamepad.\n\nRead instructions in imgui.cpp for details.")
-      (update-2nd config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NavEnableKeyboard $ (ImGui.ConfigFlags_NavEnableKeyboard)))
+      (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NavEnableKeyboard $ (ImGui.ConfigFlags_NavEnableKeyboard)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Enable keyboard controls.")
       ;; ImGui.CheckboxFlags("io.ConfigFlags: NavEnableGamepad",     &io.ConfigFlags, ImGuiConfigFlags_NavEnableGamepad)
       ;; ImGui.SameLine(ctx); demo.HelpMarker("Enable gamepad controls. Require backend to set io.BackendFlags |= ImGuiBackendFlags_HasGamepad.\n\nRead instructions in imgui.cpp for details.")
-      (update-2nd config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NavEnableSetMousePos $ (ImGui.ConfigFlags_NavEnableSetMousePos)))
+      (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NavEnableSetMousePos $ (ImGui.ConfigFlags_NavEnableSetMousePos)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Instruct navigation to move the mouse cursor.")
-      (update-2nd config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NoMouse $ (ImGui.ConfigFlags_NoMouse)))
+      (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NoMouse $ (ImGui.ConfigFlags_NoMouse)))
       (when (not= (band config.flags (ImGui.ConfigFlags_NoMouse)) 0)
         ;; The "NoMouse" option can get us stuck with a disabled mouse! Let's provide an alternative way to fix it:
         (when (< (% (ImGui.GetTime ctx) 0.40)
@@ -399,14 +386,14 @@
           (ImGui.Text ctx "<<PRESS SPACE TO DISABLE>>"))
         (when (ImGui.IsKeyPressed ctx (ImGui.Key_Space))
           (set config.flags (band config.flags (bnot (ImGui.ConfigFlags_NoMouse))))))
-      (update-2nd config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NoMouseCursorChange $ (ImGui.ConfigFlags_NoMouseCursorChange)))
+      (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NoMouseCursorChange $ (ImGui.ConfigFlags_NoMouseCursorChange)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Instruct backend to not alter mouse cursor shape and visibility.")
-      (update-2nd config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NoSavedSettings $ (ImGui.ConfigFlags_NoSavedSettings)))
+      (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NoSavedSettings $ (ImGui.ConfigFlags_NoSavedSettings)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Globally disable loading and saving state to an .ini file")
 
-      (update-2nd config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_DockingEnable $ (ImGui.ConfigFlags_DockingEnable)))
+      (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_DockingEnable $ (ImGui.ConfigFlags_DockingEnable)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker 
         (format "Drag from window title bar or their tab to dock/undock. Hold SHIFT to %s docking.\n\nDrag from window menu button (upper-left button) to undock an entire node (all windows)."
@@ -506,7 +493,7 @@
                 (ImGui.SameLine ctx)
                 (ImGui.PushAllowKeyboardFocus ctx false)
                 (ImGui.SetNextItemWidth ctx 80)
-                (update-2nd config.logging.auto_open_depth (ImGui.SliderInt ctx "Open Depth" $ 0 9))
+                (doimgui config.logging.auto_open_depth (ImGui.SliderInt ctx "Open Depth" $ 0 9))
                 (ImGui.PopAllowKeyboardFocus ctx)
                 (ImGui.PopID ctx))
             ;; Start logging at the end of the function so that the buttons don't appear in the log
@@ -618,12 +605,12 @@
         (set widgets.basic.clicked (+ widgets.basic.clicked 1)))
       (when (not= (band widgets.basic.clicked 1) 0) (ImGui.SameLine ctx)
         (ImGui.Text ctx "Thanks for clicking me!"))
-      (update-2nd widgets.basic.check (ImGui.Checkbox ctx :checkbox $))
-      (update-2nd widgets.basic.radio (ImGui.RadioButtonEx ctx "radio a" $ 0))
+      (doimgui widgets.basic.check (ImGui.Checkbox ctx :checkbox $))
+      (doimgui widgets.basic.radio (ImGui.RadioButtonEx ctx "radio a" $ 0))
       (ImGui.SameLine ctx)
-      (update-2nd widgets.basic.radio (ImGui.RadioButtonEx ctx "radio b" $ 1))
+      (doimgui widgets.basic.radio (ImGui.RadioButtonEx ctx "radio b" $ 1))
       (ImGui.SameLine ctx)
-      (update-2nd widgets.basic.radio (ImGui.RadioButtonEx ctx "radio c" $ 2))
+      (doimgui widgets.basic.radio (ImGui.RadioButtonEx ctx "radio c" $ 2))
       (for [i 0 6]
         (when (> i 0) (ImGui.SameLine ctx))
         (ImGui.PushID ctx i)
@@ -673,7 +660,7 @@
       (ImGui.LabelText ctx :label :Value)
       (ImGui.SeparatorText ctx :Inputs)
       (do
-        (update-2nd widgets.basic.str0 (ImGui.InputText ctx "input text" $))
+        (doimgui widgets.basic.str0 (ImGui.InputText ctx "input text" $))
         (ImGui.SameLine ctx)
         (demo.HelpMarker "USER:
         Hold SHIFT or use mouse to select text.
@@ -684,10 +671,10 @@
         ESCAPE to revert.
 
         ")
-        (update-2nd widgets.basic.str1 (ImGui.InputTextWithHint ctx "input text (w/ hint)" "enter text here" $))
-        (update-2nd widgets.basic.i0 (ImGui.InputInt ctx "input int" $))
-        (update-2nd widgets.basic.d0 (ImGui.InputDouble ctx "input double" $ 0.01 1 "%.8f"))
-        (update-2nd widgets.basic.d1 (ImGui.InputDouble ctx "input scientific" $ 0 0 "%e"))
+        (doimgui widgets.basic.str1 (ImGui.InputTextWithHint ctx "input text (w/ hint)" "enter text here" $))
+        (doimgui widgets.basic.i0 (ImGui.InputInt ctx "input int" $))
+        (doimgui widgets.basic.d0 (ImGui.InputDouble ctx "input double" $ 0.01 1 "%.8f"))
+        (doimgui widgets.basic.d1 (ImGui.InputDouble ctx "input scientific" $ 0 0 "%e"))
         (ImGui.SameLine ctx)
         (demo.HelpMarker "You can input value using the scientific notation,
         e.g. \"1e+8\" becomes \"100000000\".")
@@ -1285,13 +1272,13 @@ label:
                           :password :hunter2}))
 
     (when (ImGui.TreeNode ctx "Multi-line Text Input")
-      (update-2nd widgets.input.multiline.flags (ImGui.CheckboxFlags ctx :ImGuiInputTextFlags_ReadOnly $
+      (doimgui widgets.input.multiline.flags (ImGui.CheckboxFlags ctx :ImGuiInputTextFlags_ReadOnly $
                                                                      (ImGui.InputTextFlags_ReadOnly)))
-      (update-2nd widgets.input.multiline.flags (ImGui.CheckboxFlags ctx :ImGuiInputTextFlags_AllowTabInput $
+      (doimgui widgets.input.multiline.flags (ImGui.CheckboxFlags ctx :ImGuiInputTextFlags_AllowTabInput $
                                                                      (ImGui.InputTextFlags_AllowTabInput)))
-      (update-2nd widgets.input.multiline.flags (ImGui.CheckboxFlags ctx :ImGuiInputTextFlags_CtrlEnterForNewLine $
+      (doimgui widgets.input.multiline.flags (ImGui.CheckboxFlags ctx :ImGuiInputTextFlags_CtrlEnterForNewLine $
                                                                      (ImGui.InputTextFlags_CtrlEnterForNewLine)))
-      (update-2nd widgets.input.multiline.text
+      (doimgui widgets.input.multiline.text
                   (ImGui.InputTextMultiline ctx "##source" $
                                             (- FLT_MIN) (* (ImGui.GetTextLineHeight ctx) 16)
                                             widgets.input.multiline.flags))
@@ -1325,14 +1312,14 @@ label:
       (ImGui.TreePop ctx))
 
     (when (ImGui.TreeNode ctx "Password Input")
-      (update-2nd widgets.input.password (ImGui.InputText ctx :password $ (ImGui.InputTextFlags_Password)))
+      (doimgui widgets.input.password (ImGui.InputText ctx :password $ (ImGui.InputTextFlags_Password)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Display all characters as '*'.
 Disable clipboard cut and copy.
 Disable logging.
 ")
-      (update-2nd widgets.input.password (ImGui.InputTextWithHint ctx "password (w/ hint)" :<password> $ (ImGui.InputTextFlags_Password)))
-      (update-2nd widgets.input.password (ImGui.InputText ctx "password (clear)" $))
+      (doimgui widgets.input.password (ImGui.InputTextWithHint ctx "password (w/ hint)" :<password> $ (ImGui.InputTextFlags_Password)))
+      (doimgui widgets.input.password (ImGui.InputText ctx "password (clear)" $))
       (ImGui.TreePop ctx))
 
 ;; TODO
@@ -1464,10 +1451,10 @@ Disable logging.
 
       (when (ImGui.TreeNode ctx "Advanced & Close Button")
         ;; Expose a couple of the available flags. In most cases you may just call BeginTabBar() with no flags (0).
-        (update-2nd widgets.tabs.flags1 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_Reorderable $ (ImGui.TabBarFlags_Reorderable)))
-        (update-2nd widgets.tabs.flags1 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_AutoSelectNewTabs $ (ImGui.TabBarFlags_AutoSelectNewTabs)))
-        (update-2nd widgets.tabs.flags1 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_TabListPopupButton $ (ImGui.TabBarFlags_TabListPopupButton)))
-        (update-2nd widgets.tabs.flags1 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_NoCloseWithMiddleMouseButton $ (ImGui.TabBarFlags_NoCloseWithMiddleMouseButton)))
+        (doimgui widgets.tabs.flags1 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_Reorderable $ (ImGui.TabBarFlags_Reorderable)))
+        (doimgui widgets.tabs.flags1 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_AutoSelectNewTabs $ (ImGui.TabBarFlags_AutoSelectNewTabs)))
+        (doimgui widgets.tabs.flags1 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_TabListPopupButton $ (ImGui.TabBarFlags_TabListPopupButton)))
+        (doimgui widgets.tabs.flags1 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_NoCloseWithMiddleMouseButton $ (ImGui.TabBarFlags_NoCloseWithMiddleMouseButton)))
 
         (when (= 0 (band widgets.tabs.flags1 fitting-policy-mask)) ;; was FittingPolicyDefault_
           (set widgets.tabs.flags1
@@ -1514,11 +1501,11 @@ Disable logging.
         ;; TabItemButton() and Leading/Trailing flags are distinct features which we will demo together.
         ;; (It is possible to submit regular tabs with Leading/Trailing flags, or TabItemButton tabs without Leading/Trailing flags...
         ;; but they tend to make more sense together)
-        (update-2nd widgets.tabs.show_leading_button (ImGui.Checkbox ctx "Show Leading TabItemButton()" $))
-        (update-2nd widgets.tabs.show_trailing_button (ImGui.Checkbox ctx "Show Trailing TabItemButton()" $))
+        (doimgui widgets.tabs.show_leading_button (ImGui.Checkbox ctx "Show Leading TabItemButton()" $))
+        (doimgui widgets.tabs.show_trailing_button (ImGui.Checkbox ctx "Show Trailing TabItemButton()" $))
 
         ;; Expose some other flags which are useful to showcase how they interact with Leading/Trailing tabs
-        (update-2nd widgets.tabs.flags2 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_TabListPopupButton $
+        (doimgui widgets.tabs.flags2 (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_TabListPopupButton $
                                                              (ImGui.TabBarFlags_TabListPopupButton)))
         (when (ImGui.CheckboxFlags ctx :ImGuiTabBarFlags_FittingPolicyResizeDown
                                    widgets.tabs.flags2
@@ -1588,7 +1575,7 @@ Disable logging.
                                  :progress 0
                                  :progress_dir 1})
 
-    (update-2nd widgets.plots.animate (ImGui.Checkbox ctx :Animate $))
+    (doimgui widgets.plots.animate (ImGui.Checkbox ctx :Animate $))
 
     ;; Plot as lines and plot as histogram
     (ImGui.PlotLines ctx "Frame Times" widgets.plots.frame_times)
@@ -1622,9 +1609,9 @@ Disable logging.
 
     (ImGui.SeparatorText ctx :Functions)
     (ImGui.SetNextItemWidth ctx (* (ImGui.GetFontSize ctx) 8))
-    (let [func-changed (update-2nd widgets.plots.plot2.func (ImGui.Combo ctx :func $ "Sin\000Saw\000"))
+    (let [func-changed (doimgui widgets.plots.plot2.func (ImGui.Combo ctx :func $ "Sin\000Saw\000"))
           _ (ImGui.SameLine ctx)
-          rv (update-2nd widgets.plots.plot2.size (ImGui.SliderInt ctx "Sample count" $ 1 400))]
+          rv (doimgui widgets.plots.plot2.size (ImGui.SliderInt ctx "Sample count" $ 1 400))]
       ;; Use functions to generate output
       (when (or func-changed rv widgets.plots.plot2.fill)
         (set widgets.plots.plot2.fill false)
@@ -1684,10 +1671,10 @@ Disable logging.
 
     ;; static bool hdr = false;
     (ImGui.SeparatorText ctx :Options)
-    (update-2nd widgets.colors.alpha_preview (ImGui.Checkbox ctx "With Alpha Preview" $))
-    (update-2nd widgets.colors.alpha_half_preview (ImGui.Checkbox ctx "With Half Alpha Preview" $))
-    (update-2nd widgets.colors.drag_and_drop (ImGui.Checkbox ctx "With Drag and Drop" $))
-    (update-2nd widgets.colors.options_menu (ImGui.Checkbox ctx "With Options Menu" $))
+    (doimgui widgets.colors.alpha_preview (ImGui.Checkbox ctx "With Alpha Preview" $))
+    (doimgui widgets.colors.alpha_half_preview (ImGui.Checkbox ctx "With Half Alpha Preview" $))
+    (doimgui widgets.colors.drag_and_drop (ImGui.Checkbox ctx "With Drag and Drop" $))
+    (doimgui widgets.colors.options_menu (ImGui.Checkbox ctx "With Options Menu" $))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Right-click on the individual color widget to show options.")
     ;; ImGui.Checkbox("With HDR", &hdr); ImGui.SameLine(); HelpMarker("Currently all this does is to lift the 0..1 limits on dragging widgets.")
@@ -1707,16 +1694,16 @@ Disable logging.
       "Click on the color square to open a color picker.\n\z
        CTRL+click on individual component to input value.\n"))
     (var argb (demo.RgbaToArgb widgets.colors.rgba))
-    (when (update-2nd argb (ImGui.ColorEdit3 ctx "MyColor##1" $ misc-flags))
+    (when (doimgui argb (ImGui.ColorEdit3 ctx "MyColor##1" $ misc-flags))
       (set widgets.colors.rgba (demo.ArgbToRgba argb)))
 
     (ImGui.Text ctx "Color widget HSV with Alpha:")
-    (update-2nd widgets.colors.rgba
+    (doimgui widgets.colors.rgba
                 (ImGui.ColorEdit4 ctx "MyColor##2" $ (bor (ImGui.ColorEditFlags_DisplayHSV)
                                                           misc-flags)))
 
     (ImGui.Text ctx "Color widget with Float Display:")
-    (update-2nd widgets.colors.rgba
+    (doimgui widgets.colors.rgba
                 (ImGui.ColorEdit4 ctx "MyColor##2f" $ (bor (ImGui.ColorEditFlags_Float)
                                                            misc-flags)))
 
@@ -1724,7 +1711,7 @@ Disable logging.
     (ImGui.SameLine ctx)
     (demo.HelpMarker "With the ImGuiColorEditFlags_NoInputs flag you can hide all the slider/text inputs.
 With the ImGuiColorEditFlags_NoLabel flag you can pass a non-empty label which will only be used for the tooltip and picker popup.")
-    (update-2nd widgets.colors.rgba
+    (doimgui widgets.colors.rgba
                 (ImGui.ColorEdit4 ctx "MyColor##3" $
                                   (bor (ImGui.ColorEditFlags_NoInputs)
                                        (ImGui.ColorEditFlags_NoLabel)
@@ -1792,7 +1779,7 @@ With the ImGuiColorEditFlags_NoLabel flag you can pass a non-empty label which w
       (ImGui.EndPopup ctx))
 
     (ImGui.Text ctx "Color button only:")
-    (update-2nd widgets.colors.no_border (ImGui.Checkbox ctx :ImGuiColorEditFlags_NoBorder $))
+    (doimgui widgets.colors.no_border (ImGui.Checkbox ctx :ImGuiColorEditFlags_NoBorder $))
     (ImGui.ColorButton ctx "MyColor##3c" widgets.colors.rgba
                        (bor misc-flags
                             (if widgets.colors.no_border
@@ -1801,19 +1788,19 @@ With the ImGuiColorEditFlags_NoLabel flag you can pass a non-empty label which w
                        80 80)
 
     (ImGui.SeparatorText ctx "Color picker")
-    (update-2nd widgets.colors.alpha (ImGui.Checkbox ctx "With Alpha" $))
-    (update-2nd widgets.colors.alpha_bar (ImGui.Checkbox ctx "With Alpha Bar" $))
-    (update-2nd widgets.colors.side_preview (ImGui.Checkbox ctx "With Side Preview" $))
+    (doimgui widgets.colors.alpha (ImGui.Checkbox ctx "With Alpha" $))
+    (doimgui widgets.colors.alpha_bar (ImGui.Checkbox ctx "With Alpha Bar" $))
+    (doimgui widgets.colors.side_preview (ImGui.Checkbox ctx "With Side Preview" $))
     (when widgets.colors.side_preview
       (ImGui.SameLine ctx)
-      (update-2nd widgets.colors.ref_color (ImGui.Checkbox ctx "With Ref Color" $))
+      (doimgui widgets.colors.ref_color (ImGui.Checkbox ctx "With Ref Color" $))
       (when widgets.colors.ref_color
         (ImGui.SameLine ctx)
-        (update-2nd widgets.colors.ref_color_rgba
+        (doimgui widgets.colors.ref_color_rgba
                     (ImGui.ColorEdit4 ctx "##RefColor" $
                                       (bor (ImGui.ColorEditFlags_NoInputs)
                                            misc-flags)))))
-    (update-2nd widgets.colors.display_mode
+    (doimgui widgets.colors.display_mode
                 (ImGui.Combo ctx "Display Mode" $
                              "Auto/Current\000None\000RGB Only\000HSV Only\000Hex Only\000"))
     (ImGui.SameLine ctx)
@@ -1821,7 +1808,7 @@ With the ImGuiColorEditFlags_NoLabel flag you can pass a non-empty label which w
       "ColorEdit defaults to displaying RGB inputs if you don't specify a display mode, \z
        but the user can change it with a right-click on those inputs.\n\nColorPicker defaults to displaying RGB+HSV+Hex \z
        if you don't specify a display mode.\n\nYou can change the defaults using SetColorEditOptions().")
-    (update-2nd widgets.colors.picker_mode
+    (doimgui widgets.colors.picker_mode
                 (ImGui.Combo ctx "Picker Mode" $ "Auto/Current\000Hue bar + SV rect\000Hue wheel + SV triangle\000"))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "When not specified explicitly (Auto/Current mode), user can right-click the picker to change mode.")
@@ -1848,7 +1835,7 @@ With the ImGuiColorEditFlags_NoLabel flag you can pass a non-empty label which w
     (local ref-color
            (or (and widgets.colors.alpha widgets.colors.ref_color_rgba)
                (demo.RgbaToArgb widgets.colors.ref_color_rgba)))
-    (when (update-2nd color (ImGui.ColorPicker4 ctx "MyColor##4" $ flags
+    (when (doimgui color (ImGui.ColorPicker4 ctx "MyColor##4" $ flags
                                                 (when widgets.colors.ref_color
                                                   ref-color)))
       (set widgets.colors.rgba
@@ -1876,7 +1863,7 @@ We don't have a getter to avoidencouraging you to persistently save values that 
                    (select 2 (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemSpacing))))
                 0.40))
     (ImGui.SetNextItemWidth ctx w)
-    (when (update-2nd color
+    (when (doimgui color
                       (ImGui.ColorPicker3 ctx "##MyColor##5" $
                                           (bor (ImGui.ColorEditFlags_PickerHueBar)
                                                (ImGui.ColorEditFlags_NoSidePreview)
@@ -1885,7 +1872,7 @@ We don't have a getter to avoidencouraging you to persistently save values that 
       (set widgets.colors.rgba (demo.ArgbToRgba color)))
     (ImGui.SameLine ctx)
     (ImGui.SetNextItemWidth ctx w)
-    (when (update-2nd color
+    (when (doimgui color
                       (ImGui.ColorPicker3 ctx "##MyColor##6" $
                                           (bor (ImGui.ColorEditFlags_PickerHueWheel)
                                                (ImGui.ColorEditFlags_NoSidePreview)
@@ -1899,11 +1886,11 @@ We don't have a getter to avoidencouraging you to persistently save values that 
     (ImGui.SameLine ctx)
     (demo.HelpMarker "By default, colors are given to ColorEdit and ColorPicker in RGB, but ImGuiColorEditFlags_InputHSV allows you to store colors as HSV and pass them to ColorEdit and ColorPicker as HSV. This comes with the added benefit that you can manipulate hue values with the picker even when saturation or value are zero.")
     (ImGui.Text ctx "Color widget with InputHSV:")
-    (update-2nd widgets.colors.hsva (ImGui.ColorEdit4 ctx "HSV shown as RGB##1" $
+    (doimgui widgets.colors.hsva (ImGui.ColorEdit4 ctx "HSV shown as RGB##1" $
                                                       (bor (ImGui.ColorEditFlags_DisplayRGB)
                                                            (ImGui.ColorEditFlags_InputHSV)
                                                            (ImGui.ColorEditFlags_Float))))
-    (update-2nd widgets.colors.hsva (ImGui.ColorEdit4 ctx "HSV shown as HSV##1" $
+    (doimgui widgets.colors.hsva (ImGui.ColorEdit4 ctx "HSV shown as HSV##1" $
                                                       (bor (ImGui.ColorEditFlags_DisplayHSV)
                                                            (ImGui.ColorEditFlags_InputHSV)
                                                            (ImGui.ColorEditFlags_Float))))
@@ -1930,19 +1917,19 @@ We don't have a getter to avoidencouraging you to persistently save values that 
                             :slider_i 50}))
 
     ;; Demonstrate using advanced flags for DragXXX and SliderXXX functions. Note that the flags are the same!
-    (update-2nd widgets.sliders.flags
+    (doimgui widgets.sliders.flags
                 (ImGui.CheckboxFlags ctx :ImGuiSliderFlags_AlwaysClamp $ (ImGui.SliderFlags_AlwaysClamp)))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Always clamp value to min/max bounds (if any) when input manually with CTRL+Click.")
-    (update-2nd widgets.sliders.flags
+    (doimgui widgets.sliders.flags
                 (ImGui.CheckboxFlags ctx :ImGuiSliderFlags_Logarithmic $ (ImGui.SliderFlags_Logarithmic)))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Enable logarithmic editing (more precision for small values).")
-    (update-2nd widgets.sliders.flags
+    (doimgui widgets.sliders.flags
                 (ImGui.CheckboxFlags ctx :ImGuiSliderFlags_NoRoundToFormat $ (ImGui.SliderFlags_NoRoundToFormat)))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Disable rounding underlying value to match precision of the format string (e.g. %.3f values are rounded to those 3 digits).")
-    (update-2nd widgets.sliders.flags
+    (doimgui widgets.sliders.flags
                 (ImGui.CheckboxFlags ctx :ImGuiSliderFlags_NoInput $ (ImGui.SliderFlags_NoInput)))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Disable CTRL+Click or Enter key allowing to input text directly into the widget.")
@@ -1952,22 +1939,22 @@ We don't have a getter to avoidencouraging you to persistently save values that 
     (let [DBL_MIN 2.22507e-308
           DBL_MAX 1.79769e+308]
       (ImGui.Text ctx (: "Underlying double value: %f" :format widgets.sliders.drag_d))
-      (update-2nd widgets.sliders.drag_d
+      (doimgui widgets.sliders.drag_d
                   (ImGui.DragDouble ctx "DragDouble (0 -> 1)" $ 0.005 0.0 1.0 "%.3f" widgets.sliders.flags))
-      (update-2nd widgets.sliders.drag_d
+      (doimgui widgets.sliders.drag_d
                   (ImGui.DragDouble ctx "DragDouble (0 -> +inf)" $ 0.005 0.0 DBL_MAX "%.3f" widgets.sliders.flags))
-      (update-2nd widgets.sliders.drag_d
+      (doimgui widgets.sliders.drag_d
                   (ImGui.DragDouble ctx "DragDouble (-inf -> 1)" $ 0.005 (- DBL_MAX) 1 "%.3f" widgets.sliders.flags))
-      (update-2nd widgets.sliders.drag_d
+      (doimgui widgets.sliders.drag_d
                   (ImGui.DragDouble ctx "DragDouble (-inf -> +inf)" $ 0.005 (- DBL_MAX) DBL_MAX "%.3f" widgets.sliders.flags))
-      (update-2nd widgets.sliders.drag_i
+      (doimgui widgets.sliders.drag_i
                   (ImGui.DragInt ctx "DragInt (0 -> 100)" $ 0.5 0 100 "%d" widgets.sliders.flags)))
 
     ;; Sliders
     (ImGui.Text ctx (: "Underlying float value: %f" :format widgets.sliders.slider_d))
-    (update-2nd widgets.sliders.slider_d
+    (doimgui widgets.sliders.slider_d
                 (ImGui.SliderDouble ctx "SliderDouble (0 -> 1)" $ 0 1 "%.3f" widgets.sliders.flags))
-    (update-2nd widgets.sliders.slider_i
+    (doimgui widgets.sliders.slider_i
                 (ImGui.SliderInt ctx "SliderInt (0 -> 100)" $ 0 100 "%d" widgets.sliders.flags))
 
     (ImGui.TreePop ctx))
@@ -2256,7 +2243,7 @@ We don't have a getter to avoidencouraging you to persistently save values that 
     (let [spacing 4]
       (ImGui.PushStyleVar ctx (ImGui.StyleVar_ItemSpacing) spacing spacing)
 
-      (update-2nd widgets.vsliders.int_value (ImGui.VSliderInt ctx "##int" 18 160 $ 0 5))
+      (doimgui widgets.vsliders.int_value (ImGui.VSliderInt ctx "##int" 18 160 $ 0 5))
       (ImGui.SameLine ctx)
 
       (ImGui.PushID ctx :set1)
@@ -2325,8 +2312,8 @@ We don't have a getter to avoidencouraging you to persistently save values that 
       ;; to allow your own widgets to use colors in their drag and drop interaction.
       ;; Also see 'Demo->Widgets->Color/Picker Widgets->Palette' demo.
       (demo.HelpMarker "You can drag from the color squares.")
-      (update-2nd widgets.dragdrop.color1 (ImGui.ColorEdit3 ctx "color 1" $))
-      (update-2nd widgets.dragdrop.color2 (ImGui.ColorEdit4 ctx "color 2" $))
+      (doimgui widgets.dragdrop.color1 (ImGui.ColorEdit3 ctx "color 1" $))
+      (doimgui widgets.dragdrop.color2 (ImGui.ColorEdit4 ctx "color 2" $))
       (ImGui.TreePop ctx))
 
     (when (ImGui.TreeNode ctx "Drag and drop to copy/swap items")
@@ -2455,15 +2442,15 @@ We don't have a getter to avoidencouraging you to persistently save values that 
                     _ (ImGui.PopButtonRepeat ctx)]
                 rv)
             ;; Testing checkbox
-            3 (update-2nd widgets.query_item.b (ImGui.Checkbox ctx "ITEM: Checkbox" $))
+            3 (doimgui widgets.query_item.b (ImGui.Checkbox ctx "ITEM: Checkbox" $))
             ;; Testing basic item
             4 (let [(rv da41) (ImGui.SliderDouble ctx "ITEM: SliderDouble" (. widgets.query_item.d4a 1) 0 1)]
                 (tset widgets.query_item.d4a 1 da41)
                 rv)
             ;; Testing input text (which handles tabbing)
-            5 (update-2nd widgets.query_item.str (ImGui.InputText ctx "ITEM: InputText" $))
+            5 (doimgui widgets.query_item.str (ImGui.InputText ctx "ITEM: InputText" $))
             ;; Testing input text (which uses a child window)
-            6 (update-2nd widgets.query_item.str (ImGui.InputTextMultiline ctx "ITEM: InputTextMultiline" $))
+            6 (doimgui widgets.query_item.str (ImGui.InputTextMultiline ctx "ITEM: InputTextMultiline" $))
             ;; Testing +/- buttons on scalar input
             7 (let [(rv d4a1) (ImGui.InputDouble ctx "ITEM: InputDouble" (. widgets.query_item.d4a 1) 1)]
                 (tset widgets.query_item.d4a 1 d4a1)
@@ -2476,7 +2463,7 @@ We don't have a getter to avoidencouraging you to persistently save values that 
                 (tset d4a 3 d4a3)
                 rv)
             ;; Testing multi-component items (IsItemXXX flags are reported merged)
-            9 (update-2nd widgets.query_item.color (ImGui.ColorEdit4 ctx "ITEM: ColorEdit" $))
+            9 (doimgui widgets.query_item.color (ImGui.ColorEdit4 ctx "ITEM: ColorEdit" $))
             ;; Testing selectable item
             10 (ImGui.Selectable ctx "ITEM: Selectable")
             ;; Testing menu item (they use ImGuiButtonFlags_PressedOnRelease button policy)
@@ -2490,8 +2477,8 @@ We don't have a getter to avoidencouraging you to persistently save values that 
             13 (ImGui.TreeNode ctx "ITEM: TreeNode w/ ImGuiTreeNodeFlags_OpenOnDoubleClick"
                                (bor (ImGui.TreeNodeFlags_OpenOnDoubleClick)
                                     (ImGui.TreeNodeFlags_NoTreePushOnOpen)))
-            14 (update-2nd widgets.query_item.current (ImGui.Combo ctx "ITEM: Combo" $ "Apple\000Banana\000Cherry\000Kiwi\000"))
-            15 (update-2nd widgets.query_item.current (ImGui.ListBox ctx "ITEM: ListBox" $ "Apple\000Banana\000Cherry\000Kiwi\000")))
+            14 (doimgui widgets.query_item.current (ImGui.Combo ctx "ITEM: Combo" $ "Apple\000Banana\000Cherry\000Kiwi\000"))
+            15 (doimgui widgets.query_item.current (ImGui.ListBox ctx "ITEM: ListBox" $ "Apple\000Banana\000Cherry\000Kiwi\000")))
 
           hovered-delay-none (ImGui.IsItemHovered ctx)
           hovered-delay-short (ImGui.IsItemHovered ctx (ImGui.HoveredFlags_DelayShort))
@@ -2559,7 +2546,7 @@ GetItemRectSize() = (%.1f, %.1f)"
     (set-when-not widgets.query_window
                   {:embed_all_inside_a_child_window false
                    :test_window false})
-    (update-2nd widgets.query_window.embed_all_inside_a_child_window
+    (doimgui widgets.query_window.embed_all_inside_a_child_window
                 (ImGui.Checkbox ctx "Embed everything inside a child window for testing _RootWindow flag." $))
     (let [visible (or (not widgets.query_window.embed_all_inside_a_child_window)
                       (ImGui.BeginChild ctx :outer_child 0 (* (ImGui.GetFontSize ctx) 20) true))] 
@@ -2649,7 +2636,7 @@ GetItemRectSize() = (%.1f, %.1f)"
     ;; Calling IsItemHovered() after begin returns the hovered status of the title bar.
     ;; This is useful in particular if you want to create a context menu associated to the title bar of a window.
     ;; This will also work when docked into a Tab (the Tab replace the Title Bar and guarantee the same properties).
-    (update-2nd widgets.query_window.test_window (ImGui.Checkbox ctx "Hovered/Active tests after Begin() for title bar testing" $))
+    (doimgui widgets.query_window.test_window (ImGui.Checkbox ctx "Hovered/Active tests after Begin() for title bar testing" $))
     (when widgets.query_window.test_window
       ;; FIXME-DOCK: This window cannot be docked within the ImGui Demo window, this will cause a feedback loop and get them stuck.
       ;; Could we fix this through an ImGuiWindowClass feature? Or an API call to tag our parent as "don't skip items"?
@@ -2676,7 +2663,7 @@ GetItemRectSize() = (%.1f, %.1f)"
     (ImGui.EndDisabled ctx))
 
   (when (ImGui.TreeNode ctx "Disable block")
-    (update-2nd widgets.disable_all (ImGui.Checkbox ctx "Disable entire section above" $))
+    (doimgui widgets.disable_all (ImGui.Checkbox ctx "Disable entire section above" $))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Demonstrate using BeginDisabled()/EndDisabled() across this section.")
     (ImGui.TreePop ctx))
@@ -2720,8 +2707,8 @@ GetItemRectSize() = (%.1f, %.1f)"
                                   :offset_x 0})
       (ImGui.SeparatorText ctx "Child windows")
       (demo.HelpMarker "Use child windows to begin into a self-contained independent scrolling/clipping regions within a host window.")
-      (update-2nd layout.child.disable_mouse_wheel (ImGui.Checkbox ctx "Disable Mouse Wheel" $))
-      (update-2nd layout.child.disable_menu (ImGui.Checkbox ctx "Disable Menu" $))
+      (doimgui layout.child.disable_mouse_wheel (ImGui.Checkbox ctx "Disable Mouse Wheel" $))
+      (doimgui layout.child.disable_menu (ImGui.Checkbox ctx "Disable Menu" $))
 
       ;; Child 1: no border, enable horizontal scrollbar
       (let [window-flags (bor (ImGui.WindowFlags_HorizontalScrollbar)
@@ -2772,7 +2759,7 @@ GetItemRectSize() = (%.1f, %.1f)"
       ;;   the POV of the parent window). See 'Demo->Querying Status (Edited/Active/Hovered etc.)' for details.
       (do
         (ImGui.SetNextItemWidth ctx (* (ImGui.GetFontSize ctx) 8))
-        (update-2nd layout.child.offset_x (ImGui.DragInt ctx "Offset X" $ 1 (- 1000) 1000))
+        (doimgui layout.child.offset_x (ImGui.DragInt ctx "Offset X" $ 1 (- 1000) 1000))
         (ImGui.SetCursorPosX ctx (+ (ImGui.GetCursorPosX ctx) layout.child.offset_x))
         (ImGui.PushStyleColor ctx (ImGui.Col_ChildBg) 4278190180)
         (let [visible (ImGui.BeginChild ctx :Red 200 100 true (ImGui.WindowFlags_None))]
@@ -2797,14 +2784,14 @@ GetItemRectSize() = (%.1f, %.1f)"
       ;; Use PushItemWidth()/PopItemWidth() to set the width of a group of items.
       ;; In real code use you'll probably want to choose width values that are proportional to your font size
       ;; e.g. Using '20.0 * GetFontSize()' as width instead of '200.0', etc.
-      (update-2nd layout.width.show_indented_items (ImGui.Checkbox ctx "Show indented items" $))
+      (doimgui layout.width.show_indented_items (ImGui.Checkbox ctx "Show indented items" $))
       (ImGui.Text ctx "SetNextItemWidth/PushItemWidth(100)")
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Fixed width.")
       (ImGui.PushItemWidth ctx 100)
-      (update-2nd layout.width.d (ImGui.DragDouble ctx "float##1b" $))
+      (doimgui layout.width.d (ImGui.DragDouble ctx "float##1b" $))
       (when layout.width.show_indented_items (ImGui.Indent ctx)
-        (update-2nd layout.width.d (ImGui.DragDouble ctx "float (indented)##1b" $))
+        (doimgui layout.width.d (ImGui.DragDouble ctx "float (indented)##1b" $))
         (ImGui.Unindent ctx))
       (ImGui.PopItemWidth ctx)
 
@@ -2812,9 +2799,9 @@ GetItemRectSize() = (%.1f, %.1f)"
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Align to right edge minus 100")
       (ImGui.PushItemWidth ctx (- 100))
-      (update-2nd layout.width.d (ImGui.DragDouble ctx "float##2a" $))
+      (doimgui layout.width.d (ImGui.DragDouble ctx "float##2a" $))
       (when layout.width.show_indented_items (ImGui.Indent ctx)
-        (update-2nd layout.width.d (ImGui.DragDouble ctx "float (indented)##2b" $))
+        (doimgui layout.width.d (ImGui.DragDouble ctx "float (indented)##2b" $))
         (ImGui.Unindent ctx))
       (ImGui.PopItemWidth ctx)
 
@@ -2822,9 +2809,9 @@ GetItemRectSize() = (%.1f, %.1f)"
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Half of available width.\n(~ right-cursor_pos)\n(works within a column set)")
       (ImGui.PushItemWidth ctx (* (ImGui.GetContentRegionAvail ctx) 0.5))
-      (update-2nd layout.width.d (ImGui.DragDouble ctx "float##3a" $))
+      (doimgui layout.width.d (ImGui.DragDouble ctx "float##3a" $))
       (when layout.width.show_indented_items (ImGui.Indent ctx)
-        (update-2nd layout.width.d (ImGui.DragDouble ctx "float (indented)##3b" $))
+        (doimgui layout.width.d (ImGui.DragDouble ctx "float (indented)##3b" $))
         (ImGui.Unindent ctx))
       (ImGui.PopItemWidth ctx)
 
@@ -2832,9 +2819,9 @@ GetItemRectSize() = (%.1f, %.1f)"
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Align to right edge minus half")
       (ImGui.PushItemWidth ctx (* (- (ImGui.GetContentRegionAvail ctx)) 0.5))
-      (update-2nd layout.width.d (ImGui.DragDouble ctx "float##4a" $))
+      (doimgui layout.width.d (ImGui.DragDouble ctx "float##4a" $))
       (when layout.width.show_indented_items (ImGui.Indent ctx)
-        (update-2nd layout.width.d (ImGui.DragDouble ctx "float (indented)##4b" $))
+        (doimgui layout.width.d (ImGui.DragDouble ctx "float (indented)##4b" $))
         (ImGui.Unindent ctx))
       (ImGui.PopItemWidth ctx)
 
@@ -2844,9 +2831,9 @@ GetItemRectSize() = (%.1f, %.1f)"
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Align to right edge")
       (ImGui.PushItemWidth ctx (- FLT_MIN))
-      (update-2nd layout.width.d (ImGui.DragDouble ctx "##float5a" $))
+      (doimgui layout.width.d (ImGui.DragDouble ctx "##float5a" $))
       (when layout.width.show_indented_items (ImGui.Indent ctx)
-        (update-2nd layout.width.d (ImGui.DragDouble ctx "float (indented)##5b" $))
+        (doimgui layout.width.d (ImGui.DragDouble ctx "float (indented)##5b" $))
         (ImGui.Unindent ctx))
       (ImGui.PopItemWidth ctx)
       (ImGui.TreePop ctx))
@@ -2898,24 +2885,24 @@ GetItemRectSize() = (%.1f, %.1f)"
       (ImGui.SmallButton ctx :x=300)
 
       ;; Checkbox
-      (update-2nd layout.horizontal.c1 (ImGui.Checkbox ctx :My $))
+      (doimgui layout.horizontal.c1 (ImGui.Checkbox ctx :My $))
       (ImGui.SameLine ctx)
-      (update-2nd layout.horizontal.c2 (ImGui.Checkbox ctx :Tailor $))
+      (doimgui layout.horizontal.c2 (ImGui.Checkbox ctx :Tailor $))
       (ImGui.SameLine ctx)
-      (update-2nd layout.horizontal.c3 (ImGui.Checkbox ctx :Is $))
+      (doimgui layout.horizontal.c3 (ImGui.Checkbox ctx :Is $))
       (ImGui.SameLine ctx)
-      (update-2nd layout.horizontal.c4 (ImGui.Checkbox ctx :Rich $))
+      (doimgui layout.horizontal.c4 (ImGui.Checkbox ctx :Rich $))
 
       ;; Various
       (ImGui.PushItemWidth ctx 80)
       (local items "AAAA\0BBBB\0CCCC\0DDDD\0")
-      (update-2nd layout.horizontal.item (ImGui.Combo ctx :Combo $ items))
+      (doimgui layout.horizontal.item (ImGui.Combo ctx :Combo $ items))
       (ImGui.SameLine ctx)
-      (update-2nd layout.horizontal.d0 (ImGui.SliderDouble ctx :X $ 0 5))
+      (doimgui layout.horizontal.d0 (ImGui.SliderDouble ctx :X $ 0 5))
       (ImGui.SameLine ctx)
-      (update-2nd layout.horizontal.d1 (ImGui.SliderDouble ctx :Y $ 0 5))
+      (doimgui layout.horizontal.d1 (ImGui.SliderDouble ctx :Y $ 0 5))
       (ImGui.SameLine ctx)
-      (update-2nd layout.horizontal.d2 (ImGui.SliderDouble ctx :Z $ 0 5))
+      (doimgui layout.horizontal.d2 (ImGui.SliderDouble ctx :Z $ 0 5))
       (ImGui.PopItemWidth ctx)
 
       (ImGui.PushItemWidth ctx 80)
@@ -3140,22 +3127,22 @@ GetItemRectSize() = (%.1f, %.1f)"
       ;; Vertical scroll functions
       (demo.HelpMarker "Use SetScrollHereY() or SetScrollFromPosY() to scroll to a given vertical position.")
 
-      (update-2nd layout.scrolling.enable_extra_decorations (ImGui.Checkbox ctx :Decoration $))
+      (doimgui layout.scrolling.enable_extra_decorations (ImGui.Checkbox ctx :Decoration $))
 
-      (update-2nd layout.scrolling.enable_track (ImGui.Checkbox ctx :Track $))
+      (doimgui layout.scrolling.enable_track (ImGui.Checkbox ctx :Track $))
 
       (ImGui.PushItemWidth ctx 100)
       (ImGui.SameLine ctx 140)
-      (when (update-2nd layout.scrolling.track_item (ImGui.DragInt ctx "##item" $ 0.25 0 99 "Item = %d"))
+      (when (doimgui layout.scrolling.track_item (ImGui.DragInt ctx "##item" $ 0.25 0 99 "Item = %d"))
         (set layout.scrolling.enable_track true))
 
       (let [scroll-to-off (ImGui.Button ctx "Scroll Offset")
             _ (ImGui.SameLine ctx 140)
-            rv (update-2nd layout.scrolling.scroll_to_off_px (ImGui.DragDouble ctx "##off" $ 1 0 FLT_MAX "+%.0f px"))
+            rv (doimgui layout.scrolling.scroll_to_off_px (ImGui.DragDouble ctx "##off" $ 1 0 FLT_MAX "+%.0f px"))
             scroll-to-off (if rv true scroll-to-off)
             scroll-to-pos (ImGui.Button ctx "Scroll To Pos")
             _ (ImGui.SameLine ctx 140)
-            rv (update-2nd layout.scrolling.scroll_to_pos_px (ImGui.DragDouble ctx "##pos" $ 1 (- 10) FLT_MAX "X/Y = %.0f px"))
+            rv (doimgui layout.scrolling.scroll_to_pos_px (ImGui.DragDouble ctx "##pos" $ 1 (- 10) FLT_MAX "X/Y = %.0f px"))
             scroll-to-pos (if rv true scroll-to-pos)]
         (ImGui.PopItemWidth ctx)
         (when (or scroll-to-off scroll-to-pos)
@@ -3250,7 +3237,7 @@ GetItemRectSize() = (%.1f, %.1f)"
     (demo.HelpMarker "Horizontal scrolling for a window is enabled via the ImGuiWindowFlags_HorizontalScrollbar flag.
 
     You may want to also explicitly specify content width by using SetNextWindowContentWidth() before Begin().")
-    (update-2nd layout.scrolling.lines (ImGui.SliderInt ctx :Lines $ 1 15))
+    (doimgui layout.scrolling.lines (ImGui.SliderInt ctx :Lines $ 1 15))
     (ImGui.PushStyleVar ctx (ImGui.StyleVar_FrameRounding) 3)
     (ImGui.PushStyleVar ctx (ImGui.StyleVar_FramePadding) 2 1)
     (local scrolling-child-width (+ (* (ImGui.GetFrameHeightWithSpacing ctx) 7)
@@ -3304,7 +3291,7 @@ GetItemRectSize() = (%.1f, %.1f)"
         (ImGui.EndChild ctx)))
     (ImGui.Spacing ctx)
 
-    (update-2nd layout.scrolling.show_horizontal_contents_size_demo_window
+    (doimgui layout.scrolling.show_horizontal_contents_size_demo_window
                 (ImGui.Checkbox ctx "Show Horizontal contents size demo window" $))
     (when layout.scrolling.show_horizontal_contents_size_demo_window
       (set-when-not layout.horizontal_window
@@ -3319,7 +3306,7 @@ GetItemRectSize() = (%.1f, %.1f)"
                      :show_tree_nodes true})
       (when layout.horizontal_window.explicit_content_size
         (ImGui.SetNextWindowContentSize ctx layout.horizontal_window.contents_size_x 0))
-      (when (update-2nd layout.scrolling.show_horizontal_contents_size_demo_window
+      (when (doimgui layout.scrolling.show_horizontal_contents_size_demo_window
                         (ImGui.Begin ctx "Horizontal contents size demo window" true
                                      (if layout.horizontal_window.show_h_scrollbar
                                        (ImGui.WindowFlags_HorizontalScrollbar)
@@ -3327,27 +3314,27 @@ GetItemRectSize() = (%.1f, %.1f)"
         (ImGui.PushStyleVar ctx (ImGui.StyleVar_ItemSpacing) 2 0)
         (ImGui.PushStyleVar ctx (ImGui.StyleVar_FramePadding) 2 0)
         (demo.HelpMarker "Test of different widgets react and impact the work rectangle growing when horizontal scrolling is enabled.\n\nUse 'Metrics->Tools->Show windows rectangles' to visualize rectangles.")
-        (update-2nd layout.horizontal_window.show_h_scrollbar (ImGui.Checkbox ctx :H-scrollbar $))
+        (doimgui layout.horizontal_window.show_h_scrollbar (ImGui.Checkbox ctx :H-scrollbar $))
         ;; Will grow contents size (unless explicitly overwritten)
-        (update-2nd layout.horizontal_window.show_button (ImGui.Checkbox ctx :Button $))
+        (doimgui layout.horizontal_window.show_button (ImGui.Checkbox ctx :Button $))
         ;; Will grow contents size and display highlight over full width
-        (update-2nd layout.horizontal_window.show_tree_nodes (ImGui.Checkbox ctx "Tree nodes" $))
+        (doimgui layout.horizontal_window.show_tree_nodes (ImGui.Checkbox ctx "Tree nodes" $))
         ;; Will grow and use contents size
-        (update-2nd layout.horizontal_window.show_text_wrapped (ImGui.Checkbox ctx "Text wrapped" $))
+        (doimgui layout.horizontal_window.show_text_wrapped (ImGui.Checkbox ctx "Text wrapped" $))
         ;; Will use contents size
-        (update-2nd layout.horizontal_window.show_columns (ImGui.Checkbox ctx :Columns $))
+        (doimgui layout.horizontal_window.show_columns (ImGui.Checkbox ctx :Columns $))
         ;; Will use contents size
-        (update-2nd layout.horizontal_window.show_tab_bar (ImGui.Checkbox ctx "Tab bar" $))
+        (doimgui layout.horizontal_window.show_tab_bar (ImGui.Checkbox ctx "Tab bar" $))
         ;; Will grow and use contents size
-        (update-2nd layout.horizontal_window.show_child (ImGui.Checkbox ctx :Child $))
-        (update-2nd layout.horizontal_window.explicit_content_size (ImGui.Checkbox ctx "Explicit content size" $))
+        (doimgui layout.horizontal_window.show_child (ImGui.Checkbox ctx :Child $))
+        (doimgui layout.horizontal_window.explicit_content_size (ImGui.Checkbox ctx "Explicit content size" $))
         (ImGui.Text ctx (: "Scroll %.1f/%.1f %.1f/%.1f" :format
                            (ImGui.GetScrollX ctx) (ImGui.GetScrollMaxX ctx)
                            (ImGui.GetScrollY ctx) (ImGui.GetScrollMaxY ctx)))
         (when layout.horizontal_window.explicit_content_size
           (ImGui.SameLine ctx)
           (ImGui.SetNextItemWidth ctx 100)
-          (update-2nd layout.horizontal_window.contents_size_x (ImGui.DragDouble ctx "##csx" $))
+          (doimgui layout.horizontal_window.contents_size_x (ImGui.DragDouble ctx "##csx" $))
           (let [(x y) (ImGui.GetCursorScreenPos ctx)
                 draw-list (ImGui.GetWindowDrawList ctx)]
             (ImGui.DrawList_AddRectFilled draw-list x y (+ x 10) (+ y 10) 0xFFFFFFFF)
@@ -3594,7 +3581,7 @@ GetItemRectSize() = (%.1f, %.1f)"
           (when (ImGui.Selectable ctx "Set to PI")
             (set popups.context.value 3.141592))
           (ImGui.SetNextItemWidth ctx (- FLT_MIN))
-          (update-2nd popups.context.value (ImGui.DragDouble ctx "##Value" $ 0.1 0.0 0.0))
+          (doimgui popups.context.value (ImGui.DragDouble ctx "##Value" $ 0.1 0.0 0.0))
           (ImGui.EndPopup ctx))
 
         ;; We can also use OpenPopupOnItemClick() to toggle the visibility of a given popup.
@@ -3616,7 +3603,7 @@ GetItemRectSize() = (%.1f, %.1f)"
         (ImGui.Button ctx (: "Button: %s###Button" :format popups.context.name))
         (when (ImGui.BeginPopupContextItem ctx)
           (ImGui.Text ctx "Edit name:")
-          (update-2nd popups.context.name (ImGui.InputText ctx "##edit" $))
+          (doimgui popups.context.name (ImGui.InputText ctx "##edit" $))
           (when (ImGui.Button ctx :Close)
             (ImGui.CloseCurrentPopup ctx))
           (ImGui.EndPopup ctx))
@@ -3645,7 +3632,7 @@ GetItemRectSize() = (%.1f, %.1f)"
         ;;ImGui.Combo("Combo", &unused_i, "Delete\0Delete harder\0");
 
         (ImGui.PushStyleVar ctx (ImGui.StyleVar_FramePadding) 0 0)
-        (update-2nd popups.modal.dont_ask_me_next_time (ImGui.Checkbox ctx "Don't ask me next time" $))
+        (doimgui popups.modal.dont_ask_me_next_time (ImGui.Checkbox ctx "Don't ask me next time" $))
         (ImGui.PopStyleVar ctx)
 
         (when (ImGui.Button ctx :OK 120 0) (ImGui.CloseCurrentPopup ctx))
@@ -3667,8 +3654,8 @@ GetItemRectSize() = (%.1f, %.1f)"
         (ImGui.Text ctx "Hello from Stacked The First\nUsing style.Colors[ImGuiCol_ModalWindowDimBg] behind it.")
 
         ;; Testing behavior of widgets stacking their own regular popups over the modal.
-        (update-2nd popups.modal.item (ImGui.Combo ctx :Combo $ "aaaa\000bbbb\000cccc\000dddd\000eeee\000"))
-        (update-2nd popups.modal.color (ImGui.ColorEdit4 ctx :color $))
+        (doimgui popups.modal.item (ImGui.Combo ctx :Combo $ "aaaa\000bbbb\000cccc\000dddd\000eeee\000"))
+        (doimgui popups.modal.color (ImGui.ColorEdit4 ctx :color $))
 
         (when (ImGui.Button ctx "Add another modal..")
           (ImGui.OpenPopup ctx "Stacked 2"))
@@ -3796,35 +3783,35 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
   (var flags flags)
   (let [width-mask (bor (ImGui.TableColumnFlags_WidthStretch)
                         (ImGui.TableColumnFlags_WidthFixed))]
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_Disabled $ (ImGui.TableColumnFlags_Disabled)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_Disabled $ (ImGui.TableColumnFlags_Disabled)))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Master disable flag (also hide from context menu)")
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_DefaultHide $ (ImGui.TableColumnFlags_DefaultHide)))
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_DefaultSort $ (ImGui.TableColumnFlags_DefaultSort)))
-    (when (update-2nd flags (ImGui.CheckboxFlags ctx :_WidthStretch $ (ImGui.TableColumnFlags_WidthStretch)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_DefaultHide $ (ImGui.TableColumnFlags_DefaultHide)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_DefaultSort $ (ImGui.TableColumnFlags_DefaultSort)))
+    (when (doimgui flags (ImGui.CheckboxFlags ctx :_WidthStretch $ (ImGui.TableColumnFlags_WidthStretch)))
       (set flags (band flags
                        (bnot (^ width-mask
                                 (ImGui.TableColumnFlags_WidthStretch))))))
     
-    (when (update-2nd flags (ImGui.CheckboxFlags ctx :_WidthFixed $ (ImGui.TableColumnFlags_WidthFixed)))
+    (when (doimgui flags (ImGui.CheckboxFlags ctx :_WidthFixed $ (ImGui.TableColumnFlags_WidthFixed)))
       (set flags (band flags
                        (bnot (^ width-mask
                                 (ImGui.TableColumnFlags_WidthFixed))))))
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_NoResize $ (ImGui.TableColumnFlags_NoResize)))
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_NoReorder $ (ImGui.TableColumnFlags_NoReorder)))
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_NoHide $ (ImGui.TableColumnFlags_NoHide)))
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_NoClip $ (ImGui.TableColumnFlags_NoClip)))
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_NoSort $ (ImGui.TableColumnFlags_NoSort)))
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_NoSortAscending $ (ImGui.TableColumnFlags_NoSortAscending)))
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_NoSortDescending $ (ImGui.TableColumnFlags_NoSortDescending)))
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_NoHeaderLabel $ (ImGui.TableColumnFlags_NoHeaderLabel)))
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_NoHeaderWidth $ (ImGui.TableColumnFlags_NoHeaderWidth)))
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_PreferSortAscending $ (ImGui.TableColumnFlags_PreferSortAscending)))
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_PreferSortDescending $ (ImGui.TableColumnFlags_PreferSortDescending)))
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_IndentEnable $ (ImGui.TableColumnFlags_IndentEnable)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_NoResize $ (ImGui.TableColumnFlags_NoResize)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_NoReorder $ (ImGui.TableColumnFlags_NoReorder)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_NoHide $ (ImGui.TableColumnFlags_NoHide)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_NoClip $ (ImGui.TableColumnFlags_NoClip)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_NoSort $ (ImGui.TableColumnFlags_NoSort)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_NoSortAscending $ (ImGui.TableColumnFlags_NoSortAscending)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_NoSortDescending $ (ImGui.TableColumnFlags_NoSortDescending)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_NoHeaderLabel $ (ImGui.TableColumnFlags_NoHeaderLabel)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_NoHeaderWidth $ (ImGui.TableColumnFlags_NoHeaderWidth)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_PreferSortAscending $ (ImGui.TableColumnFlags_PreferSortAscending)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_PreferSortDescending $ (ImGui.TableColumnFlags_PreferSortDescending)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_IndentEnable $ (ImGui.TableColumnFlags_IndentEnable)))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Default for column 0")
-    (update-2nd flags (ImGui.CheckboxFlags ctx :_IndentDisable $ (ImGui.TableColumnFlags_IndentDisable)))
+    (doimgui flags (ImGui.CheckboxFlags ctx :_IndentDisable $ (ImGui.TableColumnFlags_IndentDisable)))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Default for column >0")
     flags))
@@ -3852,7 +3839,7 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
     (when (= tables.disable_indent nil) (set tables.disable_indent false))
 
     ;; Options
-    (update-2nd tables.disable_indent (ImGui.Checkbox ctx "Disable tree indentation" $))
+    (doimgui tables.disable_indent (ImGui.Checkbox ctx "Disable tree indentation" $))
     (ImGui.SameLine ctx)
     (demo.HelpMarker "Disable the indenting of tree nodes so demo tables can use the full window width.")
     (ImGui.Separator ctx)
@@ -3923,8 +3910,8 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
                                  (ImGui.TableFlags_RowBg))})
       ;; Expose a few Borders related flags interactively
       (demo.PushStyleCompact)
-      (update-2nd tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_RowBg $ (ImGui.TableFlags_RowBg)))
-      (update-2nd tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Borders $ (ImGui.TableFlags_Borders)))
+      (doimgui tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_RowBg $ (ImGui.TableFlags_RowBg)))
+      (doimgui tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Borders $ (ImGui.TableFlags_Borders)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "ImGuiTableFlags_Borders
       = ImGuiTableFlags_BordersInnerV
@@ -3932,27 +3919,27 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
       | ImGuiTableFlags_BordersInnerV
       | ImGuiTableFlags_BordersOuterH")
       (ImGui.Indent ctx)
-      (update-2nd tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersH $ (ImGui.TableFlags_BordersH)))
+      (doimgui tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersH $ (ImGui.TableFlags_BordersH)))
       (ImGui.Indent ctx)
-      (update-2nd tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersOuterH $ (ImGui.TableFlags_BordersOuterH)))
-      (update-2nd tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersInnerH $ (ImGui.TableFlags_BordersInnerH)))
+      (doimgui tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersOuterH $ (ImGui.TableFlags_BordersOuterH)))
+      (doimgui tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersInnerH $ (ImGui.TableFlags_BordersInnerH)))
       (ImGui.Unindent ctx)
-      (update-2nd tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersV $ (ImGui.TableFlags_BordersV)))
+      (doimgui tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersV $ (ImGui.TableFlags_BordersV)))
       (ImGui.Indent ctx)
-      (update-2nd tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersOuterV $ (ImGui.TableFlags_BordersOuterV)))
-      (update-2nd tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersInnerV $ (ImGui.TableFlags_BordersInnerV)))
+      (doimgui tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersOuterV $ (ImGui.TableFlags_BordersOuterV)))
+      (doimgui tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersInnerV $ (ImGui.TableFlags_BordersInnerV)))
       (ImGui.Unindent ctx)
-      (update-2nd tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersOuter $ (ImGui.TableFlags_BordersOuter)))
-      (update-2nd tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersInner $ (ImGui.TableFlags_BordersInner)))
+      (doimgui tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersOuter $ (ImGui.TableFlags_BordersOuter)))
+      (doimgui tables.borders_bg.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersInner $ (ImGui.TableFlags_BordersInner)))
       (ImGui.Unindent ctx)
       (ImGui.AlignTextToFramePadding ctx)
 
       (ImGui.Text ctx "Cell contents:")
       (ImGui.SameLine ctx)
-      (update-2nd tables.borders_bg.contents_type (ImGui.RadioButtonEx ctx :Text $ 0))
+      (doimgui tables.borders_bg.contents_type (ImGui.RadioButtonEx ctx :Text $ 0))
       (ImGui.SameLine ctx)
-      (update-2nd tables.borders_bg.contents_type (ImGui.RadioButtonEx ctx :FillButton $ 1))
-      (update-2nd tables.borders_bg.display_headers (ImGui.Checkbox ctx "Display headers" $))
+      (doimgui tables.borders_bg.contents_type (ImGui.RadioButtonEx ctx :FillButton $ 1))
+      (doimgui tables.borders_bg.display_headers (ImGui.Checkbox ctx "Display headers" $))
       ;; rv,tables.borders_bg.flags = ImGui.CheckboxFlags(ctx, 'ImGuiTableFlags_NoBordersInBody', tables.borders_bg.flags, ImGui.TableFlags_NoBordersInBody()); ImGui.SameLine(ctx); demo.HelpMarker('Disable vertical borders in columns Body (borders will always appear in Headers')
       (demo.PopStyleCompact)
 
@@ -3987,8 +3974,8 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
       ;; By default, if we don't enable ScrollX the sizing policy for each column is "Stretch"
       ;; All columns maintain a sizing weight, and they will occupy all available width.
       (demo.PushStyleCompact)
-      (update-2nd tables.resz_stretch.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Resizable $ (ImGui.TableFlags_Resizable)))
-      (update-2nd tables.resz_stretch.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersV $ (ImGui.TableFlags_BordersV)))
+      (doimgui tables.resz_stretch.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Resizable $ (ImGui.TableFlags_Resizable)))
+      (doimgui tables.resz_stretch.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersV $ (ImGui.TableFlags_BordersV)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Using the _Resizable flag automatically enables the _BordersInnerV flag as well, this is why the resize borders are still showing when unchecking this.")
       (demo.PopStyleCompact)
@@ -4017,7 +4004,7 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
       Fixed-width columns generally makes more sense if you want to use horizontal scrolling.\n\n\z
       Double-click a column border to auto-fit the column to its contents.")
       (demo.PushStyleCompact)
-      (update-2nd tables.resz_fixed.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoHostExtendX $ (ImGui.TableFlags_NoHostExtendX)))
+      (doimgui tables.resz_fixed.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoHostExtendX $ (ImGui.TableFlags_NoHostExtendX)))
       (demo.PopStyleCompact)
 
       (when (ImGui.BeginTable ctx :table1 3 tables.resz_fixed.flags)
@@ -4085,9 +4072,9 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
       (demo.HelpMarker "Click and drag column headers to reorder columns.\n\n\z
       Right-click on a header to open a context menu.")
       (demo.PushStyleCompact)
-      (update-2nd tables.reorder.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Resizable $ (ImGui.TableFlags_Resizable)))
-      (update-2nd tables.reorder.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Reorderable $ (ImGui.TableFlags_Reorderable)))
-      (update-2nd tables.reorder.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Hideable $ (ImGui.TableFlags_Hideable)))
+      (doimgui tables.reorder.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Resizable $ (ImGui.TableFlags_Resizable)))
+      (doimgui tables.reorder.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Reorderable $ (ImGui.TableFlags_Reorderable)))
+      (doimgui tables.reorder.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Hideable $ (ImGui.TableFlags_Hideable)))
       ;; rv,tables.reorder.flags = ImGui.CheckboxFlags(ctx, 'ImGuiTableFlags_NoBordersInBody', tables.reorder.flags, ImGui.TableFlags_NoBordersInBody())
       ;; rv,tables.reorder.flags = ImGui.CheckboxFlags(ctx, 'ImGuiTableFlags_NoBordersInBodyUntilResize', tables.reorder.flags, ImGui.TableFlags_NoBordersInBodyUntilResize()); ImGui.SameLine(ctx); demo.HelpMarker('Disable vertical borders in columns Body until hovered for resize (borders will always appear in Headers)')
       (demo.PopStyleCompact)
@@ -5048,8 +5035,8 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
                                  (ImGui.TableFlags_SizingFixedFit)
                                  (ImGui.TableFlags_NoSavedSettings))})
       (demo.HelpMarker "Multiple tables with the same identifier will share their settings, width, visibility, order etc.")
-      (update-2nd tables.synced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ScrollY $ (ImGui.TableFlags_ScrollY)))
-      (update-2nd tables.synced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_SizingFixedFit $ (ImGui.TableFlags_SizingFixedFit)))
+      (doimgui tables.synced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ScrollY $ (ImGui.TableFlags_ScrollY)))
+      (doimgui tables.synced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_SizingFixedFit $ (ImGui.TableFlags_SizingFixedFit)))
       (for [n 0 2]
         (local buf (: "Synced Table %d" :format n))
         (local open
@@ -5184,60 +5171,60 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
         (demo.PushStyleCompact)
         (ImGui.PushItemWidth ctx (* TEXT_BASE_WIDTH 28))
         (when (ImGui.TreeNode ctx "Features:" (ImGui.TreeNodeFlags_DefaultOpen))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Resizable $ (ImGui.TableFlags_Resizable)))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Reorderable $ (ImGui.TableFlags_Reorderable)))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Hideable $ (ImGui.TableFlags_Hideable)))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Sortable $ (ImGui.TableFlags_Sortable)))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoSavedSettings $ (ImGui.TableFlags_NoSavedSettings)))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ContextMenuInBody $ (ImGui.TableFlags_ContextMenuInBody)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Resizable $ (ImGui.TableFlags_Resizable)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Reorderable $ (ImGui.TableFlags_Reorderable)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Hideable $ (ImGui.TableFlags_Hideable)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_Sortable $ (ImGui.TableFlags_Sortable)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoSavedSettings $ (ImGui.TableFlags_NoSavedSettings)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ContextMenuInBody $ (ImGui.TableFlags_ContextMenuInBody)))
           (ImGui.TreePop ctx))
         (when (ImGui.TreeNode ctx "Decorations:"
                               (ImGui.TreeNodeFlags_DefaultOpen))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_RowBg $ (ImGui.TableFlags_RowBg)))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersV $ (ImGui.TableFlags_BordersV)))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersOuterV $ (ImGui.TableFlags_BordersOuterV)))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersInnerV $ (ImGui.TableFlags_BordersInnerV)))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersH $ (ImGui.TableFlags_BordersH)))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersOuterH $ (ImGui.TableFlags_BordersOuterH)))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersInnerH $ (ImGui.TableFlags_BordersInnerH)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_RowBg $ (ImGui.TableFlags_RowBg)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersV $ (ImGui.TableFlags_BordersV)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersOuterV $ (ImGui.TableFlags_BordersOuterV)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersInnerV $ (ImGui.TableFlags_BordersInnerV)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersH $ (ImGui.TableFlags_BordersH)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersOuterH $ (ImGui.TableFlags_BordersOuterH)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_BordersInnerH $ (ImGui.TableFlags_BordersInnerH)))
           (ImGui.TreePop ctx))
         (when (ImGui.TreeNode ctx "Sizing:" (ImGui.TreeNodeFlags_DefaultOpen))
           (set tables.advanced.flags
                (demo.EditTableSizingFlags tables.advanced.flags))
           (ImGui.SameLine ctx)
           (demo.HelpMarker "In the Advanced demo we override the policy of each column so those table-wide settings have less effect that typical.")
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoHostExtendX $ (ImGui.TableFlags_NoHostExtendX)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoHostExtendX $ (ImGui.TableFlags_NoHostExtendX)))
           (ImGui.SameLine ctx)
           (demo.HelpMarker "Make outer width auto-fit to columns, overriding outer_size.x value.
 
           Only available when ScrollX/ScrollY are disabled and Stretch columns are not used.")
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoHostExtendY $ (ImGui.TableFlags_NoHostExtendY)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoHostExtendY $ (ImGui.TableFlags_NoHostExtendY)))
           (ImGui.SameLine ctx)
           (demo.HelpMarker "Make outer height stop exactly at outer_size.y (prevent auto-extending table past the limit).
 
           Only available when ScrollX/ScrollY are disabled. Data below the limit will be clipped and not visible.")
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoKeepColumnsVisible $ (ImGui.TableFlags_NoKeepColumnsVisible)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoKeepColumnsVisible $ (ImGui.TableFlags_NoKeepColumnsVisible)))
           (ImGui.SameLine ctx)
           (demo.HelpMarker "Only available if ScrollX is disabled.")
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_PreciseWidths $ (ImGui.TableFlags_PreciseWidths)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_PreciseWidths $ (ImGui.TableFlags_PreciseWidths)))
           (ImGui.SameLine ctx)
           (demo.HelpMarker "Disable distributing remainder width to stretched columns (width allocation on a 100-wide table with 3 columns: Without this flag: 33,33,34. With this flag: 33,33,33). With larger number of columns, resizing will appear to be less smooth.")
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoClip $ (ImGui.TableFlags_NoClip)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoClip $ (ImGui.TableFlags_NoClip)))
           (ImGui.SameLine ctx)
           (demo.HelpMarker "Disable clipping rectangle for every individual columns (reduce draw command count, items will be able to overflow into other columns). Generally incompatible with ScrollFreeze options.")
           (ImGui.TreePop ctx))
         (when (ImGui.TreeNode ctx "Padding:" (ImGui.TreeNodeFlags_DefaultOpen))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_PadOuterX $ (ImGui.TableFlags_PadOuterX)))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoPadOuterX $ (ImGui.TableFlags_NoPadOuterX)))
-          (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoPadInnerX $ (ImGui.TableFlags_NoPadInnerX)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_PadOuterX $ (ImGui.TableFlags_PadOuterX)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoPadOuterX $ (ImGui.TableFlags_NoPadOuterX)))
+          (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_NoPadInnerX $ (ImGui.TableFlags_NoPadInnerX)))
           (ImGui.TreePop ctx))
     (when (ImGui.TreeNode ctx "Scrolling:"
                           (ImGui.TreeNodeFlags_DefaultOpen))
-      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ScrollX $ (ImGui.TableFlags_ScrollX)))
+      (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ScrollX $ (ImGui.TableFlags_ScrollX)))
       (ImGui.SameLine ctx)
       (ImGui.SetNextItemWidth ctx (ImGui.GetFrameHeight ctx))
-      (update-2nd tables.advanced.freeze_cols (ImGui.DragInt ctx :freeze_cols $ 0.2 0 9 nil (ImGui.SliderFlags_NoInput)))
-      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ScrollY $ (ImGui.TableFlags_ScrollY)))
+      (doimgui tables.advanced.freeze_cols (ImGui.DragInt ctx :freeze_cols $ 0.2 0 9 nil (ImGui.SliderFlags_NoInput)))
+      (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_ScrollY $ (ImGui.TableFlags_ScrollY)))
       (ImGui.SameLine ctx)
       (ImGui.SetNextItemWidth ctx (ImGui.GetFrameHeight ctx))
       (set (rv tables.advanced.freeze_rows)
@@ -5245,16 +5232,16 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
                           9 nil (ImGui.SliderFlags_NoInput)))
       (ImGui.TreePop ctx))
     (when (ImGui.TreeNode ctx "Sorting:" (ImGui.TreeNodeFlags_DefaultOpen))
-      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_SortMulti $ (ImGui.TableFlags_SortMulti)))
+      (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_SortMulti $ (ImGui.TableFlags_SortMulti)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "When sorting is enabled: hold shift when clicking headers to sort on multiple column. TableGetSortSpecs() may return specs where (SpecsCount > 1).")
-      (update-2nd tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_SortTristate $ (ImGui.TableFlags_SortTristate)))
+      (doimgui tables.advanced.flags (ImGui.CheckboxFlags ctx :ImGuiTableFlags_SortTristate $ (ImGui.TableFlags_SortTristate)))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "When sorting is enabled: allow no sorting, disable default sorting. TableGetSortSpecs() may return specs where (SpecsCount == 0).")
       (ImGui.TreePop ctx))
     (when (ImGui.TreeNode ctx "Other:" (ImGui.TreeNodeFlags_DefaultOpen))
-      (update-2nd tables.advanced.show_headers (ImGui.Checkbox ctx :show_headers $))
-      (update-2nd tables.advanced.show_wrapped_text (ImGui.Checkbox ctx :show_wrapped_text $))
+      (doimgui tables.advanced.show_headers (ImGui.Checkbox ctx :show_headers $))
+      (doimgui tables.advanced.show_wrapped_text (ImGui.Checkbox ctx :show_wrapped_text $))
       (set-forcibly! (rv osv1 osv2)
                      (ImGui.DragDouble2 ctx "##OuterSize"
                                         (table.unpack tables.advanced.outer_size_value)))
@@ -5263,19 +5250,19 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
       (ImGui.SameLine ctx 0
                       (ImGui.GetStyleVar ctx
                                          (ImGui.StyleVar_ItemInnerSpacing)))
-      (update-2nd tables.advanced.outer_size_enabled (ImGui.Checkbox ctx :outer_size $))
+      (doimgui tables.advanced.outer_size_enabled (ImGui.Checkbox ctx :outer_size $))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "If scrolling is disabled (ScrollX and ScrollY not set):
       - The table is output directly in the parent window.
       - OuterSize.x < 0.0 will right-align the table.
       - OuterSize.x = 0.0 will narrow fit the table unless there are any Stretch columns.
       - OuterSize.y then becomes the minimum size for the table, which will extend vertically if there are more rows (unless NoHostExtendY is set).")
-      (update-2nd tables.advanced.inner_width_with_scroll (ImGui.DragDouble ctx "inner_width (when ScrollX active)" $ 1 0 FLT_MAX))
-      (update-2nd tables.advanced.row_min_height (ImGui.DragDouble ctx :row_min_height $ 1 0 FLT_MAX))
+      (doimgui tables.advanced.inner_width_with_scroll (ImGui.DragDouble ctx "inner_width (when ScrollX active)" $ 1 0 FLT_MAX))
+      (doimgui tables.advanced.row_min_height (ImGui.DragDouble ctx :row_min_height $ 1 0 FLT_MAX))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Specify height of the Selectable item.")
-      (update-2nd tables.advanced.items_count (ImGui.DragInt ctx :items_count $ 0.1 0 9999))
-      (update-2nd tables.advanced.contents_type (ImGui.Combo ctx "items_type (first column)" $ "Text\000Button\000SmallButton\000FillButton\000Selectable\000Selectable (span row)\000"))
+      (doimgui tables.advanced.items_count (ImGui.DragInt ctx :items_count $ 0.1 0 9999))
+      (doimgui tables.advanced.contents_type (ImGui.Combo ctx "items_type (first column)" $ "Text\000Button\000SmallButton\000FillButton\000Selectable\000Selectable (span row)\000"))
       (ImGui.TreePop ctx))
     (ImGui.PopItemWidth ctx)
     (demo.PopStyleCompact)
@@ -5449,7 +5436,7 @@ Capturing the keyboard allows receiving input from REAPER's global scope.
 Hovering the colored canvas will call SetNextFrameWantCaptureXXX.")
       (local capture-override-desc [:None "Set to false" "Set to true"])
       (ImGui.SetNextItemWidth ctx (* (ImGui.GetFontSize ctx) 15))
-      (update-2nd misc.capture_override.keyboard
+      (doimgui misc.capture_override.keyboard
                   (ImGui.SliderInt ctx "SetNextFrameWantCaptureKeyboard() on hover" $ (- 1) 1
                                    (. capture-override-desc (+ $ 2)) (ImGui.SliderFlags_AlwaysClamp)))
       (ImGui.ColorButton ctx "##panel" 2988028671
@@ -5477,15 +5464,15 @@ Hovering the colored canvas will call SetNextFrameWantCaptureXXX.")
     (when (ImGui.TreeNode ctx :Tabbing)
       (set-when-not misc.tabbing {:buf :hello})
       (ImGui.Text ctx "Use TAB/SHIFT+TAB to cycle through keyboard editable fields.")
-      (update-2nd misc.tabbing.buf (ImGui.InputText ctx :1 $))
-      (update-2nd misc.tabbing.buf (ImGui.InputText ctx :2 $))
-      (update-2nd misc.tabbing.buf (ImGui.InputText ctx :3 $))
+      (doimgui misc.tabbing.buf (ImGui.InputText ctx :1 $))
+      (doimgui misc.tabbing.buf (ImGui.InputText ctx :2 $))
+      (doimgui misc.tabbing.buf (ImGui.InputText ctx :3 $))
       (ImGui.PushAllowKeyboardFocus ctx false)
-      (update-2nd misc.tabbing.buf (ImGui.InputText ctx "4 (tab skip)" $))
+      (doimgui misc.tabbing.buf (ImGui.InputText ctx "4 (tab skip)" $))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Item won't be cycled through when using TAB or Shift+Tab.")
       (ImGui.PopAllowKeyboardFocus ctx)
-      (update-2nd misc.tabbing.buf (ImGui.InputText ctx :5 $))
+      (doimgui misc.tabbing.buf (ImGui.InputText ctx :5 $))
       (ImGui.TreePop ctx))
     (when (ImGui.TreeNode ctx "Focus from code")
       (set-when-not misc.focus {:buf "click on a button to set focus" :d3 [0 0 0]})
@@ -5496,14 +5483,14 @@ Hovering the colored canvas will call SetNextFrameWantCaptureXXX.")
       (local focus-3 (ImGui.Button ctx "Focus on 3"))
       (var has-focus 0)
       (when focus-1 (ImGui.SetKeyboardFocusHere ctx))
-      (update-2nd misc.focus.buf (ImGui.InputText ctx :1 $))
+      (doimgui misc.focus.buf (ImGui.InputText ctx :1 $))
       (when (ImGui.IsItemActive ctx) (set has-focus 1))
       (when focus-2 (ImGui.SetKeyboardFocusHere ctx))
-      (update-2nd misc.focus.buf (ImGui.InputText ctx :2 $))
+      (doimgui misc.focus.buf (ImGui.InputText ctx :2 $))
       (when (ImGui.IsItemActive ctx) (set has-focus 2))
       (ImGui.PushAllowKeyboardFocus ctx false)
       (when focus-3 (ImGui.SetKeyboardFocusHere ctx))
-      (update-2nd misc.focus.buf (ImGui.InputText ctx "3 (tab skip)" $))
+      (doimgui misc.focus.buf (ImGui.InputText ctx "3 (tab skip)" $))
       (when (ImGui.IsItemActive ctx) (set has-focus 3))
       (ImGui.SameLine ctx)
       (demo.HelpMarker "Item won't be cycled through when using TAB or Shift+Tab.")
@@ -5932,7 +5919,7 @@ Right-click to open edit options menu.")
       (when (not (ImGui.ValidatePtr self.filter.inst :ImGui_TextFilter*))
         (set self.filter.inst (ImGui.CreateTextFilter self.filter.text)))
       (when (ImGui.BeginPopup self.ctx :Options)
-        (update-2nd self.auto_scroll (ImGui.Checkbox self.ctx :Auto-scroll $))
+        (doimgui self.auto_scroll (ImGui.Checkbox self.ctx :Auto-scroll $))
         (ImGui.EndPopup self.ctx))
       (when (ImGui.Button self.ctx :Options)
         (ImGui.OpenPopup self.ctx :Options))
@@ -6118,7 +6105,7 @@ Right-click to open edit options menu.")
   (let [(rv open) (ImGui.Begin ctx "Example: Long text display" true)]
     (when rv
       (ImGui.Text ctx "Printing unusually long amount of text.")
-      (update-2nd app.long_text.test_type
+      (doimgui app.long_text.test_type
                   (ImGui.Combo ctx "Test type" $
                                "Single call to Text()\0\z
                                 Multiple calls to Text(), clipped\0\z
@@ -6180,7 +6167,7 @@ Right-click to open edit options menu.")
                   "Window will resize every-frame to the size of its content.
                   Note that you probably don't want to query the window size to
                   output your content because that would create a feedback loop.")
-      (update-2nd app.auto_resize.lines (ImGui.SliderInt ctx "Number of lines" $ 1 20))
+      (doimgui app.auto_resize.lines (ImGui.SliderInt ctx "Number of lines" $ 1 20))
       (for [i 1 app.auto_resize.lines]
         (ImGui.Text ctx (: "%sThis is line %d" :format (: " " :rep (* i 4)) i))) ;; Pad with space to extend size horizontally
       (ImGui.End ctx))
@@ -6260,7 +6247,7 @@ Right-click to open edit options menu.")
           (when (ImGui.Button ctx "Set 800x200")
             (ImGui.SetWindowSize ctx 800 200))
           (ImGui.SetNextItemWidth ctx (* (ImGui.GetFontSize ctx) 20))
-          (update-2nd app.constrained_resize.type
+          (doimgui app.constrained_resize.type
                       (ImGui.Combo ctx :Constraint $
                                    "Between 100x100 and 500x500\0\z
                                    At least 100x100\0\z
@@ -6272,9 +6259,9 @@ Right-click to open edit options menu.")
           ;;Custom: Always Square\0\z
           ;;Custom: Fixed Steps (100)\0')
           (ImGui.SetNextItemWidth ctx (* (ImGui.GetFontSize ctx) 20))
-          (update-2nd app.constrained_resize.display_lines (ImGui.DragInt ctx :Lines $ 0.2 1 100))
-          (update-2nd app.constrained_resize.auto_resize (ImGui.Checkbox ctx :Auto-resize $))
-          (update-2nd app.constrained_resize.window_padding (ImGui.Checkbox ctx "Window padding" $))
+          (doimgui app.constrained_resize.display_lines (ImGui.DragInt ctx :Lines $ 0.2 1 100))
+          (doimgui app.constrained_resize.auto_resize (ImGui.Checkbox ctx :Auto-resize $))
+          (doimgui app.constrained_resize.window_padding (ImGui.Checkbox ctx "Window padding" $))
           (for [i 1 app.constrained_resize.display_lines]
             (ImGui.Text ctx (: "%sHello, sailor! Making this line long enough for the example."
                                :format (: " " :rep (* i 4)))))))
@@ -6385,12 +6372,12 @@ Right-click to open edit options menu.")
     Work Area = entire viewport minus sections used by the main menu bars, task bars etc.
 
     Enable the main-menu bar in Examples menu to see the difference.")
-    (update-2nd app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoBackground $ (ImGui.WindowFlags_NoBackground)))
-    (update-2nd app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoDecoration $ (ImGui.WindowFlags_NoDecoration)))
+    (doimgui app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoBackground $ (ImGui.WindowFlags_NoBackground)))
+    (doimgui app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoDecoration $ (ImGui.WindowFlags_NoDecoration)))
     (ImGui.Indent ctx)
-    (update-2nd app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoTitleBar $ (ImGui.WindowFlags_NoTitleBar)))
-    (update-2nd app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoCollapse $ (ImGui.WindowFlags_NoCollapse)))
-    (update-2nd app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoScrollbar $ (ImGui.WindowFlags_NoScrollbar)))
+    (doimgui app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoTitleBar $ (ImGui.WindowFlags_NoTitleBar)))
+    (doimgui app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoCollapse $ (ImGui.WindowFlags_NoCollapse)))
+    (doimgui app.fullscreen.flags (ImGui.CheckboxFlags ctx :ImGuiWindowFlags_NoScrollbar $ (ImGui.WindowFlags_NoScrollbar)))
     (ImGui.Unindent ctx)
     (when (ImGui.Button ctx "Close this window")
       (set open false))
@@ -6500,22 +6487,22 @@ My title is the same as window 1, but my identifier is unique.")
       (local item-inner-spacing-x
              (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemInnerSpacing)))
       (ImGui.Text ctx "All primitives")
-      (update-2nd app.rendering.sz (ImGui.DragDouble ctx :Size $ 0.2 2 100 "%.0f"))
-      (update-2nd app.rendering.thickness (ImGui.DragDouble ctx :Thickness $ 0.05 1 8 "%.02f"))
-      (update-2nd app.rendering.ngon_sides (ImGui.SliderInt ctx "N-gon sides" $ 3 12))
-      (update-2nd app.rendering.circle_segments_override (ImGui.Checkbox ctx "##circlesegmentoverride" $))
+      (doimgui app.rendering.sz (ImGui.DragDouble ctx :Size $ 0.2 2 100 "%.0f"))
+      (doimgui app.rendering.thickness (ImGui.DragDouble ctx :Thickness $ 0.05 1 8 "%.02f"))
+      (doimgui app.rendering.ngon_sides (ImGui.SliderInt ctx "N-gon sides" $ 3 12))
+      (doimgui app.rendering.circle_segments_override (ImGui.Checkbox ctx "##circlesegmentoverride" $))
       (ImGui.SameLine ctx 0 item-inner-spacing-x)
       (set (rv app.rendering.circle_segments_override_v)
            (ImGui.SliderInt ctx "Circle segments override"
                              app.rendering.circle_segments_override_v 3 40))
       (when rv (set app.rendering.circle_segments_override true))
-      (update-2nd app.rendering.curve_segments_override (ImGui.Checkbox ctx "##curvessegmentoverride" $))
+      (doimgui app.rendering.curve_segments_override (ImGui.Checkbox ctx "##curvessegmentoverride" $))
       (ImGui.SameLine ctx 0 item-inner-spacing-x)
       (set (rv app.rendering.curve_segments_override_v)
            (ImGui.SliderInt ctx "Curves segments override"
                              app.rendering.curve_segments_override_v 3 40))
       (when rv (set app.rendering.curve_segments_override true))
-      (update-2nd app.rendering.col (ImGui.ColorEdit4 ctx :Color $))
+      (doimgui app.rendering.col (ImGui.ColorEdit4 ctx :Color $))
 
       (local p [(ImGui.GetCursorScreenPos ctx)])
       (local spacing 10)
