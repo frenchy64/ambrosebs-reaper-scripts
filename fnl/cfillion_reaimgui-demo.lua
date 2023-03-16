@@ -4576,7 +4576,7 @@ function demo.ShowDemoWindowTables()
     demo.PopStyleCompact()
 
     if ImGui.BeginTable(ctx, 'table1', 3, tables.reorder.flags) then
-      -- Submit columns name with TableSetupColumn() and call TableHeadersRow() to create a row with a header in each column.
+      -- Submit column names with TableSetupColumn() and call TableHeadersRow() to create a row with a header in each column.
       -- (Later we will show how TableSetupColumn() has other uses, optional flags, sizing weight etc.)
       ImGui.TableSetupColumn(ctx, 'One')
       ImGui.TableSetupColumn(ctx, 'Two')
