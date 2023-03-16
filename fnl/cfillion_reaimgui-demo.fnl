@@ -2760,9 +2760,11 @@ GetItemRectSize() = (%.1f, %.1f)"
       (do
         (ImGui.SetNextItemWidth ctx (* (ImGui.GetFontSize ctx) 8))
         (assert layout.child.offset_x "offset_x is nil! before")
+        ;(set (_ layout.child.offset_x)
+        ;     (ImGui.DragInt ctx "Offset X" layout.child.offset_x 1.0 -1000 1000))
         (let [;; bind for debugging
-              (_ v1) (doimgui layout.child.offset_x (ImGui.DragInt ctx "Offset X" $ 1.0 -1000 1000))]
-          (assert v1 "v1 is nil!")
+              (v v1) (doimgui layout.child.offset_x (ImGui.DragInt ctx "Offset X" $ 1.0 -1000 1000))]
+          (assert v1 (.. "v1 is nil! " (tostring rv)))
           )
         (assert layout.child.offset_x "offset_x is nil! after")
 

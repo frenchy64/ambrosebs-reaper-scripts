@@ -22,8 +22,8 @@ end
 local ctx = nil
 local FLT_MIN, FLT_MAX = ImGui.NumericLimits_Float()
 local IMGUI_VERSION, IMGUI_VERSION_NUM, REAIMGUI_VERSION = ImGui.GetVersion()
-local demo = {open = true, menu = {b = true, enabled = true, f = 0.5, n = 0}, unsaved_document = false, no_close = false, no_collapse = false, no_scrollbar = false, no_titlebar = false, no_nav = false, no_docking = false, no_resize = false, no_background = false, no_menu = false, no_move = false}
-local show_app = {constrained_resize = false, auto_resize = false, log = false, simple_overlay = false, debug_log = false, style_editor = false, stack_tool = false, fullscreen = false, window_titles = false, console = false, documents = false, metrics = false, custom_rendering = false, property_editor = false, layout = false, about = false, long_text = false}
+local demo = {open = true, menu = {b = true, enabled = true, f = 0.5, n = 0}, no_close = false, unsaved_document = false, no_move = false, no_scrollbar = false, no_menu = false, no_nav = false, no_collapse = false, no_resize = false, no_docking = false, no_background = false, no_titlebar = false}
+local show_app = {window_titles = false, debug_log = false, layout = false, console = false, stack_tool = false, log = false, metrics = false, simple_overlay = false, documents = false, about = false, custom_rendering = false, fullscreen = false, constrained_resize = false, style_editor = false, property_editor = false, long_text = false, auto_resize = false}
 local config = {}
 local widgets = {}
 local layout = {}
@@ -2042,7 +2042,7 @@ demo.ShowDemoWindowWidgets = function()
     end
     if ImGui.TreeNode(ctx, "Color/Picker Widgets") then
       if not widgets.colors then
-        widgets.colors = {alpha = true, alpha_bar = true, alpha_preview = true, backup_color = nil, display_mode = 0, drag_and_drop = true, hsva = 1006632959, options_menu = true, picker_mode = 0, raw_hsv = reaper.new_array(4), ref_color_rgba = 4278255488, rgba = 1922079432, saved_palette = nil, side_preview = true, alpha_half_preview = false, no_border = false, ref_color = false}
+        widgets.colors = {alpha = true, alpha_bar = true, alpha_preview = true, backup_color = nil, display_mode = 0, drag_and_drop = true, hsva = 1006632959, options_menu = true, picker_mode = 0, raw_hsv = reaper.new_array(4), ref_color_rgba = 4278255488, rgba = 1922079432, saved_palette = nil, side_preview = true, ref_color = false, alpha_half_preview = false, no_border = false}
       else
       end
       ImGui.SeparatorText(ctx, "Options")
@@ -3229,7 +3229,7 @@ demo.ShowDemoWindowLayout = function()
     local rv = nil
     if ImGui.TreeNode(ctx, "Child windows") then
       if not layout.child then
-        layout.child = {offset_x = 0, disable_menu = false, disable_mouse_wheel = false}
+        layout.child = {offset_x = 0, disable_mouse_wheel = false, disable_menu = false}
       else
       end
       ImGui.SeparatorText(ctx, "Child windows")
@@ -3319,7 +3319,7 @@ demo.ShowDemoWindowLayout = function()
         ImGui.SetNextItemWidth(ctx, (ImGui.GetFontSize(ctx) * 8))
         assert(layout.child.offset_x, "offset_x is nil! before")
         do
-          local _, v1 = nil, nil
+          local v, v1 = nil, nil
           do
             local rv_521_, arg1_520_ = nil, nil
             do
@@ -3329,9 +3329,9 @@ demo.ShowDemoWindowLayout = function()
               rv_521_, arg1_520_ = ImGui.DragInt(ctx, "Offset X", _24, 1.0, -1000, 1000)
             end
             layout.child.offset_x = arg1_520_
-            _, v1 = rv_521_, arg1_520_
+            v, v1 = rv_521_, arg1_520_
           end
-          assert(v1, "v1 is nil!")
+          assert(v1, ("v1 is nil! " .. tostring(rv)))
         end
         assert(layout.child.offset_x, "offset_x is nil! after")
         ImGui.SetCursorPosX(ctx, (ImGui.GetCursorPosX(ctx) + layout.child.offset_x))
@@ -3526,7 +3526,7 @@ demo.ShowDemoWindowLayout = function()
     end
     if ImGui.TreeNode(ctx, "Basic Horizontal Layout") then
       if not layout.horizontal then
-        layout.horizontal = {d0 = 1.0, d1 = 2.0, d2 = 3.0, item = -1, selection = {0, 1, 2, 3}, c3 = false, c4 = false, c2 = false, c1 = false}
+        layout.horizontal = {d0 = 1.0, d1 = 2.0, d2 = 3.0, item = -1, selection = {0, 1, 2, 3}, c4 = false, c2 = false, c3 = false, c1 = false}
       else
       end
       ImGui.TextWrapped(ctx, "(Use ImGui.SameLine() to keep adding items to the right of the preceding item)")
@@ -4117,7 +4117,7 @@ demo.ShowDemoWindowLayout = function()
       end
       if layout.scrolling.show_horizontal_contents_size_demo_window then
         if not layout.horizontal_window then
-          layout.horizontal_window = {contents_size_x = 300.0, show_button = true, show_columns = true, show_h_scrollbar = true, show_tab_bar = true, show_tree_nodes = true, explicit_content_size = false, show_text_wrapped = false, show_child = false}
+          layout.horizontal_window = {contents_size_x = 300.0, show_button = true, show_columns = true, show_h_scrollbar = true, show_tab_bar = true, show_tree_nodes = true, show_child = false, show_text_wrapped = false, explicit_content_size = false}
         else
         end
         if layout.horizontal_window.explicit_content_size then
