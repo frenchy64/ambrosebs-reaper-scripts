@@ -2759,9 +2759,15 @@ GetItemRectSize() = (%.1f, %.1f)"
       ;;   the POV of the parent window). See 'Demo->Querying Status (Edited/Active/Hovered etc.)' for details.
       (do
         (ImGui.SetNextItemWidth ctx (* (ImGui.GetFontSize ctx) 8))
-        (doimgui layout.child.offset_x (ImGui.DragInt ctx "Offset X" $ 1 (- 1000) 1000))
+        (assert layout.child.offset_x "offset_x is nil! before")
+        (let [;; bind for debugging
+              (_ v1) (doimgui layout.child.offset_x (ImGui.DragInt ctx "Offset X" $ 1.0 -1000 1000))]
+          (assert v1 "v1 is nil!")
+          )
+        (assert layout.child.offset_x "offset_x is nil! after")
+
         (ImGui.SetCursorPosX ctx (+ (ImGui.GetCursorPosX ctx) layout.child.offset_x))
-        (ImGui.PushStyleColor ctx (ImGui.Col_ChildBg) 4278190180)
+        (ImGui.PushStyleColor ctx (ImGui.Col_ChildBg) 0xFF000064)
         (let [visible (ImGui.BeginChild ctx :Red 200 100 true (ImGui.WindowFlags_None))]
           (ImGui.PopStyleColor ctx)
           (when visible
