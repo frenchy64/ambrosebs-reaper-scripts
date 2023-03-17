@@ -1,23 +1,9 @@
-local ImGui = {}
-local ctx = nil
-local show_app = {console = false}
-demo.ShowDemoWindow = function(open)
-  if ImGui.BeginMenuBar(ctx) then
-    if ImGui.BeginMenu(ctx, "Examples") then
-      local rv_2_, arg1_1_ = nil, nil
-      do
-        local arg1_1_ = show_app.console
-        local _24 = arg1_1_
-        local _241 = arg1_1_
-        rv_2_, arg1_1_ = ImGui.MenuItem(ctx, "Console", nil, _24, false)
-      end
-      show_app.console = arg1_1_
-      return rv_2_, arg1_1_
-    else
-      return nil
-    end
-  else
-    return nil
+local function _1_(...)
+  local g_1_auto
+  do
+    local g_1_auto0 = 1
+    g_1_auto = 2
   end
+  return g_1_auto
 end
-return demo.ShowDemoWindow
+return print("this should be 2: ", _1_(...))
