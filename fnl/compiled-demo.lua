@@ -22,8 +22,8 @@ end
 local ctx = nil
 local FLT_MIN, FLT_MAX = ImGui.NumericLimits_Float()
 local IMGUI_VERSION, IMGUI_VERSION_NUM, REAIMGUI_VERSION = ImGui.GetVersion()
-local demo = {open = true, menu = {b = true, enabled = true, f = 0.5, n = 0}, no_titlebar = false, no_close = false, no_nav = false, unsaved_document = false, no_scrollbar = false, no_resize = false, no_menu = false, no_docking = false, no_move = false, no_collapse = false, no_background = false}
-local show_app = {style_editor = false, about = false, layout = false, custom_rendering = false, fullscreen = false, log = false, simple_overlay = false, debug_log = false, property_editor = false, console = false, auto_resize = false, stack_tool = false, window_titles = false, metrics = false, long_text = false, constrained_resize = false, documents = false}
+local demo = {open = true, menu = {b = true, enabled = true, f = 0.5, n = 0}, no_nav = false, no_move = false, no_background = false, no_close = false, no_scrollbar = false, no_collapse = false, unsaved_document = false, no_titlebar = false, no_resize = false, no_docking = false, no_menu = false}
+local show_app = {about = false, metrics = false, log = false, style_editor = false, layout = false, simple_overlay = false, stack_tool = false, debug_log = false, window_titles = false, console = false, property_editor = false, long_text = false, custom_rendering = false, constrained_resize = false, fullscreen = false, documents = false, auto_resize = false}
 local config = {}
 local widgets = {}
 local layout = {}
@@ -2060,7 +2060,7 @@ demo.ShowDemoWindowWidgets = function()
     end
     if ImGui.TreeNode(ctx, "Color/Picker Widgets") then
       if not widgets.colors then
-        widgets.colors = {alpha = true, alpha_bar = true, alpha_preview = true, backup_color = nil, display_mode = 0, drag_and_drop = true, hsva = 1006632959, options_menu = true, picker_mode = 0, raw_hsv = reaper.new_array(4), ref_color_rgba = 4278255488, rgba = 1922079432, saved_palette = nil, side_preview = true, alpha_half_preview = false, no_border = false, ref_color = false}
+        widgets.colors = {alpha = true, alpha_bar = true, alpha_preview = true, backup_color = nil, display_mode = 0, drag_and_drop = true, hsva = 1006632959, options_menu = true, picker_mode = 0, raw_hsv = reaper.new_array(4), ref_color_rgba = 4278255488, rgba = 1922079432, saved_palette = nil, side_preview = true, no_border = false, ref_color = false, alpha_half_preview = false}
       else
       end
       ImGui.SeparatorText(ctx, "Options")
@@ -3136,7 +3136,7 @@ demo.ShowDemoWindowWidgets = function()
   end
   if ImGui.TreeNode(ctx, "Querying Window Status (Focused/Hovered etc.)") then
     if not widgets.query_window then
-      widgets.query_window = {test_window = false, embed_all_inside_a_child_window = false}
+      widgets.query_window = {embed_all_inside_a_child_window = false, test_window = false}
     else
     end
     do
@@ -3546,7 +3546,7 @@ demo.ShowDemoWindowLayout = function()
     end
     if ImGui.TreeNode(ctx, "Basic Horizontal Layout") then
       if not layout.horizontal then
-        layout.horizontal = {d0 = 1.0, d1 = 2.0, d2 = 3.0, item = -1, selection = {0, 1, 2, 3}, c1 = false, c4 = false, c3 = false, c2 = false}
+        layout.horizontal = {d0 = 1.0, d1 = 2.0, d2 = 3.0, item = -1, selection = {0, 1, 2, 3}, c1 = false, c2 = false, c3 = false, c4 = false}
       else
       end
       ImGui.TextWrapped(ctx, "(Use ImGui.SameLine() to keep adding items to the right of the preceding item)")
@@ -4137,7 +4137,7 @@ demo.ShowDemoWindowLayout = function()
       end
       if layout.scrolling.show_horizontal_contents_size_demo_window then
         if not layout.horizontal_window then
-          layout.horizontal_window = {contents_size_x = 300.0, show_button = true, show_columns = true, show_h_scrollbar = true, show_tab_bar = true, show_tree_nodes = true, show_text_wrapped = false, show_child = false, explicit_content_size = false}
+          layout.horizontal_window = {contents_size_x = 300.0, show_button = true, show_columns = true, show_h_scrollbar = true, show_tab_bar = true, show_tree_nodes = true, explicit_content_size = false, show_child = false, show_text_wrapped = false}
         else
         end
         if layout.horizontal_window.explicit_content_size then
@@ -6348,7 +6348,7 @@ demo.ShowDemoWindowTables = function()
     Do_open_action()
     if ImGui.TreeNode(ctx, "Advanced") then
       if not tables.advanced then
-        tables.advanced = {contents_type = 5, flags = (ImGui.TableFlags_Resizable() | ImGui.TableFlags_Reorderable() | ImGui.TableFlags_Hideable() | ImGui.TableFlags_Sortable() | ImGui.TableFlags_SortMulti() | ImGui.TableFlags_RowBg() | ImGui.TableFlags_Borders() | ImGui.TableFlags_ScrollX() | ImGui.TableFlags_ScrollY() | ImGui.TableFlags_SizingFixedFit()), freeze_cols = 1, freeze_rows = 1, inner_width_with_scroll = 0, items = {}, items_count = (#template_items_names * 2), outer_size_enabled = true, outer_size_value = {0, (TEXT_BASE_HEIGHT * 12)}, row_min_height = 0, show_headers = true, items_need_sort = false, show_wrapped_text = false}
+        tables.advanced = {contents_type = 5, flags = (ImGui.TableFlags_Resizable() | ImGui.TableFlags_Reorderable() | ImGui.TableFlags_Hideable() | ImGui.TableFlags_Sortable() | ImGui.TableFlags_SortMulti() | ImGui.TableFlags_RowBg() | ImGui.TableFlags_Borders() | ImGui.TableFlags_ScrollX() | ImGui.TableFlags_ScrollY() | ImGui.TableFlags_SizingFixedFit()), freeze_cols = 1, freeze_rows = 1, inner_width_with_scroll = 0, items = {}, items_count = (#template_items_names * 2), outer_size_enabled = true, outer_size_value = {0, (TEXT_BASE_HEIGHT * 12)}, row_min_height = 0, show_headers = true, show_wrapped_text = false, items_need_sort = false}
       else
       end
       if ImGui.TreeNode(ctx, "Options") then
@@ -8243,7 +8243,7 @@ demo.ShowExampleAppWindowTitles = function()
 end
 demo.ShowExampleAppCustomRendering = function()
   if not app.rendering then
-    app.rendering = {circle_segments_override_v = 12, col = 4294928127, curve_segments_override_v = 8, draw_bg = true, draw_fg = true, ngon_sides = 6, opt_enable_context_menu = true, opt_enable_grid = true, points = {}, scrolling = {0, 0}, sz = 36, thickness = 3, circle_segments_override = false, curve_segments_override = false, adding_line = false}
+    app.rendering = {circle_segments_override_v = 12, col = 4294928127, curve_segments_override_v = 8, draw_bg = true, draw_fg = true, ngon_sides = 6, opt_enable_context_menu = true, opt_enable_grid = true, points = {}, scrolling = {0, 0}, sz = 36, thickness = 3, adding_line = false, curve_segments_override = false, circle_segments_override = false}
   else
   end
   local rv, open = ImGui.Begin(ctx, "Example: Custom rendering", true)

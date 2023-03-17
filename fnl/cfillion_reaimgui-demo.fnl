@@ -293,7 +293,8 @@
     (ImGui.PushItemWidth ctx (* (ImGui.GetFontSize ctx) (- 12)))
     ;; Menu Bar
     (when (ImGui.BeginMenuBar ctx)
-      (when (ImGui.BeginMenu ctx :Menu) (demo.ShowExampleMenuFile)
+      (when (ImGui.BeginMenu ctx :Menu)
+        (demo.ShowExampleMenuFile)
         (ImGui.EndMenu ctx))
       (when (ImGui.BeginMenu ctx :Examples)
         ;;(doimgui show_app.main_menu_bar (ImGui.MenuItem ctx "Main menu bar" nil $ false))
@@ -526,31 +527,30 @@
         (table-column! ctx "Unsaved document" demo.unsaved_document)
         (ImGui.EndTable ctx))
 
-      (local flags (ImGui.GetConfigVar ctx (ImGui.ConfigVar_Flags)))
-      (local docking-disabled (or demo.no_docking
-                                  (= (band flags (ImGui.ConfigFlags_DockingEnable))
-                                     0)))
+      (let [flags (ImGui.GetConfigVar ctx (ImGui.ConfigVar_Flags))
+            docking-disabled (or demo.no_docking
+                                 (= (band flags (ImGui.ConfigFlags_DockingEnable))
+                                    0))]
+        (ImGui.Spacing ctx)
+        (when docking-disabled (ImGui.BeginDisabled ctx))
 
-      (ImGui.Spacing ctx)
-      (when docking-disabled (ImGui.BeginDisabled ctx))
+        (let [dock-id (ImGui.GetWindowDockID ctx)]
+          (ImGui.AlignTextToFramePadding ctx)
+          (ImGui.Text ctx "Dock in docker:")
+          (ImGui.SameLine ctx)
+          (ImGui.SetNextItemWidth ctx 222)
+          (when (ImGui.BeginCombo ctx "##docker" (demo.DockName dock-id))
+            (when (ImGui.Selectable ctx :Floating (= dock-id 0))
+              (set demo.set_dock_id 0))
+            (for [id -1 -16 -1]
+              (when (ImGui.Selectable ctx (demo.DockName id) (= dock-id id))
+                (set demo.set_dock_id id)))
+            (ImGui.EndCombo ctx)))
 
-      (let [dock-id (ImGui.GetWindowDockID ctx)]
-        (ImGui.AlignTextToFramePadding ctx)
-        (ImGui.Text ctx "Dock in docker:")
-        (ImGui.SameLine ctx)
-        (ImGui.SetNextItemWidth ctx 222)
-        (when (ImGui.BeginCombo ctx "##docker" (demo.DockName dock-id))
-          (when (ImGui.Selectable ctx :Floating (= dock-id 0))
-            (set demo.set_dock_id 0))
-          (for [id -1 -16 -1]
-            (when (ImGui.Selectable ctx (demo.DockName id) (= dock-id id))
-              (set demo.set_dock_id id)))
-          (ImGui.EndCombo ctx)))
-
-      (when docking-disabled
-        (ImGui.SameLine ctx)
-        (ImGui.Text ctx (: "Disabled via %s" :format (if demo.no_docking :WindowFlags :ConfigFlags)))
-        (ImGui.EndDisabled ctx)))
+        (when docking-disabled
+          (ImGui.SameLine ctx)
+          (ImGui.Text ctx (: "Disabled via %s" :format (if demo.no_docking :WindowFlags :ConfigFlags)))
+          (ImGui.EndDisabled ctx))))
 
     ;; All demo contents
     (demo.ShowDemoWindowWidgets)
