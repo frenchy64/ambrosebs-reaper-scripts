@@ -22,8 +22,8 @@ end
 local ctx = nil
 local FLT_MIN, FLT_MAX = ImGui.NumericLimits_Float()
 local IMGUI_VERSION, IMGUI_VERSION_NUM, REAIMGUI_VERSION = ImGui.GetVersion()
-local demo = {open = true, menu = {b = true, enabled = true, f = 0.5, n = 0}, no_close = false, unsaved_document = false, no_move = false, no_scrollbar = false, no_menu = false, no_nav = false, no_collapse = false, no_resize = false, no_docking = false, no_background = false, no_titlebar = false}
-local show_app = {window_titles = false, debug_log = false, layout = false, console = false, stack_tool = false, log = false, metrics = false, simple_overlay = false, documents = false, about = false, custom_rendering = false, fullscreen = false, constrained_resize = false, style_editor = false, property_editor = false, long_text = false, auto_resize = false}
+local demo = {open = true, menu = {b = true, enabled = true, f = 0.5, n = 0}, unsaved_document = false, no_resize = false, no_scrollbar = false, no_menu = false, no_collapse = false, no_move = false, no_close = false, no_docking = false, no_nav = false, no_background = false, no_titlebar = false}
+local show_app = {custom_rendering = false, simple_overlay = false, documents = false, about = false, stack_tool = false, property_editor = false, style_editor = false, window_titles = false, auto_resize = false, fullscreen = false, long_text = false, metrics = false, debug_log = false, constrained_resize = false, layout = false, console = false, log = false}
 local config = {}
 local widgets = {}
 local layout = {}
@@ -303,178 +303,178 @@ demo.ShowDemoWindow = function(open)
     end
     if ImGui.BeginMenu(ctx, "Examples") then
       do
-        local rv_51_, arg1_50_ = nil, nil
+        local rv_52_, arg1_50_ = nil, nil
         do
-          local arg1_50_ = show_app.console
-          local _24 = arg1_50_
-          local _241 = arg1_50_
-          rv_51_, arg1_50_ = ImGui.MenuItem(ctx, "Console", nil, _24, false)
+          local arg1_51_ = show_app.console
+          local _24 = arg1_51_
+          local _241 = arg1_51_
+          rv_52_, arg1_50_ = ImGui.MenuItem(ctx, "Console", nil, _24, false)
         end
         show_app.console = arg1_50_
       end
       do
-        local rv_53_, arg1_52_ = nil, nil
+        local rv_55_, arg1_53_ = nil, nil
         do
-          local arg1_52_ = show_app.log
-          local _24 = arg1_52_
-          local _241 = arg1_52_
-          rv_53_, arg1_52_ = ImGui.MenuItem(ctx, "Log", nil, _24)
-        end
-        show_app.log = arg1_52_
-      end
-      do
-        local rv_55_, arg1_54_ = nil, nil
-        do
-          local arg1_54_ = show_app.layout
+          local arg1_54_ = show_app.log
           local _24 = arg1_54_
           local _241 = arg1_54_
-          rv_55_, arg1_54_ = ImGui.MenuItem(ctx, "Simple layout", nil, _24)
+          rv_55_, arg1_53_ = ImGui.MenuItem(ctx, "Log", nil, _24)
         end
-        show_app.layout = arg1_54_
+        show_app.log = arg1_53_
       end
       do
-        local rv_57_, arg1_56_ = nil, nil
+        local rv_58_, arg1_56_ = nil, nil
         do
-          local arg1_56_ = show_app.property_editor
-          local _24 = arg1_56_
-          local _241 = arg1_56_
-          rv_57_, arg1_56_ = ImGui.MenuItem(ctx, "Property editor", nil, _24)
+          local arg1_57_ = show_app.layout
+          local _24 = arg1_57_
+          local _241 = arg1_57_
+          rv_58_, arg1_56_ = ImGui.MenuItem(ctx, "Simple layout", nil, _24)
         end
-        show_app.property_editor = arg1_56_
+        show_app.layout = arg1_56_
       end
       do
-        local rv_59_, arg1_58_ = nil, nil
+        local rv_61_, arg1_59_ = nil, nil
         do
-          local arg1_58_ = show_app.long_text
-          local _24 = arg1_58_
-          local _241 = arg1_58_
-          rv_59_, arg1_58_ = ImGui.MenuItem(ctx, "Long text display", nil, _24)
-        end
-        show_app.long_text = arg1_58_
-      end
-      do
-        local rv_61_, arg1_60_ = nil, nil
-        do
-          local arg1_60_ = show_app.auto_resize
+          local arg1_60_ = show_app.property_editor
           local _24 = arg1_60_
           local _241 = arg1_60_
-          rv_61_, arg1_60_ = ImGui.MenuItem(ctx, "Auto-resizing window", nil, _24)
+          rv_61_, arg1_59_ = ImGui.MenuItem(ctx, "Property editor", nil, _24)
         end
-        show_app.auto_resize = arg1_60_
+        show_app.property_editor = arg1_59_
       end
       do
-        local rv_63_, arg1_62_ = nil, nil
+        local rv_64_, arg1_62_ = nil, nil
         do
-          local arg1_62_ = show_app.constrained_resize
-          local _24 = arg1_62_
-          local _241 = arg1_62_
-          rv_63_, arg1_62_ = ImGui.MenuItem(ctx, "Constrained-resizing window", nil, _24)
+          local arg1_63_ = show_app.long_text
+          local _24 = arg1_63_
+          local _241 = arg1_63_
+          rv_64_, arg1_62_ = ImGui.MenuItem(ctx, "Long text display", nil, _24)
         end
-        show_app.constrained_resize = arg1_62_
+        show_app.long_text = arg1_62_
       end
       do
-        local rv_65_, arg1_64_ = nil, nil
+        local rv_67_, arg1_65_ = nil, nil
         do
-          local arg1_64_ = show_app.simple_overlay
-          local _24 = arg1_64_
-          local _241 = arg1_64_
-          rv_65_, arg1_64_ = ImGui.MenuItem(ctx, "Simple overlay", nil, _24)
-        end
-        show_app.simple_overlay = arg1_64_
-      end
-      do
-        local rv_67_, arg1_66_ = nil, nil
-        do
-          local arg1_66_ = show_app.fullscreen
+          local arg1_66_ = show_app.auto_resize
           local _24 = arg1_66_
           local _241 = arg1_66_
-          rv_67_, arg1_66_ = ImGui.MenuItem(ctx, "Fullscreen window", nil, _24)
+          rv_67_, arg1_65_ = ImGui.MenuItem(ctx, "Auto-resizing window", nil, _24)
         end
-        show_app.fullscreen = arg1_66_
+        show_app.auto_resize = arg1_65_
       end
       do
-        local rv_69_, arg1_68_ = nil, nil
+        local rv_70_, arg1_68_ = nil, nil
         do
-          local arg1_68_ = show_app.window_titles
-          local _24 = arg1_68_
-          local _241 = arg1_68_
-          rv_69_, arg1_68_ = ImGui.MenuItem(ctx, "Manipulating window titles", nil, _24)
+          local arg1_69_ = show_app.constrained_resize
+          local _24 = arg1_69_
+          local _241 = arg1_69_
+          rv_70_, arg1_68_ = ImGui.MenuItem(ctx, "Constrained-resizing window", nil, _24)
         end
-        show_app.window_titles = arg1_68_
+        show_app.constrained_resize = arg1_68_
       end
       do
-        local rv_71_, arg1_70_ = nil, nil
+        local rv_73_, arg1_71_ = nil, nil
         do
-          local arg1_70_ = show_app.custom_rendering
-          local _24 = arg1_70_
-          local _241 = arg1_70_
-          rv_71_, arg1_70_ = ImGui.MenuItem(ctx, "Custom rendering", nil, _24)
-        end
-        show_app.custom_rendering = arg1_70_
-      end
-      do
-        local rv_73_, arg1_72_ = nil, nil
-        do
-          local arg1_72_ = show_app.documents
+          local arg1_72_ = show_app.simple_overlay
           local _24 = arg1_72_
           local _241 = arg1_72_
-          rv_73_, arg1_72_ = ImGui.MenuItem(ctx, "Documents", nil, _24, false)
+          rv_73_, arg1_71_ = ImGui.MenuItem(ctx, "Simple overlay", nil, _24)
         end
-        show_app.documents = arg1_72_
+        show_app.simple_overlay = arg1_71_
+      end
+      do
+        local rv_76_, arg1_74_ = nil, nil
+        do
+          local arg1_75_ = show_app.fullscreen
+          local _24 = arg1_75_
+          local _241 = arg1_75_
+          rv_76_, arg1_74_ = ImGui.MenuItem(ctx, "Fullscreen window", nil, _24)
+        end
+        show_app.fullscreen = arg1_74_
+      end
+      do
+        local rv_79_, arg1_77_ = nil, nil
+        do
+          local arg1_78_ = show_app.window_titles
+          local _24 = arg1_78_
+          local _241 = arg1_78_
+          rv_79_, arg1_77_ = ImGui.MenuItem(ctx, "Manipulating window titles", nil, _24)
+        end
+        show_app.window_titles = arg1_77_
+      end
+      do
+        local rv_82_, arg1_80_ = nil, nil
+        do
+          local arg1_81_ = show_app.custom_rendering
+          local _24 = arg1_81_
+          local _241 = arg1_81_
+          rv_82_, arg1_80_ = ImGui.MenuItem(ctx, "Custom rendering", nil, _24)
+        end
+        show_app.custom_rendering = arg1_80_
+      end
+      do
+        local rv_85_, arg1_83_ = nil, nil
+        do
+          local arg1_84_ = show_app.documents
+          local _24 = arg1_84_
+          local _241 = arg1_84_
+          rv_85_, arg1_83_ = ImGui.MenuItem(ctx, "Documents", nil, _24, false)
+        end
+        show_app.documents = arg1_83_
       end
       ImGui.EndMenu(ctx)
     else
     end
     if ImGui.BeginMenu(ctx, "Tools") then
       do
-        local rv_76_, arg1_75_ = nil, nil
+        local rv_89_, arg1_87_ = nil, nil
         do
-          local arg1_75_ = show_app.metrics
-          local _24 = arg1_75_
-          local _241 = arg1_75_
-          rv_76_, arg1_75_ = ImGui.MenuItem(ctx, "Metrics/Debugger", nil, _24)
+          local arg1_88_ = show_app.metrics
+          local _24 = arg1_88_
+          local _241 = arg1_88_
+          rv_89_, arg1_87_ = ImGui.MenuItem(ctx, "Metrics/Debugger", nil, _24)
         end
-        show_app.metrics = arg1_75_
+        show_app.metrics = arg1_87_
       end
       do
-        local rv_78_, arg1_77_ = nil, nil
+        local rv_92_, arg1_90_ = nil, nil
         do
-          local arg1_77_ = show_app.debug_log
-          local _24 = arg1_77_
-          local _241 = arg1_77_
-          rv_78_, arg1_77_ = ImGui.MenuItem(ctx, "Debug Log", nil, _24)
+          local arg1_91_ = show_app.debug_log
+          local _24 = arg1_91_
+          local _241 = arg1_91_
+          rv_92_, arg1_90_ = ImGui.MenuItem(ctx, "Debug Log", nil, _24)
         end
-        show_app.debug_log = arg1_77_
+        show_app.debug_log = arg1_90_
       end
       do
-        local rv_80_, arg1_79_ = nil, nil
+        local rv_95_, arg1_93_ = nil, nil
         do
-          local arg1_79_ = show_app.stack_tool
-          local _24 = arg1_79_
-          local _241 = arg1_79_
-          rv_80_, arg1_79_ = ImGui.MenuItem(ctx, "Stack Tool", nil, _24)
+          local arg1_94_ = show_app.stack_tool
+          local _24 = arg1_94_
+          local _241 = arg1_94_
+          rv_95_, arg1_93_ = ImGui.MenuItem(ctx, "Stack Tool", nil, _24)
         end
-        show_app.stack_tool = arg1_79_
+        show_app.stack_tool = arg1_93_
       end
       do
-        local rv_82_, arg1_81_ = nil, nil
+        local rv_98_, arg1_96_ = nil, nil
         do
-          local arg1_81_ = show_app.style_editor
-          local _24 = arg1_81_
-          local _241 = arg1_81_
-          rv_82_, arg1_81_ = ImGui.MenuItem(ctx, "Style Editor", nil, _24)
+          local arg1_97_ = show_app.style_editor
+          local _24 = arg1_97_
+          local _241 = arg1_97_
+          rv_98_, arg1_96_ = ImGui.MenuItem(ctx, "Style Editor", nil, _24)
         end
-        show_app.style_editor = arg1_81_
+        show_app.style_editor = arg1_96_
       end
       do
-        local rv_84_, arg1_83_ = nil, nil
+        local rv_101_, arg1_99_ = nil, nil
         do
-          local arg1_83_ = show_app.about
-          local _24 = arg1_83_
-          local _241 = arg1_83_
-          rv_84_, arg1_83_ = ImGui.MenuItem(ctx, "About Dear ImGui", nil, _24)
+          local arg1_100_ = show_app.about
+          local _24 = arg1_100_
+          local _241 = arg1_100_
+          rv_101_, arg1_99_ = ImGui.MenuItem(ctx, "About Dear ImGui", nil, _24)
         end
-        show_app.about = arg1_83_
+        show_app.about = arg1_99_
       end
       ImGui.EndMenu(ctx)
     else
@@ -519,14 +519,14 @@ demo.ShowDemoWindow = function(open)
         local conf_var = assert(reaper[("ImGui_%s"):format(name)], "unknown var")()
         local rv, val = ImGui.Checkbox(ctx, name, ImGui.GetConfigVar(ctx, conf_var))
         if rv then
-          local function _90_()
+          local function _107_()
             if val then
               return 1
             else
               return 0
             end
           end
-          return ImGui.SetConfigVar(ctx, conf_var, _90_())
+          return ImGui.SetConfigVar(ctx, conf_var, _107_())
         else
           return nil
         end
@@ -534,38 +534,38 @@ demo.ShowDemoWindow = function(open)
       config.flags = ImGui.GetConfigVar(ctx, ImGui.ConfigVar_Flags())
       ImGui.SeparatorText(ctx, "General")
       do
-        local rv_93_, arg1_92_ = nil, nil
+        local rv_111_, arg1_109_ = nil, nil
         do
-          local arg1_92_ = config.flags
-          local _24 = arg1_92_
-          local _241 = arg1_92_
-          rv_93_, arg1_92_ = ImGui.CheckboxFlags(ctx, "ConfigFlags_NavEnableKeyboard", _24, ImGui.ConfigFlags_NavEnableKeyboard())
+          local arg1_110_ = config.flags
+          local _24 = arg1_110_
+          local _241 = arg1_110_
+          rv_111_, arg1_109_ = ImGui.CheckboxFlags(ctx, "ConfigFlags_NavEnableKeyboard", _24, ImGui.ConfigFlags_NavEnableKeyboard())
         end
-        config.flags = arg1_92_
+        config.flags = arg1_109_
       end
       ImGui.SameLine(ctx)
       demo.HelpMarker("Enable keyboard controls.")
       do
-        local rv_95_, arg1_94_ = nil, nil
+        local rv_114_, arg1_112_ = nil, nil
         do
-          local arg1_94_ = config.flags
-          local _24 = arg1_94_
-          local _241 = arg1_94_
-          rv_95_, arg1_94_ = ImGui.CheckboxFlags(ctx, "ConfigFlags_NavEnableSetMousePos", _24, ImGui.ConfigFlags_NavEnableSetMousePos())
+          local arg1_113_ = config.flags
+          local _24 = arg1_113_
+          local _241 = arg1_113_
+          rv_114_, arg1_112_ = ImGui.CheckboxFlags(ctx, "ConfigFlags_NavEnableSetMousePos", _24, ImGui.ConfigFlags_NavEnableSetMousePos())
         end
-        config.flags = arg1_94_
+        config.flags = arg1_112_
       end
       ImGui.SameLine(ctx)
       demo.HelpMarker("Instruct navigation to move the mouse cursor.")
       do
-        local rv_97_, arg1_96_ = nil, nil
+        local rv_117_, arg1_115_ = nil, nil
         do
-          local arg1_96_ = config.flags
-          local _24 = arg1_96_
-          local _241 = arg1_96_
-          rv_97_, arg1_96_ = ImGui.CheckboxFlags(ctx, "ConfigFlags_NoMouse", _24, ImGui.ConfigFlags_NoMouse())
+          local arg1_116_ = config.flags
+          local _24 = arg1_116_
+          local _241 = arg1_116_
+          rv_117_, arg1_115_ = ImGui.CheckboxFlags(ctx, "ConfigFlags_NoMouse", _24, ImGui.ConfigFlags_NoMouse())
         end
-        config.flags = arg1_96_
+        config.flags = arg1_115_
       end
       if ((config.flags & ImGui.ConfigFlags_NoMouse()) ~= 0) then
         if ((ImGui.GetTime(ctx) % 0.4) < 0.2) then
@@ -580,48 +580,48 @@ demo.ShowDemoWindow = function(open)
       else
       end
       do
-        local rv_102_, arg1_101_ = nil, nil
+        local rv_123_, arg1_121_ = nil, nil
         do
-          local arg1_101_ = config.flags
-          local _24 = arg1_101_
-          local _241 = arg1_101_
-          rv_102_, arg1_101_ = ImGui.CheckboxFlags(ctx, "ConfigFlags_NoMouseCursorChange", _24, ImGui.ConfigFlags_NoMouseCursorChange())
+          local arg1_122_ = config.flags
+          local _24 = arg1_122_
+          local _241 = arg1_122_
+          rv_123_, arg1_121_ = ImGui.CheckboxFlags(ctx, "ConfigFlags_NoMouseCursorChange", _24, ImGui.ConfigFlags_NoMouseCursorChange())
         end
-        config.flags = arg1_101_
+        config.flags = arg1_121_
       end
       ImGui.SameLine(ctx)
       demo.HelpMarker("Instruct backend to not alter mouse cursor shape and visibility.")
       do
-        local rv_104_, arg1_103_ = nil, nil
+        local rv_126_, arg1_124_ = nil, nil
         do
-          local arg1_103_ = config.flags
-          local _24 = arg1_103_
-          local _241 = arg1_103_
-          rv_104_, arg1_103_ = ImGui.CheckboxFlags(ctx, "ConfigFlags_NoSavedSettings", _24, ImGui.ConfigFlags_NoSavedSettings())
+          local arg1_125_ = config.flags
+          local _24 = arg1_125_
+          local _241 = arg1_125_
+          rv_126_, arg1_124_ = ImGui.CheckboxFlags(ctx, "ConfigFlags_NoSavedSettings", _24, ImGui.ConfigFlags_NoSavedSettings())
         end
-        config.flags = arg1_103_
+        config.flags = arg1_124_
       end
       ImGui.SameLine(ctx)
       demo.HelpMarker("Globally disable loading and saving state to an .ini file")
       do
-        local rv_106_, arg1_105_ = nil, nil
+        local rv_129_, arg1_127_ = nil, nil
         do
-          local arg1_105_ = config.flags
-          local _24 = arg1_105_
-          local _241 = arg1_105_
-          rv_106_, arg1_105_ = ImGui.CheckboxFlags(ctx, "ConfigFlags_DockingEnable", _24, ImGui.ConfigFlags_DockingEnable())
+          local arg1_128_ = config.flags
+          local _24 = arg1_128_
+          local _241 = arg1_128_
+          rv_129_, arg1_127_ = ImGui.CheckboxFlags(ctx, "ConfigFlags_DockingEnable", _24, ImGui.ConfigFlags_DockingEnable())
         end
-        config.flags = arg1_105_
+        config.flags = arg1_127_
       end
       ImGui.SameLine(ctx)
-      local function _107_()
+      local function _130_()
         if ImGui.GetConfigVar(ctx, ImGui.ConfigVar_DockingWithShift()) then
           return "enable"
         else
           return "disable"
         end
       end
-      demo.HelpMarker(format("Drag from window title bar or their tab to dock/undock. Hold SHIFT to %s docking.\n\nDrag from window menu button (upper-left button) to undock an entire node (all windows).", _107_()))
+      demo.HelpMarker(format("Drag from window title bar or their tab to dock/undock. Hold SHIFT to %s docking.\n\nDrag from window menu button (upper-left button) to undock an entire node (all windows).", _130_()))
       if (0 ~= (config.flags & ImGui.ConfigFlags_DockingEnable())) then
         ImGui.Indent(ctx)
         config_var_checkbox("ConfigVar_DockingNoSplit")
@@ -689,14 +689,14 @@ demo.ShowDemoWindow = function(open)
           ImGui.PushAllowKeyboardFocus(ctx, false)
           ImGui.SetNextItemWidth(ctx, 80)
           do
-            local rv_113_, arg1_112_ = nil, nil
+            local rv_137_, arg1_135_ = nil, nil
             do
-              local arg1_112_ = config.logging.auto_open_depth
-              local _24 = arg1_112_
-              local _241 = arg1_112_
-              rv_113_, arg1_112_ = ImGui.SliderInt(ctx, "Open Depth", _24, 0, 9)
+              local arg1_136_ = config.logging.auto_open_depth
+              local _24 = arg1_136_
+              local _241 = arg1_136_
+              rv_137_, arg1_135_ = ImGui.SliderInt(ctx, "Open Depth", _24, 0, 9)
             end
-            config.logging.auto_open_depth = arg1_112_
+            config.logging.auto_open_depth = arg1_135_
           end
           ImGui.PopAllowKeyboardFocus(ctx)
           _1 = ImGui.PopID(ctx)
@@ -811,14 +811,14 @@ demo.ShowDemoWindow = function(open)
     end
     if docking_disabled then
       ImGui.SameLine(ctx)
-      local function _125_()
+      local function _149_()
         if demo.no_docking then
           return "WindowFlags"
         else
           return "ConfigFlags"
         end
       end
-      ImGui.Text(ctx, ("Disabled via %s"):format(_125_()))
+      ImGui.Text(ctx, ("Disabled via %s"):format(_149_()))
       ImGui.EndDisabled(ctx)
     else
     end
@@ -856,46 +856,46 @@ demo.ShowDemoWindowWidgets = function()
       else
       end
       do
-        local rv_133_, arg1_132_ = nil, nil
+        local rv_158_, arg1_156_ = nil, nil
         do
-          local arg1_132_ = widgets.basic.check
-          local _24 = arg1_132_
-          local _241 = arg1_132_
-          rv_133_, arg1_132_ = ImGui.Checkbox(ctx, "checkbox", _24)
+          local arg1_157_ = widgets.basic.check
+          local _24 = arg1_157_
+          local _241 = arg1_157_
+          rv_158_, arg1_156_ = ImGui.Checkbox(ctx, "checkbox", _24)
         end
-        widgets.basic.check = arg1_132_
+        widgets.basic.check = arg1_156_
       end
       do
-        local rv_135_, arg1_134_ = nil, nil
+        local rv_161_, arg1_159_ = nil, nil
         do
-          local arg1_134_ = widgets.basic.radio
-          local _24 = arg1_134_
-          local _241 = arg1_134_
-          rv_135_, arg1_134_ = ImGui.RadioButtonEx(ctx, "radio a", _24, 0)
+          local arg1_160_ = widgets.basic.radio
+          local _24 = arg1_160_
+          local _241 = arg1_160_
+          rv_161_, arg1_159_ = ImGui.RadioButtonEx(ctx, "radio a", _24, 0)
         end
-        widgets.basic.radio = arg1_134_
-      end
-      ImGui.SameLine(ctx)
-      do
-        local rv_137_, arg1_136_ = nil, nil
-        do
-          local arg1_136_ = widgets.basic.radio
-          local _24 = arg1_136_
-          local _241 = arg1_136_
-          rv_137_, arg1_136_ = ImGui.RadioButtonEx(ctx, "radio b", _24, 1)
-        end
-        widgets.basic.radio = arg1_136_
+        widgets.basic.radio = arg1_159_
       end
       ImGui.SameLine(ctx)
       do
-        local rv_139_, arg1_138_ = nil, nil
+        local rv_164_, arg1_162_ = nil, nil
         do
-          local arg1_138_ = widgets.basic.radio
-          local _24 = arg1_138_
-          local _241 = arg1_138_
-          rv_139_, arg1_138_ = ImGui.RadioButtonEx(ctx, "radio c", _24, 2)
+          local arg1_163_ = widgets.basic.radio
+          local _24 = arg1_163_
+          local _241 = arg1_163_
+          rv_164_, arg1_162_ = ImGui.RadioButtonEx(ctx, "radio b", _24, 1)
         end
-        widgets.basic.radio = arg1_138_
+        widgets.basic.radio = arg1_162_
+      end
+      ImGui.SameLine(ctx)
+      do
+        local rv_167_, arg1_165_ = nil, nil
+        do
+          local arg1_166_ = widgets.basic.radio
+          local _24 = arg1_166_
+          local _241 = arg1_166_
+          rv_167_, arg1_165_ = ImGui.RadioButtonEx(ctx, "radio c", _24, 2)
+        end
+        widgets.basic.radio = arg1_165_
       end
       for i = 0, 6 do
         if (i > 0) then
@@ -958,56 +958,56 @@ demo.ShowDemoWindowWidgets = function()
       ImGui.SeparatorText(ctx, "Inputs")
       do
         do
-          local rv_147_, arg1_146_ = nil, nil
+          local rv_176_, arg1_174_ = nil, nil
           do
-            local arg1_146_ = widgets.basic.str0
-            local _24 = arg1_146_
-            local _241 = arg1_146_
-            rv_147_, arg1_146_ = ImGui.InputText(ctx, "input text", _24)
+            local arg1_175_ = widgets.basic.str0
+            local _24 = arg1_175_
+            local _241 = arg1_175_
+            rv_176_, arg1_174_ = ImGui.InputText(ctx, "input text", _24)
           end
-          widgets.basic.str0 = arg1_146_
+          widgets.basic.str0 = arg1_174_
         end
         ImGui.SameLine(ctx)
         demo.HelpMarker("USER:\n        Hold SHIFT or use mouse to select text.\n        CTRL+Left/Right to word jump.\n        CTRL+A or double-click to select all.\n        CTRL+X,CTRL+C,CTRL+V clipboard.\n        CTRL+Z,CTRL+Y undo/redo.\n        ESCAPE to revert.\n\n        ")
         do
-          local rv_149_, arg1_148_ = nil, nil
+          local rv_179_, arg1_177_ = nil, nil
           do
-            local arg1_148_ = widgets.basic.str1
-            local _24 = arg1_148_
-            local _241 = arg1_148_
-            rv_149_, arg1_148_ = ImGui.InputTextWithHint(ctx, "input text (w/ hint)", "enter text here", _24)
+            local arg1_178_ = widgets.basic.str1
+            local _24 = arg1_178_
+            local _241 = arg1_178_
+            rv_179_, arg1_177_ = ImGui.InputTextWithHint(ctx, "input text (w/ hint)", "enter text here", _24)
           end
-          widgets.basic.str1 = arg1_148_
+          widgets.basic.str1 = arg1_177_
         end
         do
-          local rv_151_, arg1_150_ = nil, nil
+          local rv_182_, arg1_180_ = nil, nil
           do
-            local arg1_150_ = widgets.basic.i0
-            local _24 = arg1_150_
-            local _241 = arg1_150_
-            rv_151_, arg1_150_ = ImGui.InputInt(ctx, "input int", _24)
+            local arg1_181_ = widgets.basic.i0
+            local _24 = arg1_181_
+            local _241 = arg1_181_
+            rv_182_, arg1_180_ = ImGui.InputInt(ctx, "input int", _24)
           end
-          widgets.basic.i0 = arg1_150_
+          widgets.basic.i0 = arg1_180_
         end
         do
-          local rv_153_, arg1_152_ = nil, nil
+          local rv_185_, arg1_183_ = nil, nil
           do
-            local arg1_152_ = widgets.basic.d0
-            local _24 = arg1_152_
-            local _241 = arg1_152_
-            rv_153_, arg1_152_ = ImGui.InputDouble(ctx, "input double", _24, 0.01, 1, "%.8f")
+            local arg1_184_ = widgets.basic.d0
+            local _24 = arg1_184_
+            local _241 = arg1_184_
+            rv_185_, arg1_183_ = ImGui.InputDouble(ctx, "input double", _24, 0.01, 1, "%.8f")
           end
-          widgets.basic.d0 = arg1_152_
+          widgets.basic.d0 = arg1_183_
         end
         do
-          local rv_155_, arg1_154_ = nil, nil
+          local rv_188_, arg1_186_ = nil, nil
           do
-            local arg1_154_ = widgets.basic.d1
-            local _24 = arg1_154_
-            local _241 = arg1_154_
-            rv_155_, arg1_154_ = ImGui.InputDouble(ctx, "input scientific", _24, 0, 0, "%e")
+            local arg1_187_ = widgets.basic.d1
+            local _24 = arg1_187_
+            local _241 = arg1_187_
+            rv_188_, arg1_186_ = ImGui.InputDouble(ctx, "input scientific", _24, 0, 0, "%e")
           end
-          widgets.basic.d1 = arg1_154_
+          widgets.basic.d1 = arg1_186_
         end
         ImGui.SameLine(ctx)
         demo.HelpMarker("You can input value using the scientific notation,\n        e.g. \"1e+8\" becomes \"100000000\".")
@@ -1595,44 +1595,44 @@ demo.ShowDemoWindowWidgets = function()
       end
       if ImGui.TreeNode(ctx, "Multi-line Text Input") then
         do
-          local rv_240_, arg1_239_ = nil, nil
+          local rv_274_, arg1_272_ = nil, nil
           do
-            local arg1_239_ = widgets.input.multiline.flags
-            local _24 = arg1_239_
-            local _241 = arg1_239_
-            rv_240_, arg1_239_ = ImGui.CheckboxFlags(ctx, "ImGuiInputTextFlags_ReadOnly", _24, ImGui.InputTextFlags_ReadOnly())
+            local arg1_273_ = widgets.input.multiline.flags
+            local _24 = arg1_273_
+            local _241 = arg1_273_
+            rv_274_, arg1_272_ = ImGui.CheckboxFlags(ctx, "ImGuiInputTextFlags_ReadOnly", _24, ImGui.InputTextFlags_ReadOnly())
           end
-          widgets.input.multiline.flags = arg1_239_
+          widgets.input.multiline.flags = arg1_272_
         end
         do
-          local rv_242_, arg1_241_ = nil, nil
+          local rv_277_, arg1_275_ = nil, nil
           do
-            local arg1_241_ = widgets.input.multiline.flags
-            local _24 = arg1_241_
-            local _241 = arg1_241_
-            rv_242_, arg1_241_ = ImGui.CheckboxFlags(ctx, "ImGuiInputTextFlags_AllowTabInput", _24, ImGui.InputTextFlags_AllowTabInput())
+            local arg1_276_ = widgets.input.multiline.flags
+            local _24 = arg1_276_
+            local _241 = arg1_276_
+            rv_277_, arg1_275_ = ImGui.CheckboxFlags(ctx, "ImGuiInputTextFlags_AllowTabInput", _24, ImGui.InputTextFlags_AllowTabInput())
           end
-          widgets.input.multiline.flags = arg1_241_
+          widgets.input.multiline.flags = arg1_275_
         end
         do
-          local rv_244_, arg1_243_ = nil, nil
+          local rv_280_, arg1_278_ = nil, nil
           do
-            local arg1_243_ = widgets.input.multiline.flags
-            local _24 = arg1_243_
-            local _241 = arg1_243_
-            rv_244_, arg1_243_ = ImGui.CheckboxFlags(ctx, "ImGuiInputTextFlags_CtrlEnterForNewLine", _24, ImGui.InputTextFlags_CtrlEnterForNewLine())
+            local arg1_279_ = widgets.input.multiline.flags
+            local _24 = arg1_279_
+            local _241 = arg1_279_
+            rv_280_, arg1_278_ = ImGui.CheckboxFlags(ctx, "ImGuiInputTextFlags_CtrlEnterForNewLine", _24, ImGui.InputTextFlags_CtrlEnterForNewLine())
           end
-          widgets.input.multiline.flags = arg1_243_
+          widgets.input.multiline.flags = arg1_278_
         end
         do
-          local rv_246_, arg1_245_ = nil, nil
+          local rv_283_, arg1_281_ = nil, nil
           do
-            local arg1_245_ = widgets.input.multiline.text
-            local _24 = arg1_245_
-            local _241 = arg1_245_
-            rv_246_, arg1_245_ = ImGui.InputTextMultiline(ctx, "##source", _24, ( - FLT_MIN), (ImGui.GetTextLineHeight(ctx) * 16), widgets.input.multiline.flags)
+            local arg1_282_ = widgets.input.multiline.text
+            local _24 = arg1_282_
+            local _241 = arg1_282_
+            rv_283_, arg1_281_ = ImGui.InputTextMultiline(ctx, "##source", _24, ( - FLT_MIN), (ImGui.GetTextLineHeight(ctx) * 16), widgets.input.multiline.flags)
           end
-          widgets.input.multiline.text = arg1_245_
+          widgets.input.multiline.text = arg1_281_
         end
         ImGui.TreePop(ctx)
       else
@@ -1688,36 +1688,36 @@ demo.ShowDemoWindowWidgets = function()
       end
       if ImGui.TreeNode(ctx, "Password Input") then
         do
-          local rv_250_, arg1_249_ = nil, nil
+          local rv_288_, arg1_286_ = nil, nil
           do
-            local arg1_249_ = widgets.input.password
-            local _24 = arg1_249_
-            local _241 = arg1_249_
-            rv_250_, arg1_249_ = ImGui.InputText(ctx, "password", _24, ImGui.InputTextFlags_Password())
+            local arg1_287_ = widgets.input.password
+            local _24 = arg1_287_
+            local _241 = arg1_287_
+            rv_288_, arg1_286_ = ImGui.InputText(ctx, "password", _24, ImGui.InputTextFlags_Password())
           end
-          widgets.input.password = arg1_249_
+          widgets.input.password = arg1_286_
         end
         ImGui.SameLine(ctx)
         demo.HelpMarker("Display all characters as '*'.\nDisable clipboard cut and copy.\nDisable logging.\n")
         do
-          local rv_252_, arg1_251_ = nil, nil
+          local rv_291_, arg1_289_ = nil, nil
           do
-            local arg1_251_ = widgets.input.password
-            local _24 = arg1_251_
-            local _241 = arg1_251_
-            rv_252_, arg1_251_ = ImGui.InputTextWithHint(ctx, "password (w/ hint)", "<password>", _24, ImGui.InputTextFlags_Password())
+            local arg1_290_ = widgets.input.password
+            local _24 = arg1_290_
+            local _241 = arg1_290_
+            rv_291_, arg1_289_ = ImGui.InputTextWithHint(ctx, "password (w/ hint)", "<password>", _24, ImGui.InputTextFlags_Password())
           end
-          widgets.input.password = arg1_251_
+          widgets.input.password = arg1_289_
         end
         do
-          local rv_254_, arg1_253_ = nil, nil
+          local rv_294_, arg1_292_ = nil, nil
           do
-            local arg1_253_ = widgets.input.password
-            local _24 = arg1_253_
-            local _241 = arg1_253_
-            rv_254_, arg1_253_ = ImGui.InputText(ctx, "password (clear)", _24)
+            local arg1_293_ = widgets.input.password
+            local _24 = arg1_293_
+            local _241 = arg1_293_
+            rv_294_, arg1_292_ = ImGui.InputText(ctx, "password (clear)", _24)
           end
-          widgets.input.password = arg1_253_
+          widgets.input.password = arg1_292_
         end
         ImGui.TreePop(ctx)
       else
@@ -1757,44 +1757,44 @@ demo.ShowDemoWindowWidgets = function()
       end
       if ImGui.TreeNode(ctx, "Advanced & Close Button") then
         do
-          local rv_264_, arg1_263_ = nil, nil
+          local rv_305_, arg1_303_ = nil, nil
           do
-            local arg1_263_ = widgets.tabs.flags1
-            local _24 = arg1_263_
-            local _241 = arg1_263_
-            rv_264_, arg1_263_ = ImGui.CheckboxFlags(ctx, "ImGuiTabBarFlags_Reorderable", _24, ImGui.TabBarFlags_Reorderable())
+            local arg1_304_ = widgets.tabs.flags1
+            local _24 = arg1_304_
+            local _241 = arg1_304_
+            rv_305_, arg1_303_ = ImGui.CheckboxFlags(ctx, "ImGuiTabBarFlags_Reorderable", _24, ImGui.TabBarFlags_Reorderable())
           end
-          widgets.tabs.flags1 = arg1_263_
+          widgets.tabs.flags1 = arg1_303_
         end
         do
-          local rv_266_, arg1_265_ = nil, nil
+          local rv_308_, arg1_306_ = nil, nil
           do
-            local arg1_265_ = widgets.tabs.flags1
-            local _24 = arg1_265_
-            local _241 = arg1_265_
-            rv_266_, arg1_265_ = ImGui.CheckboxFlags(ctx, "ImGuiTabBarFlags_AutoSelectNewTabs", _24, ImGui.TabBarFlags_AutoSelectNewTabs())
+            local arg1_307_ = widgets.tabs.flags1
+            local _24 = arg1_307_
+            local _241 = arg1_307_
+            rv_308_, arg1_306_ = ImGui.CheckboxFlags(ctx, "ImGuiTabBarFlags_AutoSelectNewTabs", _24, ImGui.TabBarFlags_AutoSelectNewTabs())
           end
-          widgets.tabs.flags1 = arg1_265_
+          widgets.tabs.flags1 = arg1_306_
         end
         do
-          local rv_268_, arg1_267_ = nil, nil
+          local rv_311_, arg1_309_ = nil, nil
           do
-            local arg1_267_ = widgets.tabs.flags1
-            local _24 = arg1_267_
-            local _241 = arg1_267_
-            rv_268_, arg1_267_ = ImGui.CheckboxFlags(ctx, "ImGuiTabBarFlags_TabListPopupButton", _24, ImGui.TabBarFlags_TabListPopupButton())
+            local arg1_310_ = widgets.tabs.flags1
+            local _24 = arg1_310_
+            local _241 = arg1_310_
+            rv_311_, arg1_309_ = ImGui.CheckboxFlags(ctx, "ImGuiTabBarFlags_TabListPopupButton", _24, ImGui.TabBarFlags_TabListPopupButton())
           end
-          widgets.tabs.flags1 = arg1_267_
+          widgets.tabs.flags1 = arg1_309_
         end
         do
-          local rv_270_, arg1_269_ = nil, nil
+          local rv_314_, arg1_312_ = nil, nil
           do
-            local arg1_269_ = widgets.tabs.flags1
-            local _24 = arg1_269_
-            local _241 = arg1_269_
-            rv_270_, arg1_269_ = ImGui.CheckboxFlags(ctx, "ImGuiTabBarFlags_NoCloseWithMiddleMouseButton", _24, ImGui.TabBarFlags_NoCloseWithMiddleMouseButton())
+            local arg1_313_ = widgets.tabs.flags1
+            local _24 = arg1_313_
+            local _241 = arg1_313_
+            rv_314_, arg1_312_ = ImGui.CheckboxFlags(ctx, "ImGuiTabBarFlags_NoCloseWithMiddleMouseButton", _24, ImGui.TabBarFlags_NoCloseWithMiddleMouseButton())
           end
-          widgets.tabs.flags1 = arg1_269_
+          widgets.tabs.flags1 = arg1_312_
         end
         if (0 == (widgets.tabs.flags1 & fitting_policy_mask)) then
           widgets.tabs.flags1 = (widgets.tabs.flags1 | ImGui.TabBarFlags_FittingPolicyResizeDown())
@@ -1845,34 +1845,34 @@ demo.ShowDemoWindowWidgets = function()
       end
       if ImGui.TreeNode(ctx, "TabItemButton & Leading/Trailing flags") then
         do
-          local rv_281_, arg1_280_ = nil, nil
+          local rv_326_, arg1_324_ = nil, nil
           do
-            local arg1_280_ = widgets.tabs.show_leading_button
-            local _24 = arg1_280_
-            local _241 = arg1_280_
-            rv_281_, arg1_280_ = ImGui.Checkbox(ctx, "Show Leading TabItemButton()", _24)
+            local arg1_325_ = widgets.tabs.show_leading_button
+            local _24 = arg1_325_
+            local _241 = arg1_325_
+            rv_326_, arg1_324_ = ImGui.Checkbox(ctx, "Show Leading TabItemButton()", _24)
           end
-          widgets.tabs.show_leading_button = arg1_280_
+          widgets.tabs.show_leading_button = arg1_324_
         end
         do
-          local rv_283_, arg1_282_ = nil, nil
+          local rv_329_, arg1_327_ = nil, nil
           do
-            local arg1_282_ = widgets.tabs.show_trailing_button
-            local _24 = arg1_282_
-            local _241 = arg1_282_
-            rv_283_, arg1_282_ = ImGui.Checkbox(ctx, "Show Trailing TabItemButton()", _24)
+            local arg1_328_ = widgets.tabs.show_trailing_button
+            local _24 = arg1_328_
+            local _241 = arg1_328_
+            rv_329_, arg1_327_ = ImGui.Checkbox(ctx, "Show Trailing TabItemButton()", _24)
           end
-          widgets.tabs.show_trailing_button = arg1_282_
+          widgets.tabs.show_trailing_button = arg1_327_
         end
         do
-          local rv_285_, arg1_284_ = nil, nil
+          local rv_332_, arg1_330_ = nil, nil
           do
-            local arg1_284_ = widgets.tabs.flags2
-            local _24 = arg1_284_
-            local _241 = arg1_284_
-            rv_285_, arg1_284_ = ImGui.CheckboxFlags(ctx, "ImGuiTabBarFlags_TabListPopupButton", _24, ImGui.TabBarFlags_TabListPopupButton())
+            local arg1_331_ = widgets.tabs.flags2
+            local _24 = arg1_331_
+            local _241 = arg1_331_
+            rv_332_, arg1_330_ = ImGui.CheckboxFlags(ctx, "ImGuiTabBarFlags_TabListPopupButton", _24, ImGui.TabBarFlags_TabListPopupButton())
           end
-          widgets.tabs.flags2 = arg1_284_
+          widgets.tabs.flags2 = arg1_330_
         end
         if ImGui.CheckboxFlags(ctx, "ImGuiTabBarFlags_FittingPolicyResizeDown", widgets.tabs.flags2, ImGui.TabBarFlags_FittingPolicyResizeDown()) then
           widgets.tabs.flags2 = ((widgets.tabs.flags2 & ~fitting_policy_mask) | ImGui.TabBarFlags_FittingPolicyResizeDown())
@@ -1931,30 +1931,30 @@ demo.ShowDemoWindowWidgets = function()
     if ImGui.TreeNode(ctx, "Plotting") then
       local PLOT1_SIZE = 90
       local plot2_funcs
-      local function _298_(_241)
+      local function _345_(_241)
         return math.sin((_241 * 0.1))
       end
-      local function _299_(_241)
+      local function _346_(_241)
         if ((_241 & 1) == 1) then
           return 1.0
         else
           return -1.0
         end
       end
-      plot2_funcs = {_298_, _299_}
+      plot2_funcs = {_345_, _346_}
       if not widgets.plots then
         widgets.plots = {animate = true, frame_times = reaper.new_array({0.6, 0.1, 1, 0.5, 0.92, 0.1, 0.2}), plot1 = {data = reaper.new_array(PLOT1_SIZE), offset = 1, phase = 0, refresh_time = 0}, plot2 = {data = reaper.new_array(1), fill = true, func = 0, size = 70}, progress = 0, progress_dir = 1}
       else
       end
       do
-        local rv_303_, arg1_302_ = nil, nil
+        local rv_351_, arg1_349_ = nil, nil
         do
-          local arg1_302_ = widgets.plots.animate
-          local _24 = arg1_302_
-          local _241 = arg1_302_
-          rv_303_, arg1_302_ = ImGui.Checkbox(ctx, "Animate", _24)
+          local arg1_350_ = widgets.plots.animate
+          local _24 = arg1_350_
+          local _241 = arg1_350_
+          rv_351_, arg1_349_ = ImGui.Checkbox(ctx, "Animate", _24)
         end
-        widgets.plots.animate = arg1_302_
+        widgets.plots.animate = arg1_349_
       end
       ImGui.PlotLines(ctx, "Frame Times", widgets.plots.frame_times)
       ImGui.PlotHistogram(ctx, "Histogram", widgets.plots.frame_times, 0, nil, 0, 1, 0, 80)
@@ -1982,28 +1982,28 @@ demo.ShowDemoWindowWidgets = function()
       do
         local func_changed
         do
-          local rv_306_, arg1_305_ = nil, nil
+          local rv_355_, arg1_353_ = nil, nil
           do
-            local arg1_305_ = widgets.plots.plot2.func
-            local _24 = arg1_305_
-            local _241 = arg1_305_
-            rv_306_, arg1_305_ = ImGui.Combo(ctx, "func", _24, "Sin\0Saw\0")
+            local arg1_354_ = widgets.plots.plot2.func
+            local _24 = arg1_354_
+            local _241 = arg1_354_
+            rv_355_, arg1_353_ = ImGui.Combo(ctx, "func", _24, "Sin\0Saw\0")
           end
-          widgets.plots.plot2.func = arg1_305_
-          func_changed = rv_306_, arg1_305_
+          widgets.plots.plot2.func = arg1_353_
+          func_changed = rv_355_, arg1_353_
         end
         local _ = ImGui.SameLine(ctx)
         local rv0
         do
-          local rv_308_, arg1_307_ = nil, nil
+          local rv_358_, arg1_356_ = nil, nil
           do
-            local arg1_307_ = widgets.plots.plot2.size
-            local _24 = arg1_307_
-            local _241 = arg1_307_
-            rv_308_, arg1_307_ = ImGui.SliderInt(ctx, "Sample count", _24, 1, 400)
+            local arg1_357_ = widgets.plots.plot2.size
+            local _24 = arg1_357_
+            local _241 = arg1_357_
+            rv_358_, arg1_356_ = ImGui.SliderInt(ctx, "Sample count", _24, 1, 400)
           end
-          widgets.plots.plot2.size = arg1_307_
-          rv0 = rv_308_, arg1_307_
+          widgets.plots.plot2.size = arg1_356_
+          rv0 = rv_358_, arg1_356_
         end
         if (func_changed or rv0 or widgets.plots.plot2.fill) then
           widgets.plots.plot2.fill = false
@@ -2042,75 +2042,75 @@ demo.ShowDemoWindowWidgets = function()
     end
     if ImGui.TreeNode(ctx, "Color/Picker Widgets") then
       if not widgets.colors then
-        widgets.colors = {alpha = true, alpha_bar = true, alpha_preview = true, backup_color = nil, display_mode = 0, drag_and_drop = true, hsva = 1006632959, options_menu = true, picker_mode = 0, raw_hsv = reaper.new_array(4), ref_color_rgba = 4278255488, rgba = 1922079432, saved_palette = nil, side_preview = true, ref_color = false, alpha_half_preview = false, no_border = false}
+        widgets.colors = {alpha = true, alpha_bar = true, alpha_preview = true, backup_color = nil, display_mode = 0, drag_and_drop = true, hsva = 1006632959, options_menu = true, picker_mode = 0, raw_hsv = reaper.new_array(4), ref_color_rgba = 4278255488, rgba = 1922079432, saved_palette = nil, side_preview = true, no_border = false, alpha_half_preview = false, ref_color = false}
       else
       end
       ImGui.SeparatorText(ctx, "Options")
       do
-        local rv_315_, arg1_314_ = nil, nil
+        local rv_366_, arg1_364_ = nil, nil
         do
-          local arg1_314_ = widgets.colors.alpha_preview
-          local _24 = arg1_314_
-          local _241 = arg1_314_
-          rv_315_, arg1_314_ = ImGui.Checkbox(ctx, "With Alpha Preview", _24)
+          local arg1_365_ = widgets.colors.alpha_preview
+          local _24 = arg1_365_
+          local _241 = arg1_365_
+          rv_366_, arg1_364_ = ImGui.Checkbox(ctx, "With Alpha Preview", _24)
         end
-        widgets.colors.alpha_preview = arg1_314_
+        widgets.colors.alpha_preview = arg1_364_
       end
       do
-        local rv_317_, arg1_316_ = nil, nil
+        local rv_369_, arg1_367_ = nil, nil
         do
-          local arg1_316_ = widgets.colors.alpha_half_preview
-          local _24 = arg1_316_
-          local _241 = arg1_316_
-          rv_317_, arg1_316_ = ImGui.Checkbox(ctx, "With Half Alpha Preview", _24)
+          local arg1_368_ = widgets.colors.alpha_half_preview
+          local _24 = arg1_368_
+          local _241 = arg1_368_
+          rv_369_, arg1_367_ = ImGui.Checkbox(ctx, "With Half Alpha Preview", _24)
         end
-        widgets.colors.alpha_half_preview = arg1_316_
+        widgets.colors.alpha_half_preview = arg1_367_
       end
       do
-        local rv_319_, arg1_318_ = nil, nil
+        local rv_372_, arg1_370_ = nil, nil
         do
-          local arg1_318_ = widgets.colors.drag_and_drop
-          local _24 = arg1_318_
-          local _241 = arg1_318_
-          rv_319_, arg1_318_ = ImGui.Checkbox(ctx, "With Drag and Drop", _24)
+          local arg1_371_ = widgets.colors.drag_and_drop
+          local _24 = arg1_371_
+          local _241 = arg1_371_
+          rv_372_, arg1_370_ = ImGui.Checkbox(ctx, "With Drag and Drop", _24)
         end
-        widgets.colors.drag_and_drop = arg1_318_
+        widgets.colors.drag_and_drop = arg1_370_
       end
       do
-        local rv_321_, arg1_320_ = nil, nil
+        local rv_375_, arg1_373_ = nil, nil
         do
-          local arg1_320_ = widgets.colors.options_menu
-          local _24 = arg1_320_
-          local _241 = arg1_320_
-          rv_321_, arg1_320_ = ImGui.Checkbox(ctx, "With Options Menu", _24)
+          local arg1_374_ = widgets.colors.options_menu
+          local _24 = arg1_374_
+          local _241 = arg1_374_
+          rv_375_, arg1_373_ = ImGui.Checkbox(ctx, "With Options Menu", _24)
         end
-        widgets.colors.options_menu = arg1_320_
+        widgets.colors.options_menu = arg1_373_
       end
       ImGui.SameLine(ctx)
       demo.HelpMarker("Right-click on the individual color widget to show options.")
       local misc_flags
-      local _322_
+      local _376_
       if widgets.colors.drag_and_drop then
-        _322_ = 0
+        _376_ = 0
       else
-        _322_ = ImGui.ColorEditFlags_NoDragDrop()
+        _376_ = ImGui.ColorEditFlags_NoDragDrop()
       end
-      local _324_
+      local _378_
       if widgets.colors.alpha_half_preview then
-        _324_ = ImGui.ColorEditFlags_AlphaPreviewHalf()
+        _378_ = ImGui.ColorEditFlags_AlphaPreviewHalf()
       elseif widgets.colors.alpha_preview then
-        _324_ = ImGui.ColorEditFlags_AlphaPreview()
+        _378_ = ImGui.ColorEditFlags_AlphaPreview()
       else
-        _324_ = 0
+        _378_ = 0
       end
-      local function _326_()
+      local function _380_()
         if widgets.colors.options_menu then
           return 0
         else
           return ImGui.ColorEditFlags_NoOptions()
         end
       end
-      misc_flags = (_322_ | _324_ | _326_())
+      misc_flags = (_376_ | _378_ | _380_())
       ImGui.SeparatorText(ctx, "Inline color editor")
       ImGui.Text(ctx, "Color widget:")
       ImGui.SameLine(ctx)
@@ -2118,56 +2118,56 @@ demo.ShowDemoWindowWidgets = function()
     else
     end
     local argb = demo.RgbaToArgb(widgets.colors.rgba)
-    local _330_
+    local _385_
     do
-      local rv_329_, arg1_328_ = nil, nil
+      local rv_384_, arg1_382_ = nil, nil
       do
-        local arg1_328_ = argb
-        local _24 = arg1_328_
-        local _241 = arg1_328_
-        rv_329_, arg1_328_ = ImGui.ColorEdit3(ctx, "MyColor##1", _24, __fnl_global__misc_2dflags)
+        local arg1_383_ = argb
+        local _24 = arg1_383_
+        local _241 = arg1_383_
+        rv_384_, arg1_382_ = ImGui.ColorEdit3(ctx, "MyColor##1", _24, __fnl_global__misc_2dflags)
       end
-      argb = arg1_328_
-      _330_ = rv_329_
+      argb = arg1_382_
+      _385_ = rv_384_
     end
-    if _330_ then
+    if _385_ then
       widgets.colors.rgba = demo.ArgbToRgba(argb)
     else
     end
     ImGui.Text(ctx, "Color widget HSV with Alpha:")
     do
-      local rv_333_, arg1_332_ = nil, nil
+      local rv_389_, arg1_387_ = nil, nil
       do
-        local arg1_332_ = widgets.colors.rgba
-        local _24 = arg1_332_
-        local _241 = arg1_332_
-        rv_333_, arg1_332_ = ImGui.ColorEdit4(ctx, "MyColor##2", _24, (ImGui.ColorEditFlags_DisplayHSV() | __fnl_global__misc_2dflags))
+        local arg1_388_ = widgets.colors.rgba
+        local _24 = arg1_388_
+        local _241 = arg1_388_
+        rv_389_, arg1_387_ = ImGui.ColorEdit4(ctx, "MyColor##2", _24, (ImGui.ColorEditFlags_DisplayHSV() | __fnl_global__misc_2dflags))
       end
-      widgets.colors.rgba = arg1_332_
+      widgets.colors.rgba = arg1_387_
     end
     ImGui.Text(ctx, "Color widget with Float Display:")
     do
-      local rv_335_, arg1_334_ = nil, nil
+      local rv_392_, arg1_390_ = nil, nil
       do
-        local arg1_334_ = widgets.colors.rgba
-        local _24 = arg1_334_
-        local _241 = arg1_334_
-        rv_335_, arg1_334_ = ImGui.ColorEdit4(ctx, "MyColor##2f", _24, (ImGui.ColorEditFlags_Float() | __fnl_global__misc_2dflags))
+        local arg1_391_ = widgets.colors.rgba
+        local _24 = arg1_391_
+        local _241 = arg1_391_
+        rv_392_, arg1_390_ = ImGui.ColorEdit4(ctx, "MyColor##2f", _24, (ImGui.ColorEditFlags_Float() | __fnl_global__misc_2dflags))
       end
-      widgets.colors.rgba = arg1_334_
+      widgets.colors.rgba = arg1_390_
     end
     ImGui.Text(ctx, "Color button with Picker:")
     ImGui.SameLine(ctx)
     demo.HelpMarker("With the ImGuiColorEditFlags_NoInputs flag you can hide all the slider/text inputs.\nWith the ImGuiColorEditFlags_NoLabel flag you can pass a non-empty label which will only be used for the tooltip and picker popup.")
     do
-      local rv_337_, arg1_336_ = nil, nil
+      local rv_395_, arg1_393_ = nil, nil
       do
-        local arg1_336_ = widgets.colors.rgba
-        local _24 = arg1_336_
-        local _241 = arg1_336_
-        rv_337_, arg1_336_ = ImGui.ColorEdit4(ctx, "MyColor##3", _24, (ImGui.ColorEditFlags_NoInputs() | ImGui.ColorEditFlags_NoLabel() | __fnl_global__misc_2dflags))
+        local arg1_394_ = widgets.colors.rgba
+        local _24 = arg1_394_
+        local _241 = arg1_394_
+        rv_395_, arg1_393_ = ImGui.ColorEdit4(ctx, "MyColor##3", _24, (ImGui.ColorEditFlags_NoInputs() | ImGui.ColorEditFlags_NoLabel() | __fnl_global__misc_2dflags))
       end
-      widgets.colors.rgba = arg1_336_
+      widgets.colors.rgba = arg1_393_
     end
     ImGui.Text(ctx, "Color button with Custom Picker Popup:")
     if not widgets.colors.saved_palette then
@@ -2239,101 +2239,101 @@ demo.ShowDemoWindowWidgets = function()
     end
     ImGui.Text(ctx, "Color button only:")
     do
-      local rv_348_, arg1_347_ = nil, nil
+      local rv_407_, arg1_405_ = nil, nil
       do
-        local arg1_347_ = widgets.colors.no_border
-        local _24 = arg1_347_
-        local _241 = arg1_347_
-        rv_348_, arg1_347_ = ImGui.Checkbox(ctx, "ImGuiColorEditFlags_NoBorder", _24)
+        local arg1_406_ = widgets.colors.no_border
+        local _24 = arg1_406_
+        local _241 = arg1_406_
+        rv_407_, arg1_405_ = ImGui.Checkbox(ctx, "ImGuiColorEditFlags_NoBorder", _24)
       end
-      widgets.colors.no_border = arg1_347_
+      widgets.colors.no_border = arg1_405_
     end
-    local function _349_()
+    local function _408_()
       if widgets.colors.no_border then
         return ImGui.ColorEditFlags_NoBorder()
       else
         return 0
       end
     end
-    ImGui.ColorButton(ctx, "MyColor##3c", widgets.colors.rgba, (__fnl_global__misc_2dflags | _349_()), 80, 80)
+    ImGui.ColorButton(ctx, "MyColor##3c", widgets.colors.rgba, (__fnl_global__misc_2dflags | _408_()), 80, 80)
     ImGui.SeparatorText(ctx, "Color picker")
     do
-      local rv_351_, arg1_350_ = nil, nil
+      local rv_411_, arg1_409_ = nil, nil
       do
-        local arg1_350_ = widgets.colors.alpha
-        local _24 = arg1_350_
-        local _241 = arg1_350_
-        rv_351_, arg1_350_ = ImGui.Checkbox(ctx, "With Alpha", _24)
+        local arg1_410_ = widgets.colors.alpha
+        local _24 = arg1_410_
+        local _241 = arg1_410_
+        rv_411_, arg1_409_ = ImGui.Checkbox(ctx, "With Alpha", _24)
       end
-      widgets.colors.alpha = arg1_350_
+      widgets.colors.alpha = arg1_409_
     end
     do
-      local rv_353_, arg1_352_ = nil, nil
+      local rv_414_, arg1_412_ = nil, nil
       do
-        local arg1_352_ = widgets.colors.alpha_bar
-        local _24 = arg1_352_
-        local _241 = arg1_352_
-        rv_353_, arg1_352_ = ImGui.Checkbox(ctx, "With Alpha Bar", _24)
+        local arg1_413_ = widgets.colors.alpha_bar
+        local _24 = arg1_413_
+        local _241 = arg1_413_
+        rv_414_, arg1_412_ = ImGui.Checkbox(ctx, "With Alpha Bar", _24)
       end
-      widgets.colors.alpha_bar = arg1_352_
+      widgets.colors.alpha_bar = arg1_412_
     end
     do
-      local rv_355_, arg1_354_ = nil, nil
+      local rv_417_, arg1_415_ = nil, nil
       do
-        local arg1_354_ = widgets.colors.side_preview
-        local _24 = arg1_354_
-        local _241 = arg1_354_
-        rv_355_, arg1_354_ = ImGui.Checkbox(ctx, "With Side Preview", _24)
+        local arg1_416_ = widgets.colors.side_preview
+        local _24 = arg1_416_
+        local _241 = arg1_416_
+        rv_417_, arg1_415_ = ImGui.Checkbox(ctx, "With Side Preview", _24)
       end
-      widgets.colors.side_preview = arg1_354_
+      widgets.colors.side_preview = arg1_415_
     end
     if widgets.colors.side_preview then
       ImGui.SameLine(ctx)
       do
-        local rv_357_, arg1_356_ = nil, nil
+        local rv_420_, arg1_418_ = nil, nil
         do
-          local arg1_356_ = widgets.colors.ref_color
-          local _24 = arg1_356_
-          local _241 = arg1_356_
-          rv_357_, arg1_356_ = ImGui.Checkbox(ctx, "With Ref Color", _24)
+          local arg1_419_ = widgets.colors.ref_color
+          local _24 = arg1_419_
+          local _241 = arg1_419_
+          rv_420_, arg1_418_ = ImGui.Checkbox(ctx, "With Ref Color", _24)
         end
-        widgets.colors.ref_color = arg1_356_
+        widgets.colors.ref_color = arg1_418_
       end
       if widgets.colors.ref_color then
         ImGui.SameLine(ctx)
-        local rv_359_, arg1_358_ = nil, nil
+        local rv_423_, arg1_421_ = nil, nil
         do
-          local arg1_358_ = widgets.colors.ref_color_rgba
-          local _24 = arg1_358_
-          local _241 = arg1_358_
-          rv_359_, arg1_358_ = ImGui.ColorEdit4(ctx, "##RefColor", _24, (ImGui.ColorEditFlags_NoInputs() | __fnl_global__misc_2dflags))
+          local arg1_422_ = widgets.colors.ref_color_rgba
+          local _24 = arg1_422_
+          local _241 = arg1_422_
+          rv_423_, arg1_421_ = ImGui.ColorEdit4(ctx, "##RefColor", _24, (ImGui.ColorEditFlags_NoInputs() | __fnl_global__misc_2dflags))
         end
-        widgets.colors.ref_color_rgba = arg1_358_
+        widgets.colors.ref_color_rgba = arg1_421_
       else
       end
     else
     end
     do
-      local rv_363_, arg1_362_ = nil, nil
+      local rv_428_, arg1_426_ = nil, nil
       do
-        local arg1_362_ = widgets.colors.display_mode
-        local _24 = arg1_362_
-        local _241 = arg1_362_
-        rv_363_, arg1_362_ = ImGui.Combo(ctx, "Display Mode", _24, "Auto/Current\0None\0RGB Only\0HSV Only\0Hex Only\0")
+        local arg1_427_ = widgets.colors.display_mode
+        local _24 = arg1_427_
+        local _241 = arg1_427_
+        rv_428_, arg1_426_ = ImGui.Combo(ctx, "Display Mode", _24, "Auto/Current\0None\0RGB Only\0HSV Only\0Hex Only\0")
       end
-      widgets.colors.display_mode = arg1_362_
+      widgets.colors.display_mode = arg1_426_
     end
     ImGui.SameLine(ctx)
     demo.HelpMarker("ColorEdit defaults to displaying RGB inputs if you don't specify a display mode, \n       but the user can change it with a right-click on those inputs.\n\nColorPicker defaults to displaying RGB+HSV+Hex \n       if you don't specify a display mode.\n\nYou can change the defaults using SetColorEditOptions().")
     do
-      local rv_365_, arg1_364_ = nil, nil
+      local rv_431_, arg1_429_ = nil, nil
       do
-        local arg1_364_ = widgets.colors.picker_mode
-        local _24 = arg1_364_
-        local _241 = arg1_364_
-        rv_365_, arg1_364_ = ImGui.Combo(ctx, "Picker Mode", _24, "Auto/Current\0Hue bar + SV rect\0Hue wheel + SV triangle\0")
+        local arg1_430_ = widgets.colors.picker_mode
+        local _24 = arg1_430_
+        local _241 = arg1_430_
+        rv_431_, arg1_429_ = ImGui.Combo(ctx, "Picker Mode", _24, "Auto/Current\0Hue bar + SV rect\0Hue wheel + SV triangle\0")
       end
-      widgets.colors.picker_mode = arg1_364_
+      widgets.colors.picker_mode = arg1_429_
     end
     ImGui.SameLine(ctx)
     demo.HelpMarker("When not specified explicitly (Auto/Current mode), user can right-click the picker to change mode.")
@@ -2351,23 +2351,23 @@ demo.ShowDemoWindowWidgets = function()
     else
     end
     do
-      local _369_ = widgets.colors.picker_mode
-      if (_369_ == 1) then
+      local _435_ = widgets.colors.picker_mode
+      if (_435_ == 1) then
         flags = (flags | ImGui.ColorEditFlags_PickerHueBar())
-      elseif (_369_ == 2) then
+      elseif (_435_ == 2) then
         flags = (flags | ImGui.ColorEditFlags_PickerHueWheel())
       else
       end
     end
     do
-      local _371_ = widgets.colors.display_mode
-      if (_371_ == 1) then
+      local _437_ = widgets.colors.display_mode
+      if (_437_ == 1) then
         flags = (flags | ImGui.ColorEditFlags_NoInputs())
-      elseif (_371_ == 2) then
+      elseif (_437_ == 2) then
         flags = (flags | ImGui.ColorEditFlags_DisplayRGB())
-      elseif (_371_ == 3) then
+      elseif (_437_ == 3) then
         flags = (flags | ImGui.ColorEditFlags_DisplayHSV())
-      elseif (_371_ == 4) then
+      elseif (_437_ == 4) then
         flags = (flags | ImGui.ColorEditFlags_DisplayHex())
       else
       end
@@ -2379,26 +2379,26 @@ demo.ShowDemoWindowWidgets = function()
       color = demo.RgbaToArgb(widgets.colors.rgba)
     end
     local ref_color = ((widgets.colors.alpha and widgets.colors.ref_color_rgba) or demo.RgbaToArgb(widgets.colors.ref_color_rgba))
-    local _376_
+    local _443_
     do
-      local rv_375_, arg1_374_ = nil, nil
+      local rv_442_, arg1_440_ = nil, nil
       do
-        local arg1_374_ = color
-        local _24 = arg1_374_
-        local _241 = arg1_374_
-        local function _377_()
+        local arg1_441_ = color
+        local _24 = arg1_441_
+        local _241 = arg1_441_
+        local function _444_()
           if widgets.colors.ref_color then
             return ref_color
           else
             return nil
           end
         end
-        rv_375_, arg1_374_ = ImGui.ColorPicker4(ctx, "MyColor##4", _24, flags, _377_())
+        rv_442_, arg1_440_ = ImGui.ColorPicker4(ctx, "MyColor##4", _24, flags, _444_())
       end
-      color = arg1_374_
-      _376_ = rv_375_
+      color = arg1_440_
+      _443_ = rv_442_
     end
-    if _376_ then
+    if _443_ then
       if widgets.colors.alpha then
         widgets.colors.rgba = color
       else
@@ -2421,37 +2421,37 @@ demo.ShowDemoWindowWidgets = function()
     ImGui.Text(ctx, "Both types:")
     local w = ((ImGui.GetContentRegionAvail(ctx) - select(2, ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemSpacing()))) * 0.4)
     ImGui.SetNextItemWidth(ctx, w)
-    local _384_
+    local _452_
     do
-      local rv_383_, arg1_382_ = nil, nil
+      local rv_451_, arg1_449_ = nil, nil
       do
-        local arg1_382_ = color0
-        local _24 = arg1_382_
-        local _241 = arg1_382_
-        rv_383_, arg1_382_ = ImGui.ColorPicker3(ctx, "##MyColor##5", _24, (ImGui.ColorEditFlags_PickerHueBar() | ImGui.ColorEditFlags_NoSidePreview() | ImGui.ColorEditFlags_NoInputs() | ImGui.ColorEditFlags_NoAlpha()))
+        local arg1_450_ = color0
+        local _24 = arg1_450_
+        local _241 = arg1_450_
+        rv_451_, arg1_449_ = ImGui.ColorPicker3(ctx, "##MyColor##5", _24, (ImGui.ColorEditFlags_PickerHueBar() | ImGui.ColorEditFlags_NoSidePreview() | ImGui.ColorEditFlags_NoInputs() | ImGui.ColorEditFlags_NoAlpha()))
       end
-      color0 = arg1_382_
-      _384_ = rv_383_
+      color0 = arg1_449_
+      _452_ = rv_451_
     end
-    if _384_ then
+    if _452_ then
       widgets.colors.rgba = demo.ArgbToRgba(color0)
     else
     end
     ImGui.SameLine(ctx)
     ImGui.SetNextItemWidth(ctx, w)
-    local _388_
+    local _457_
     do
-      local rv_387_, arg1_386_ = nil, nil
+      local rv_456_, arg1_454_ = nil, nil
       do
-        local arg1_386_ = color0
-        local _24 = arg1_386_
-        local _241 = arg1_386_
-        rv_387_, arg1_386_ = ImGui.ColorPicker3(ctx, "##MyColor##6", _24, (ImGui.ColorEditFlags_PickerHueWheel() | ImGui.ColorEditFlags_NoSidePreview() | ImGui.ColorEditFlags_NoInputs() | ImGui.ColorEditFlags_NoAlpha()))
+        local arg1_455_ = color0
+        local _24 = arg1_455_
+        local _241 = arg1_455_
+        rv_456_, arg1_454_ = ImGui.ColorPicker3(ctx, "##MyColor##6", _24, (ImGui.ColorEditFlags_PickerHueWheel() | ImGui.ColorEditFlags_NoSidePreview() | ImGui.ColorEditFlags_NoInputs() | ImGui.ColorEditFlags_NoAlpha()))
       end
-      color0 = arg1_386_
-      _388_ = rv_387_
+      color0 = arg1_454_
+      _457_ = rv_456_
     end
-    if _388_ then
+    if _457_ then
       widgets.colors.rgba = demo.ArgbToRgba(color0)
     else
     end
@@ -2461,24 +2461,24 @@ demo.ShowDemoWindowWidgets = function()
     demo.HelpMarker("By default, colors are given to ColorEdit and ColorPicker in RGB, but ImGuiColorEditFlags_InputHSV allows you to store colors as HSV and pass them to ColorEdit and ColorPicker as HSV. This comes with the added benefit that you can manipulate hue values with the picker even when saturation or value are zero.")
     ImGui.Text(ctx, "Color widget with InputHSV:")
     do
-      local rv_391_, arg1_390_ = nil, nil
+      local rv_461_, arg1_459_ = nil, nil
       do
-        local arg1_390_ = widgets.colors.hsva
-        local _24 = arg1_390_
-        local _241 = arg1_390_
-        rv_391_, arg1_390_ = ImGui.ColorEdit4(ctx, "HSV shown as RGB##1", _24, (ImGui.ColorEditFlags_DisplayRGB() | ImGui.ColorEditFlags_InputHSV() | ImGui.ColorEditFlags_Float()))
+        local arg1_460_ = widgets.colors.hsva
+        local _24 = arg1_460_
+        local _241 = arg1_460_
+        rv_461_, arg1_459_ = ImGui.ColorEdit4(ctx, "HSV shown as RGB##1", _24, (ImGui.ColorEditFlags_DisplayRGB() | ImGui.ColorEditFlags_InputHSV() | ImGui.ColorEditFlags_Float()))
       end
-      widgets.colors.hsva = arg1_390_
+      widgets.colors.hsva = arg1_459_
     end
     do
-      local rv_393_, arg1_392_ = nil, nil
+      local rv_464_, arg1_462_ = nil, nil
       do
-        local arg1_392_ = widgets.colors.hsva
-        local _24 = arg1_392_
-        local _241 = arg1_392_
-        rv_393_, arg1_392_ = ImGui.ColorEdit4(ctx, "HSV shown as HSV##1", _24, (ImGui.ColorEditFlags_DisplayHSV() | ImGui.ColorEditFlags_InputHSV() | ImGui.ColorEditFlags_Float()))
+        local arg1_463_ = widgets.colors.hsva
+        local _24 = arg1_463_
+        local _241 = arg1_463_
+        rv_464_, arg1_462_ = ImGui.ColorEdit4(ctx, "HSV shown as HSV##1", _24, (ImGui.ColorEditFlags_DisplayHSV() | ImGui.ColorEditFlags_InputHSV() | ImGui.ColorEditFlags_Float()))
       end
-      widgets.colors.hsva = arg1_392_
+      widgets.colors.hsva = arg1_462_
     end
     local raw_hsv = widgets.colors.raw_hsv
     raw_hsv[1] = (((widgets.colors.hsva >> 24) & 255) / 255.0)
@@ -2498,50 +2498,50 @@ demo.ShowDemoWindowWidgets = function()
     else
     end
     do
-      local rv_398_, arg1_397_ = nil, nil
+      local rv_470_, arg1_468_ = nil, nil
       do
-        local arg1_397_ = widgets.sliders.flags
-        local _24 = arg1_397_
-        local _241 = arg1_397_
-        rv_398_, arg1_397_ = ImGui.CheckboxFlags(ctx, "ImGuiSliderFlags_AlwaysClamp", _24, ImGui.SliderFlags_AlwaysClamp())
+        local arg1_469_ = widgets.sliders.flags
+        local _24 = arg1_469_
+        local _241 = arg1_469_
+        rv_470_, arg1_468_ = ImGui.CheckboxFlags(ctx, "ImGuiSliderFlags_AlwaysClamp", _24, ImGui.SliderFlags_AlwaysClamp())
       end
-      widgets.sliders.flags = arg1_397_
+      widgets.sliders.flags = arg1_468_
     end
     ImGui.SameLine(ctx)
     demo.HelpMarker("Always clamp value to min/max bounds (if any) when input manually with CTRL+Click.")
     do
-      local rv_400_, arg1_399_ = nil, nil
+      local rv_473_, arg1_471_ = nil, nil
       do
-        local arg1_399_ = widgets.sliders.flags
-        local _24 = arg1_399_
-        local _241 = arg1_399_
-        rv_400_, arg1_399_ = ImGui.CheckboxFlags(ctx, "ImGuiSliderFlags_Logarithmic", _24, ImGui.SliderFlags_Logarithmic())
+        local arg1_472_ = widgets.sliders.flags
+        local _24 = arg1_472_
+        local _241 = arg1_472_
+        rv_473_, arg1_471_ = ImGui.CheckboxFlags(ctx, "ImGuiSliderFlags_Logarithmic", _24, ImGui.SliderFlags_Logarithmic())
       end
-      widgets.sliders.flags = arg1_399_
+      widgets.sliders.flags = arg1_471_
     end
     ImGui.SameLine(ctx)
     demo.HelpMarker("Enable logarithmic editing (more precision for small values).")
     do
-      local rv_402_, arg1_401_ = nil, nil
+      local rv_476_, arg1_474_ = nil, nil
       do
-        local arg1_401_ = widgets.sliders.flags
-        local _24 = arg1_401_
-        local _241 = arg1_401_
-        rv_402_, arg1_401_ = ImGui.CheckboxFlags(ctx, "ImGuiSliderFlags_NoRoundToFormat", _24, ImGui.SliderFlags_NoRoundToFormat())
+        local arg1_475_ = widgets.sliders.flags
+        local _24 = arg1_475_
+        local _241 = arg1_475_
+        rv_476_, arg1_474_ = ImGui.CheckboxFlags(ctx, "ImGuiSliderFlags_NoRoundToFormat", _24, ImGui.SliderFlags_NoRoundToFormat())
       end
-      widgets.sliders.flags = arg1_401_
+      widgets.sliders.flags = arg1_474_
     end
     ImGui.SameLine(ctx)
     demo.HelpMarker("Disable rounding underlying value to match precision of the format string (e.g. %.3f values are rounded to those 3 digits).")
     do
-      local rv_404_, arg1_403_ = nil, nil
+      local rv_479_, arg1_477_ = nil, nil
       do
-        local arg1_403_ = widgets.sliders.flags
-        local _24 = arg1_403_
-        local _241 = arg1_403_
-        rv_404_, arg1_403_ = ImGui.CheckboxFlags(ctx, "ImGuiSliderFlags_NoInput", _24, ImGui.SliderFlags_NoInput())
+        local arg1_478_ = widgets.sliders.flags
+        local _24 = arg1_478_
+        local _241 = arg1_478_
+        rv_479_, arg1_477_ = ImGui.CheckboxFlags(ctx, "ImGuiSliderFlags_NoInput", _24, ImGui.SliderFlags_NoInput())
       end
-      widgets.sliders.flags = arg1_403_
+      widgets.sliders.flags = arg1_477_
     end
     ImGui.SameLine(ctx)
     demo.HelpMarker("Disable CTRL+Click or Enter key allowing to input text directly into the widget.")
@@ -2550,74 +2550,74 @@ demo.ShowDemoWindowWidgets = function()
       local DBL_MAX = 1.79769e+308
       ImGui.Text(ctx, ("Underlying double value: %f"):format(widgets.sliders.drag_d))
       do
-        local rv_406_, arg1_405_ = nil, nil
+        local rv_482_, arg1_480_ = nil, nil
         do
-          local arg1_405_ = widgets.sliders.drag_d
-          local _24 = arg1_405_
-          local _241 = arg1_405_
-          rv_406_, arg1_405_ = ImGui.DragDouble(ctx, "DragDouble (0 -> 1)", _24, 0.005, 0.0, 1.0, "%.3f", widgets.sliders.flags)
+          local arg1_481_ = widgets.sliders.drag_d
+          local _24 = arg1_481_
+          local _241 = arg1_481_
+          rv_482_, arg1_480_ = ImGui.DragDouble(ctx, "DragDouble (0 -> 1)", _24, 0.005, 0.0, 1.0, "%.3f", widgets.sliders.flags)
         end
-        widgets.sliders.drag_d = arg1_405_
+        widgets.sliders.drag_d = arg1_480_
       end
       do
-        local rv_408_, arg1_407_ = nil, nil
+        local rv_485_, arg1_483_ = nil, nil
         do
-          local arg1_407_ = widgets.sliders.drag_d
-          local _24 = arg1_407_
-          local _241 = arg1_407_
-          rv_408_, arg1_407_ = ImGui.DragDouble(ctx, "DragDouble (0 -> +inf)", _24, 0.005, 0.0, DBL_MAX, "%.3f", widgets.sliders.flags)
+          local arg1_484_ = widgets.sliders.drag_d
+          local _24 = arg1_484_
+          local _241 = arg1_484_
+          rv_485_, arg1_483_ = ImGui.DragDouble(ctx, "DragDouble (0 -> +inf)", _24, 0.005, 0.0, DBL_MAX, "%.3f", widgets.sliders.flags)
         end
-        widgets.sliders.drag_d = arg1_407_
+        widgets.sliders.drag_d = arg1_483_
       end
       do
-        local rv_410_, arg1_409_ = nil, nil
+        local rv_488_, arg1_486_ = nil, nil
         do
-          local arg1_409_ = widgets.sliders.drag_d
-          local _24 = arg1_409_
-          local _241 = arg1_409_
-          rv_410_, arg1_409_ = ImGui.DragDouble(ctx, "DragDouble (-inf -> 1)", _24, 0.005, ( - DBL_MAX), 1, "%.3f", widgets.sliders.flags)
+          local arg1_487_ = widgets.sliders.drag_d
+          local _24 = arg1_487_
+          local _241 = arg1_487_
+          rv_488_, arg1_486_ = ImGui.DragDouble(ctx, "DragDouble (-inf -> 1)", _24, 0.005, ( - DBL_MAX), 1, "%.3f", widgets.sliders.flags)
         end
-        widgets.sliders.drag_d = arg1_409_
+        widgets.sliders.drag_d = arg1_486_
       end
       do
-        local rv_412_, arg1_411_ = nil, nil
+        local rv_491_, arg1_489_ = nil, nil
         do
-          local arg1_411_ = widgets.sliders.drag_d
-          local _24 = arg1_411_
-          local _241 = arg1_411_
-          rv_412_, arg1_411_ = ImGui.DragDouble(ctx, "DragDouble (-inf -> +inf)", _24, 0.005, ( - DBL_MAX), DBL_MAX, "%.3f", widgets.sliders.flags)
+          local arg1_490_ = widgets.sliders.drag_d
+          local _24 = arg1_490_
+          local _241 = arg1_490_
+          rv_491_, arg1_489_ = ImGui.DragDouble(ctx, "DragDouble (-inf -> +inf)", _24, 0.005, ( - DBL_MAX), DBL_MAX, "%.3f", widgets.sliders.flags)
         end
-        widgets.sliders.drag_d = arg1_411_
+        widgets.sliders.drag_d = arg1_489_
       end
-      local rv_414_, arg1_413_ = nil, nil
+      local rv_494_, arg1_492_ = nil, nil
       do
-        local arg1_413_ = widgets.sliders.drag_i
-        local _24 = arg1_413_
-        local _241 = arg1_413_
-        rv_414_, arg1_413_ = ImGui.DragInt(ctx, "DragInt (0 -> 100)", _24, 0.5, 0, 100, "%d", widgets.sliders.flags)
+        local arg1_493_ = widgets.sliders.drag_i
+        local _24 = arg1_493_
+        local _241 = arg1_493_
+        rv_494_, arg1_492_ = ImGui.DragInt(ctx, "DragInt (0 -> 100)", _24, 0.5, 0, 100, "%d", widgets.sliders.flags)
       end
-      widgets.sliders.drag_i = arg1_413_
+      widgets.sliders.drag_i = arg1_492_
     end
     ImGui.Text(ctx, ("Underlying float value: %f"):format(widgets.sliders.slider_d))
     do
-      local rv_416_, arg1_415_ = nil, nil
+      local rv_497_, arg1_495_ = nil, nil
       do
-        local arg1_415_ = widgets.sliders.slider_d
-        local _24 = arg1_415_
-        local _241 = arg1_415_
-        rv_416_, arg1_415_ = ImGui.SliderDouble(ctx, "SliderDouble (0 -> 1)", _24, 0, 1, "%.3f", widgets.sliders.flags)
+        local arg1_496_ = widgets.sliders.slider_d
+        local _24 = arg1_496_
+        local _241 = arg1_496_
+        rv_497_, arg1_495_ = ImGui.SliderDouble(ctx, "SliderDouble (0 -> 1)", _24, 0, 1, "%.3f", widgets.sliders.flags)
       end
-      widgets.sliders.slider_d = arg1_415_
+      widgets.sliders.slider_d = arg1_495_
     end
     do
-      local rv_418_, arg1_417_ = nil, nil
+      local rv_500_, arg1_498_ = nil, nil
       do
-        local arg1_417_ = widgets.sliders.slider_i
-        local _24 = arg1_417_
-        local _241 = arg1_417_
-        rv_418_, arg1_417_ = ImGui.SliderInt(ctx, "SliderInt (0 -> 100)", _24, 0, 100, "%d", widgets.sliders.flags)
+        local arg1_499_ = widgets.sliders.slider_i
+        local _24 = arg1_499_
+        local _241 = arg1_499_
+        rv_500_, arg1_498_ = ImGui.SliderInt(ctx, "SliderInt (0 -> 100)", _24, 0, 100, "%d", widgets.sliders.flags)
       end
-      widgets.sliders.slider_i = arg1_417_
+      widgets.sliders.slider_i = arg1_498_
     end
     ImGui.TreePop(ctx)
   else
@@ -2738,14 +2738,14 @@ demo.ShowDemoWindowWidgets = function()
     local spacing = 4
     ImGui.PushStyleVar(ctx, ImGui.StyleVar_ItemSpacing(), spacing, spacing)
     do
-      local rv_426_, arg1_425_ = nil, nil
+      local rv_509_, arg1_507_ = nil, nil
       do
-        local arg1_425_ = widgets.vsliders.int_value
-        local _24 = arg1_425_
-        local _241 = arg1_425_
-        rv_426_, arg1_425_ = ImGui.VSliderInt(ctx, "##int", 18, 160, _24, 0, 5)
+        local arg1_508_ = widgets.vsliders.int_value
+        local _24 = arg1_508_
+        local _241 = arg1_508_
+        rv_509_, arg1_507_ = ImGui.VSliderInt(ctx, "##int", 18, 160, _24, 0, 5)
       end
-      widgets.vsliders.int_value = arg1_425_
+      widgets.vsliders.int_value = arg1_507_
     end
     ImGui.SameLine(ctx)
     ImGui.PushID(ctx, "set1")
@@ -2830,24 +2830,24 @@ demo.ShowDemoWindowWidgets = function()
     if ImGui.TreeNode(ctx, "Drag and drop in standard widgets") then
       demo.HelpMarker("You can drag from the color squares.")
       do
-        local rv_436_, arg1_435_ = nil, nil
+        local rv_520_, arg1_518_ = nil, nil
         do
-          local arg1_435_ = widgets.dragdrop.color1
-          local _24 = arg1_435_
-          local _241 = arg1_435_
-          rv_436_, arg1_435_ = ImGui.ColorEdit3(ctx, "color 1", _24)
+          local arg1_519_ = widgets.dragdrop.color1
+          local _24 = arg1_519_
+          local _241 = arg1_519_
+          rv_520_, arg1_518_ = ImGui.ColorEdit3(ctx, "color 1", _24)
         end
-        widgets.dragdrop.color1 = arg1_435_
+        widgets.dragdrop.color1 = arg1_518_
       end
       do
-        local rv_438_, arg1_437_ = nil, nil
+        local rv_523_, arg1_521_ = nil, nil
         do
-          local arg1_437_ = widgets.dragdrop.color2
-          local _24 = arg1_437_
-          local _241 = arg1_437_
-          rv_438_, arg1_437_ = ImGui.ColorEdit4(ctx, "color 2", _24)
+          local arg1_522_ = widgets.dragdrop.color2
+          local _24 = arg1_522_
+          local _241 = arg1_522_
+          rv_523_, arg1_521_ = ImGui.ColorEdit4(ctx, "color 2", _24)
         end
-        widgets.dragdrop.color2 = arg1_437_
+        widgets.dragdrop.color2 = arg1_521_
       end
       ImGui.TreePop(ctx)
     else
@@ -2880,15 +2880,15 @@ demo.ShowDemoWindowWidgets = function()
         if ImGui.BeginDragDropSource(ctx, ImGui.DragDropFlags_None()) then
           ImGui.SetDragDropPayload(ctx, "DND_DEMO_CELL", tostring(n))
           do
-            local _444_ = widgets.dragdrop.mode
-            if (nil ~= _444_) then
-              local mode_copy0 = _444_
+            local _529_ = widgets.dragdrop.mode
+            if (nil ~= _529_) then
+              local mode_copy0 = _529_
               ImGui.Text(ctx, ("Copy %s"):format(name))
-            elseif (nil ~= _444_) then
-              local mode_move0 = _444_
+            elseif (nil ~= _529_) then
+              local mode_move0 = _529_
               ImGui.Text(ctx, ("Move %s"):format(name))
-            elseif (nil ~= _444_) then
-              local mode_swap0 = _444_
+            elseif (nil ~= _529_) then
+              local mode_swap0 = _529_
               ImGui.Text(ctx, ("Swap %s"):format(name))
             else
             end
@@ -2900,16 +2900,16 @@ demo.ShowDemoWindowWidgets = function()
           local rv, payload = ImGui.AcceptDragDropPayload(ctx, "DND_DEMO_CELL")
           if rv then
             local payload0 = tonumber(payload)
-            local _447_ = widgets.dragdrop.mode
-            if (nil ~= _447_) then
-              local mode_copy0 = _447_
+            local _532_ = widgets.dragdrop.mode
+            if (nil ~= _532_) then
+              local mode_copy0 = _532_
               widgets.dragdrop.names[n] = widgets.dragdrop.names[payload0]
-            elseif (nil ~= _447_) then
-              local mode_move0 = _447_
+            elseif (nil ~= _532_) then
+              local mode_move0 = _532_
               widgets.dragdrop.names[n] = widgets.dragdrop.names[payload0]
               widgets.dragdrop.names[payload0] = ""
-            elseif (nil ~= _447_) then
-              local mode_swap0 = _447_
+            elseif (nil ~= _532_) then
+              local mode_swap0 = _532_
               widgets.dragdrop.names[n] = widgets.dragdrop.names[payload0]
               widgets.dragdrop.names[payload0] = name
             else
@@ -2931,7 +2931,7 @@ demo.ShowDemoWindowWidgets = function()
         if (ImGui.IsItemActive(ctx) and not ImGui.IsItemHovered(ctx)) then
           local mouse_delta = select(2, ImGui.GetMouseDragDelta(ctx, ImGui.MouseButton_Left()))
           local n_next = (n + (((mouse_delta < 0) and ( - 1)) or 1))
-          if (function(_452_,_453_,_454_) return (_452_ <= _453_) and (_453_ <= _454_) end)(1,n_next,#widgets.dragdrop.items) then
+          if (function(_537_,_538_,_539_) return (_537_ <= _538_) and (_538_ <= _539_) end)(1,n_next,#widgets.dragdrop.items) then
             widgets.dragdrop.items[n] = widgets.dragdrop.items[n_next]
             widgets.dragdrop.items[n_next] = item
             ImGui.ResetMouseDragDelta(ctx, ImGui.MouseButton_Left())
@@ -2996,104 +2996,104 @@ demo.ShowDemoWindowWidgets = function()
     do
       local rv
       do
-        local _467_ = widgets.query_item.item_type
-        if (_467_ == 0) then
+        local _552_ = widgets.query_item.item_type
+        if (_552_ == 0) then
           rv = ImGui.Text(ctx, "ITEM: Text")
-        elseif (_467_ == 1) then
+        elseif (_552_ == 1) then
           rv = ImGui.Button(ctx, "ITEM: Button")
-        elseif (_467_ == 2) then
+        elseif (_552_ == 2) then
           local _ = ImGui.PushButtonRepeat(ctx, true)
           local rv0 = ImGui.Button(ctx, "ITEM: Button")
           local _0 = ImGui.PopButtonRepeat(ctx)
           rv = rv0
-        elseif (_467_ == 3) then
-          local rv_469_, arg1_468_ = nil, nil
+        elseif (_552_ == 3) then
+          local rv_555_, arg1_553_ = nil, nil
           do
-            local arg1_468_ = widgets.query_item.b
-            local _24 = arg1_468_
-            local _241 = arg1_468_
-            rv_469_, arg1_468_ = ImGui.Checkbox(ctx, "ITEM: Checkbox", _24)
+            local arg1_554_ = widgets.query_item.b
+            local _24 = arg1_554_
+            local _241 = arg1_554_
+            rv_555_, arg1_553_ = ImGui.Checkbox(ctx, "ITEM: Checkbox", _24)
           end
-          widgets.query_item.b = arg1_468_
-          rv = rv_469_, arg1_468_
-        elseif (_467_ == 4) then
+          widgets.query_item.b = arg1_553_
+          rv = rv_555_, arg1_553_
+        elseif (_552_ == 4) then
           local rv0, da41 = ImGui.SliderDouble(ctx, "ITEM: SliderDouble", (widgets.query_item.d4a)[1], 0, 1)
           do end (widgets.query_item.d4a)[1] = da41
           rv = rv0
-        elseif (_467_ == 5) then
-          local rv_471_, arg1_470_ = nil, nil
+        elseif (_552_ == 5) then
+          local rv_558_, arg1_556_ = nil, nil
           do
-            local arg1_470_ = widgets.query_item.str
-            local _24 = arg1_470_
-            local _241 = arg1_470_
-            rv_471_, arg1_470_ = ImGui.InputText(ctx, "ITEM: InputText", _24)
+            local arg1_557_ = widgets.query_item.str
+            local _24 = arg1_557_
+            local _241 = arg1_557_
+            rv_558_, arg1_556_ = ImGui.InputText(ctx, "ITEM: InputText", _24)
           end
-          widgets.query_item.str = arg1_470_
-          rv = rv_471_, arg1_470_
-        elseif (_467_ == 6) then
-          local rv_473_, arg1_472_ = nil, nil
+          widgets.query_item.str = arg1_556_
+          rv = rv_558_, arg1_556_
+        elseif (_552_ == 6) then
+          local rv_561_, arg1_559_ = nil, nil
           do
-            local arg1_472_ = widgets.query_item.str
-            local _24 = arg1_472_
-            local _241 = arg1_472_
-            rv_473_, arg1_472_ = ImGui.InputTextMultiline(ctx, "ITEM: InputTextMultiline", _24)
+            local arg1_560_ = widgets.query_item.str
+            local _24 = arg1_560_
+            local _241 = arg1_560_
+            rv_561_, arg1_559_ = ImGui.InputTextMultiline(ctx, "ITEM: InputTextMultiline", _24)
           end
-          widgets.query_item.str = arg1_472_
-          rv = rv_473_, arg1_472_
-        elseif (_467_ == 7) then
+          widgets.query_item.str = arg1_559_
+          rv = rv_561_, arg1_559_
+        elseif (_552_ == 7) then
           local rv0, d4a1 = ImGui.InputDouble(ctx, "ITEM: InputDouble", (widgets.query_item.d4a)[1], 1)
           do end (widgets.query_item.d4a)[1] = d4a1
           rv = rv0
-        elseif (_467_ == 8) then
+        elseif (_552_ == 8) then
           local d4a = widgets.query_item.d4a
           local rv0, d4a1, d4a2, d4a3 = ImGui.InputDouble3(ctx, "ITEM: InputDouble3", (d4a)[1], (d4a)[2], (d4a)[3])
           do end (d4a)[1] = d4a1
           d4a[2] = d4a2
           d4a[3] = d4a3
           rv = rv0
-        elseif (_467_ == 9) then
-          local rv_475_, arg1_474_ = nil, nil
+        elseif (_552_ == 9) then
+          local rv_564_, arg1_562_ = nil, nil
           do
-            local arg1_474_ = widgets.query_item.color
-            local _24 = arg1_474_
-            local _241 = arg1_474_
-            rv_475_, arg1_474_ = ImGui.ColorEdit4(ctx, "ITEM: ColorEdit", _24)
+            local arg1_563_ = widgets.query_item.color
+            local _24 = arg1_563_
+            local _241 = arg1_563_
+            rv_564_, arg1_562_ = ImGui.ColorEdit4(ctx, "ITEM: ColorEdit", _24)
           end
-          widgets.query_item.color = arg1_474_
-          rv = rv_475_, arg1_474_
-        elseif (_467_ == 10) then
+          widgets.query_item.color = arg1_562_
+          rv = rv_564_, arg1_562_
+        elseif (_552_ == 10) then
           rv = ImGui.Selectable(ctx, "ITEM: Selectable")
-        elseif (_467_ == 11) then
+        elseif (_552_ == 11) then
           rv = ImGui.MenuItem(ctx, "ITEM: MenuItem")
-        elseif (_467_ == 12) then
+        elseif (_552_ == 12) then
           local rv0 = ImGui.TreeNode(ctx, "ITEM: TreeNode")
           if rv0 then
             ImGui.TreePop(ctx)
           else
           end
           rv = rv0
-        elseif (_467_ == 13) then
+        elseif (_552_ == 13) then
           rv = ImGui.TreeNode(ctx, "ITEM: TreeNode w/ ImGuiTreeNodeFlags_OpenOnDoubleClick", (ImGui.TreeNodeFlags_OpenOnDoubleClick() | ImGui.TreeNodeFlags_NoTreePushOnOpen()))
-        elseif (_467_ == 14) then
-          local rv_478_, arg1_477_ = nil, nil
+        elseif (_552_ == 14) then
+          local rv_568_, arg1_566_ = nil, nil
           do
-            local arg1_477_ = widgets.query_item.current
-            local _24 = arg1_477_
-            local _241 = arg1_477_
-            rv_478_, arg1_477_ = ImGui.Combo(ctx, "ITEM: Combo", _24, "Apple\0Banana\0Cherry\0Kiwi\0")
+            local arg1_567_ = widgets.query_item.current
+            local _24 = arg1_567_
+            local _241 = arg1_567_
+            rv_568_, arg1_566_ = ImGui.Combo(ctx, "ITEM: Combo", _24, "Apple\0Banana\0Cherry\0Kiwi\0")
           end
-          widgets.query_item.current = arg1_477_
-          rv = rv_478_, arg1_477_
-        elseif (_467_ == 15) then
-          local rv_480_, arg1_479_ = nil, nil
+          widgets.query_item.current = arg1_566_
+          rv = rv_568_, arg1_566_
+        elseif (_552_ == 15) then
+          local rv_571_, arg1_569_ = nil, nil
           do
-            local arg1_479_ = widgets.query_item.current
-            local _24 = arg1_479_
-            local _241 = arg1_479_
-            rv_480_, arg1_479_ = ImGui.ListBox(ctx, "ITEM: ListBox", _24, "Apple\0Banana\0Cherry\0Kiwi\0")
+            local arg1_570_ = widgets.query_item.current
+            local _24 = arg1_570_
+            local _241 = arg1_570_
+            rv_571_, arg1_569_ = ImGui.ListBox(ctx, "ITEM: ListBox", _24, "Apple\0Banana\0Cherry\0Kiwi\0")
           end
-          widgets.query_item.current = arg1_479_
-          rv = rv_480_, arg1_479_
+          widgets.query_item.current = arg1_569_
+          rv = rv_571_, arg1_569_
         else
           rv = nil
         end
@@ -3120,14 +3120,14 @@ demo.ShowDemoWindowWidgets = function()
     else
     end
     do
-      local rv_486_, arg1_485_ = nil, nil
+      local rv_578_, arg1_576_ = nil, nil
       do
-        local arg1_485_ = widgets.query_window.embed_all_inside_a_child_window
-        local _24 = arg1_485_
-        local _241 = arg1_485_
-        rv_486_, arg1_485_ = ImGui.Checkbox(ctx, "Embed everything inside a child window for testing _RootWindow flag.", _24)
+        local arg1_577_ = widgets.query_window.embed_all_inside_a_child_window
+        local _24 = arg1_577_
+        local _241 = arg1_577_
+        rv_578_, arg1_576_ = ImGui.Checkbox(ctx, "Embed everything inside a child window for testing _RootWindow flag.", _24)
       end
-      widgets.query_window.embed_all_inside_a_child_window = arg1_485_
+      widgets.query_window.embed_all_inside_a_child_window = arg1_576_
     end
     do
       local visible = (not widgets.query_window.embed_all_inside_a_child_window or ImGui.BeginChild(ctx, "outer_child", 0, (ImGui.GetFontSize(ctx) * 20), true))
@@ -3147,14 +3147,14 @@ demo.ShowDemoWindowWidgets = function()
       end
     end
     do
-      local rv_491_, arg1_490_ = nil, nil
+      local rv_584_, arg1_582_ = nil, nil
       do
-        local arg1_490_ = widgets.query_window.test_window
-        local _24 = arg1_490_
-        local _241 = arg1_490_
-        rv_491_, arg1_490_ = ImGui.Checkbox(ctx, "Hovered/Active tests after Begin() for title bar testing", _24)
+        local arg1_583_ = widgets.query_window.test_window
+        local _24 = arg1_583_
+        local _241 = arg1_583_
+        rv_584_, arg1_582_ = ImGui.Checkbox(ctx, "Hovered/Active tests after Begin() for title bar testing", _24)
       end
-      widgets.query_window.test_window = arg1_490_
+      widgets.query_window.test_window = arg1_582_
     end
     if widgets.query_window.test_window then
       local rv = nil
@@ -3183,14 +3183,14 @@ demo.ShowDemoWindowWidgets = function()
   end
   if ImGui.TreeNode(ctx, "Disable block") then
     do
-      local rv_499_, arg1_498_ = nil, nil
+      local rv_593_, arg1_591_ = nil, nil
       do
-        local arg1_498_ = widgets.disable_all
-        local _24 = arg1_498_
-        local _241 = arg1_498_
-        rv_499_, arg1_498_ = ImGui.Checkbox(ctx, "Disable entire section above", _24)
+        local arg1_592_ = widgets.disable_all
+        local _24 = arg1_592_
+        local _241 = arg1_592_
+        rv_593_, arg1_591_ = ImGui.Checkbox(ctx, "Disable entire section above", _24)
       end
-      widgets.disable_all = arg1_498_
+      widgets.disable_all = arg1_591_
     end
     ImGui.SameLine(ctx)
     demo.HelpMarker("Demonstrate using BeginDisabled()/EndDisabled() across this section.")
@@ -3229,41 +3229,41 @@ demo.ShowDemoWindowLayout = function()
     local rv = nil
     if ImGui.TreeNode(ctx, "Child windows") then
       if not layout.child then
-        layout.child = {offset_x = 0, disable_mouse_wheel = false, disable_menu = false}
+        layout.child = {offset_x = 0, disable_menu = false, disable_mouse_wheel = false}
       else
       end
       ImGui.SeparatorText(ctx, "Child windows")
       demo.HelpMarker("Use child windows to begin into a self-contained independent scrolling/clipping regions within a host window.")
       do
-        local rv_508_, arg1_507_ = nil, nil
+        local rv_603_, arg1_601_ = nil, nil
         do
-          local arg1_507_ = layout.child.disable_mouse_wheel
-          local _24 = arg1_507_
-          local _241 = arg1_507_
-          rv_508_, arg1_507_ = ImGui.Checkbox(ctx, "Disable Mouse Wheel", _24)
+          local arg1_602_ = layout.child.disable_mouse_wheel
+          local _24 = arg1_602_
+          local _241 = arg1_602_
+          rv_603_, arg1_601_ = ImGui.Checkbox(ctx, "Disable Mouse Wheel", _24)
         end
-        layout.child.disable_mouse_wheel = arg1_507_
+        layout.child.disable_mouse_wheel = arg1_601_
       end
       do
-        local rv_510_, arg1_509_ = nil, nil
+        local rv_606_, arg1_604_ = nil, nil
         do
-          local arg1_509_ = layout.child.disable_menu
-          local _24 = arg1_509_
-          local _241 = arg1_509_
-          rv_510_, arg1_509_ = ImGui.Checkbox(ctx, "Disable Menu", _24)
+          local arg1_605_ = layout.child.disable_menu
+          local _24 = arg1_605_
+          local _241 = arg1_605_
+          rv_606_, arg1_604_ = ImGui.Checkbox(ctx, "Disable Menu", _24)
         end
-        layout.child.disable_menu = arg1_509_
+        layout.child.disable_menu = arg1_604_
       end
       do
         local window_flags
-        local function _511_()
+        local function _607_()
           if layout.child.disable_mouse_wheel then
             return ImGui.WindowFlags_NoScrollWithMouse()
           else
             return 0
           end
         end
-        window_flags = (ImGui.WindowFlags_HorizontalScrollbar() | _511_())
+        window_flags = (ImGui.WindowFlags_HorizontalScrollbar() | _607_())
         if ImGui.BeginChild(ctx, "ChildL", (ImGui.GetContentRegionAvail(ctx) * 0.5), 260, false, window_flags) then
           for i = 0, 99 do
             ImGui.Text(ctx, ("%04d: scrollable region"):format(i))
@@ -3275,20 +3275,20 @@ demo.ShowDemoWindowLayout = function()
       ImGui.SameLine(ctx)
       do
         local window_flags
-        local _513_
+        local _609_
         if layout.child.disable_mouse_wheel then
-          _513_ = ImGui.WindowFlags_NoScrollWithMouse()
+          _609_ = ImGui.WindowFlags_NoScrollWithMouse()
         else
-          _513_ = 0
+          _609_ = 0
         end
-        local function _515_()
+        local function _611_()
           if not layout.child.disable_menu then
             return ImGui.WindowFlags_MenuBar()
           else
             return 0
           end
         end
-        window_flags = (ImGui.WindowFlags_None() | _513_ | _515_())
+        window_flags = (ImGui.WindowFlags_None() | _609_ | _611_())
         local _ = ImGui.PushStyleVar(ctx, ImGui.StyleVar_ChildRounding(), 5)
         local visible = ImGui.BeginChild(ctx, "ChildR", 0, 260, true, window_flags)
         if visible then
@@ -3321,15 +3321,15 @@ demo.ShowDemoWindowLayout = function()
         do
           local v, v1 = nil, nil
           do
-            local rv_521_, arg1_520_ = nil, nil
+            local rv_618_, arg1_616_ = nil, nil
             do
-              local arg1_520_ = layout.child.offset_x
-              local _24 = arg1_520_
-              local _241 = arg1_520_
-              rv_521_, arg1_520_ = ImGui.DragInt(ctx, "Offset X", _24, 1.0, -1000, 1000)
+              local arg1_617_ = layout.child.offset_x
+              local _24 = arg1_617_
+              local _241 = arg1_617_
+              rv_618_, arg1_616_ = ImGui.DragInt(ctx, "Offset X", _24, 1.0, -1000, 1000)
             end
-            layout.child.offset_x = arg1_520_
-            v, v1 = rv_521_, arg1_520_
+            layout.child.offset_x = arg1_616_
+            v, v1 = rv_618_, arg1_616_
           end
           assert(v1, ("v1 is nil! " .. tostring(rv)))
         end
@@ -3362,40 +3362,40 @@ demo.ShowDemoWindowLayout = function()
       else
       end
       do
-        local rv_526_, arg1_525_ = nil, nil
+        local rv_624_, arg1_622_ = nil, nil
         do
-          local arg1_525_ = layout.width.show_indented_items
-          local _24 = arg1_525_
-          local _241 = arg1_525_
-          rv_526_, arg1_525_ = ImGui.Checkbox(ctx, "Show indented items", _24)
+          local arg1_623_ = layout.width.show_indented_items
+          local _24 = arg1_623_
+          local _241 = arg1_623_
+          rv_624_, arg1_622_ = ImGui.Checkbox(ctx, "Show indented items", _24)
         end
-        layout.width.show_indented_items = arg1_525_
+        layout.width.show_indented_items = arg1_622_
       end
       ImGui.Text(ctx, "SetNextItemWidth/PushItemWidth(100)")
       ImGui.SameLine(ctx)
       demo.HelpMarker("Fixed width.")
       ImGui.PushItemWidth(ctx, 100)
       do
-        local rv_528_, arg1_527_ = nil, nil
+        local rv_627_, arg1_625_ = nil, nil
         do
-          local arg1_527_ = layout.width.d
-          local _24 = arg1_527_
-          local _241 = arg1_527_
-          rv_528_, arg1_527_ = ImGui.DragDouble(ctx, "float##1b", _24)
+          local arg1_626_ = layout.width.d
+          local _24 = arg1_626_
+          local _241 = arg1_626_
+          rv_627_, arg1_625_ = ImGui.DragDouble(ctx, "float##1b", _24)
         end
-        layout.width.d = arg1_527_
+        layout.width.d = arg1_625_
       end
       if layout.width.show_indented_items then
         ImGui.Indent(ctx)
         do
-          local rv_530_, arg1_529_ = nil, nil
+          local rv_630_, arg1_628_ = nil, nil
           do
-            local arg1_529_ = layout.width.d
-            local _24 = arg1_529_
-            local _241 = arg1_529_
-            rv_530_, arg1_529_ = ImGui.DragDouble(ctx, "float (indented)##1b", _24)
+            local arg1_629_ = layout.width.d
+            local _24 = arg1_629_
+            local _241 = arg1_629_
+            rv_630_, arg1_628_ = ImGui.DragDouble(ctx, "float (indented)##1b", _24)
           end
-          layout.width.d = arg1_529_
+          layout.width.d = arg1_628_
         end
         ImGui.Unindent(ctx)
       else
@@ -3406,26 +3406,26 @@ demo.ShowDemoWindowLayout = function()
       demo.HelpMarker("Align to right edge minus 100")
       ImGui.PushItemWidth(ctx, ( - 100))
       do
-        local rv_533_, arg1_532_ = nil, nil
+        local rv_634_, arg1_632_ = nil, nil
         do
-          local arg1_532_ = layout.width.d
-          local _24 = arg1_532_
-          local _241 = arg1_532_
-          rv_533_, arg1_532_ = ImGui.DragDouble(ctx, "float##2a", _24)
+          local arg1_633_ = layout.width.d
+          local _24 = arg1_633_
+          local _241 = arg1_633_
+          rv_634_, arg1_632_ = ImGui.DragDouble(ctx, "float##2a", _24)
         end
-        layout.width.d = arg1_532_
+        layout.width.d = arg1_632_
       end
       if layout.width.show_indented_items then
         ImGui.Indent(ctx)
         do
-          local rv_535_, arg1_534_ = nil, nil
+          local rv_637_, arg1_635_ = nil, nil
           do
-            local arg1_534_ = layout.width.d
-            local _24 = arg1_534_
-            local _241 = arg1_534_
-            rv_535_, arg1_534_ = ImGui.DragDouble(ctx, "float (indented)##2b", _24)
+            local arg1_636_ = layout.width.d
+            local _24 = arg1_636_
+            local _241 = arg1_636_
+            rv_637_, arg1_635_ = ImGui.DragDouble(ctx, "float (indented)##2b", _24)
           end
-          layout.width.d = arg1_534_
+          layout.width.d = arg1_635_
         end
         ImGui.Unindent(ctx)
       else
@@ -3436,26 +3436,26 @@ demo.ShowDemoWindowLayout = function()
       demo.HelpMarker("Half of available width.\n(~ right-cursor_pos)\n(works within a column set)")
       ImGui.PushItemWidth(ctx, (ImGui.GetContentRegionAvail(ctx) * 0.5))
       do
-        local rv_538_, arg1_537_ = nil, nil
+        local rv_641_, arg1_639_ = nil, nil
         do
-          local arg1_537_ = layout.width.d
-          local _24 = arg1_537_
-          local _241 = arg1_537_
-          rv_538_, arg1_537_ = ImGui.DragDouble(ctx, "float##3a", _24)
+          local arg1_640_ = layout.width.d
+          local _24 = arg1_640_
+          local _241 = arg1_640_
+          rv_641_, arg1_639_ = ImGui.DragDouble(ctx, "float##3a", _24)
         end
-        layout.width.d = arg1_537_
+        layout.width.d = arg1_639_
       end
       if layout.width.show_indented_items then
         ImGui.Indent(ctx)
         do
-          local rv_540_, arg1_539_ = nil, nil
+          local rv_644_, arg1_642_ = nil, nil
           do
-            local arg1_539_ = layout.width.d
-            local _24 = arg1_539_
-            local _241 = arg1_539_
-            rv_540_, arg1_539_ = ImGui.DragDouble(ctx, "float (indented)##3b", _24)
+            local arg1_643_ = layout.width.d
+            local _24 = arg1_643_
+            local _241 = arg1_643_
+            rv_644_, arg1_642_ = ImGui.DragDouble(ctx, "float (indented)##3b", _24)
           end
-          layout.width.d = arg1_539_
+          layout.width.d = arg1_642_
         end
         ImGui.Unindent(ctx)
       else
@@ -3466,26 +3466,26 @@ demo.ShowDemoWindowLayout = function()
       demo.HelpMarker("Align to right edge minus half")
       ImGui.PushItemWidth(ctx, (( - ImGui.GetContentRegionAvail(ctx)) * 0.5))
       do
-        local rv_543_, arg1_542_ = nil, nil
+        local rv_648_, arg1_646_ = nil, nil
         do
-          local arg1_542_ = layout.width.d
-          local _24 = arg1_542_
-          local _241 = arg1_542_
-          rv_543_, arg1_542_ = ImGui.DragDouble(ctx, "float##4a", _24)
+          local arg1_647_ = layout.width.d
+          local _24 = arg1_647_
+          local _241 = arg1_647_
+          rv_648_, arg1_646_ = ImGui.DragDouble(ctx, "float##4a", _24)
         end
-        layout.width.d = arg1_542_
+        layout.width.d = arg1_646_
       end
       if layout.width.show_indented_items then
         ImGui.Indent(ctx)
         do
-          local rv_545_, arg1_544_ = nil, nil
+          local rv_651_, arg1_649_ = nil, nil
           do
-            local arg1_544_ = layout.width.d
-            local _24 = arg1_544_
-            local _241 = arg1_544_
-            rv_545_, arg1_544_ = ImGui.DragDouble(ctx, "float (indented)##4b", _24)
+            local arg1_650_ = layout.width.d
+            local _24 = arg1_650_
+            local _241 = arg1_650_
+            rv_651_, arg1_649_ = ImGui.DragDouble(ctx, "float (indented)##4b", _24)
           end
-          layout.width.d = arg1_544_
+          layout.width.d = arg1_649_
         end
         ImGui.Unindent(ctx)
       else
@@ -3496,26 +3496,26 @@ demo.ShowDemoWindowLayout = function()
       demo.HelpMarker("Align to right edge")
       ImGui.PushItemWidth(ctx, ( - FLT_MIN))
       do
-        local rv_548_, arg1_547_ = nil, nil
+        local rv_655_, arg1_653_ = nil, nil
         do
-          local arg1_547_ = layout.width.d
-          local _24 = arg1_547_
-          local _241 = arg1_547_
-          rv_548_, arg1_547_ = ImGui.DragDouble(ctx, "##float5a", _24)
+          local arg1_654_ = layout.width.d
+          local _24 = arg1_654_
+          local _241 = arg1_654_
+          rv_655_, arg1_653_ = ImGui.DragDouble(ctx, "##float5a", _24)
         end
-        layout.width.d = arg1_547_
+        layout.width.d = arg1_653_
       end
       if layout.width.show_indented_items then
         ImGui.Indent(ctx)
         do
-          local rv_550_, arg1_549_ = nil, nil
+          local rv_658_, arg1_656_ = nil, nil
           do
-            local arg1_549_ = layout.width.d
-            local _24 = arg1_549_
-            local _241 = arg1_549_
-            rv_550_, arg1_549_ = ImGui.DragDouble(ctx, "float (indented)##5b", _24)
+            local arg1_657_ = layout.width.d
+            local _24 = arg1_657_
+            local _241 = arg1_657_
+            rv_658_, arg1_656_ = ImGui.DragDouble(ctx, "float (indented)##5b", _24)
           end
-          layout.width.d = arg1_549_
+          layout.width.d = arg1_656_
         end
         ImGui.Unindent(ctx)
       else
@@ -3560,92 +3560,92 @@ demo.ShowDemoWindowLayout = function()
       ImGui.SameLine(ctx, 300)
       ImGui.SmallButton(ctx, "x=300")
       do
-        local rv_555_, arg1_554_ = nil, nil
+        local rv_664_, arg1_662_ = nil, nil
         do
-          local arg1_554_ = layout.horizontal.c1
-          local _24 = arg1_554_
-          local _241 = arg1_554_
-          rv_555_, arg1_554_ = ImGui.Checkbox(ctx, "My", _24)
+          local arg1_663_ = layout.horizontal.c1
+          local _24 = arg1_663_
+          local _241 = arg1_663_
+          rv_664_, arg1_662_ = ImGui.Checkbox(ctx, "My", _24)
         end
-        layout.horizontal.c1 = arg1_554_
+        layout.horizontal.c1 = arg1_662_
       end
       ImGui.SameLine(ctx)
       do
-        local rv_557_, arg1_556_ = nil, nil
+        local rv_667_, arg1_665_ = nil, nil
         do
-          local arg1_556_ = layout.horizontal.c2
-          local _24 = arg1_556_
-          local _241 = arg1_556_
-          rv_557_, arg1_556_ = ImGui.Checkbox(ctx, "Tailor", _24)
+          local arg1_666_ = layout.horizontal.c2
+          local _24 = arg1_666_
+          local _241 = arg1_666_
+          rv_667_, arg1_665_ = ImGui.Checkbox(ctx, "Tailor", _24)
         end
-        layout.horizontal.c2 = arg1_556_
+        layout.horizontal.c2 = arg1_665_
       end
       ImGui.SameLine(ctx)
       do
-        local rv_559_, arg1_558_ = nil, nil
+        local rv_670_, arg1_668_ = nil, nil
         do
-          local arg1_558_ = layout.horizontal.c3
-          local _24 = arg1_558_
-          local _241 = arg1_558_
-          rv_559_, arg1_558_ = ImGui.Checkbox(ctx, "Is", _24)
+          local arg1_669_ = layout.horizontal.c3
+          local _24 = arg1_669_
+          local _241 = arg1_669_
+          rv_670_, arg1_668_ = ImGui.Checkbox(ctx, "Is", _24)
         end
-        layout.horizontal.c3 = arg1_558_
+        layout.horizontal.c3 = arg1_668_
       end
       ImGui.SameLine(ctx)
       do
-        local rv_561_, arg1_560_ = nil, nil
+        local rv_673_, arg1_671_ = nil, nil
         do
-          local arg1_560_ = layout.horizontal.c4
-          local _24 = arg1_560_
-          local _241 = arg1_560_
-          rv_561_, arg1_560_ = ImGui.Checkbox(ctx, "Rich", _24)
+          local arg1_672_ = layout.horizontal.c4
+          local _24 = arg1_672_
+          local _241 = arg1_672_
+          rv_673_, arg1_671_ = ImGui.Checkbox(ctx, "Rich", _24)
         end
-        layout.horizontal.c4 = arg1_560_
+        layout.horizontal.c4 = arg1_671_
       end
       ImGui.PushItemWidth(ctx, 80)
       local items = "AAAA\0BBBB\0CCCC\0DDDD\0"
       do
-        local rv_563_, arg1_562_ = nil, nil
+        local rv_676_, arg1_674_ = nil, nil
         do
-          local arg1_562_ = layout.horizontal.item
-          local _24 = arg1_562_
-          local _241 = arg1_562_
-          rv_563_, arg1_562_ = ImGui.Combo(ctx, "Combo", _24, items)
+          local arg1_675_ = layout.horizontal.item
+          local _24 = arg1_675_
+          local _241 = arg1_675_
+          rv_676_, arg1_674_ = ImGui.Combo(ctx, "Combo", _24, items)
         end
-        layout.horizontal.item = arg1_562_
+        layout.horizontal.item = arg1_674_
       end
       ImGui.SameLine(ctx)
       do
-        local rv_565_, arg1_564_ = nil, nil
+        local rv_679_, arg1_677_ = nil, nil
         do
-          local arg1_564_ = layout.horizontal.d0
-          local _24 = arg1_564_
-          local _241 = arg1_564_
-          rv_565_, arg1_564_ = ImGui.SliderDouble(ctx, "X", _24, 0, 5)
+          local arg1_678_ = layout.horizontal.d0
+          local _24 = arg1_678_
+          local _241 = arg1_678_
+          rv_679_, arg1_677_ = ImGui.SliderDouble(ctx, "X", _24, 0, 5)
         end
-        layout.horizontal.d0 = arg1_564_
+        layout.horizontal.d0 = arg1_677_
       end
       ImGui.SameLine(ctx)
       do
-        local rv_567_, arg1_566_ = nil, nil
+        local rv_682_, arg1_680_ = nil, nil
         do
-          local arg1_566_ = layout.horizontal.d1
-          local _24 = arg1_566_
-          local _241 = arg1_566_
-          rv_567_, arg1_566_ = ImGui.SliderDouble(ctx, "Y", _24, 0, 5)
+          local arg1_681_ = layout.horizontal.d1
+          local _24 = arg1_681_
+          local _241 = arg1_681_
+          rv_682_, arg1_680_ = ImGui.SliderDouble(ctx, "Y", _24, 0, 5)
         end
-        layout.horizontal.d1 = arg1_566_
+        layout.horizontal.d1 = arg1_680_
       end
       ImGui.SameLine(ctx)
       do
-        local rv_569_, arg1_568_ = nil, nil
+        local rv_685_, arg1_683_ = nil, nil
         do
-          local arg1_568_ = layout.horizontal.d2
-          local _24 = arg1_568_
-          local _241 = arg1_568_
-          rv_569_, arg1_568_ = ImGui.SliderDouble(ctx, "Z", _24, 0, 5)
+          local arg1_684_ = layout.horizontal.d2
+          local _24 = arg1_684_
+          local _241 = arg1_684_
+          rv_685_, arg1_683_ = ImGui.SliderDouble(ctx, "Z", _24, 0, 5)
         end
-        layout.horizontal.d2 = arg1_568_
+        layout.horizontal.d2 = arg1_683_
       end
       ImGui.PopItemWidth(ctx)
       ImGui.PushItemWidth(ctx, 80)
@@ -3848,40 +3848,40 @@ demo.ShowDemoWindowLayout = function()
       end
       demo.HelpMarker("Use SetScrollHereY() or SetScrollFromPosY() to scroll to a given vertical position.")
       do
-        local rv_582_, arg1_581_ = nil, nil
+        local rv_699_, arg1_697_ = nil, nil
         do
-          local arg1_581_ = layout.scrolling.enable_extra_decorations
-          local _24 = arg1_581_
-          local _241 = arg1_581_
-          rv_582_, arg1_581_ = ImGui.Checkbox(ctx, "Decoration", _24)
+          local arg1_698_ = layout.scrolling.enable_extra_decorations
+          local _24 = arg1_698_
+          local _241 = arg1_698_
+          rv_699_, arg1_697_ = ImGui.Checkbox(ctx, "Decoration", _24)
         end
-        layout.scrolling.enable_extra_decorations = arg1_581_
+        layout.scrolling.enable_extra_decorations = arg1_697_
       end
       do
-        local rv_584_, arg1_583_ = nil, nil
+        local rv_702_, arg1_700_ = nil, nil
         do
-          local arg1_583_ = layout.scrolling.enable_track
-          local _24 = arg1_583_
-          local _241 = arg1_583_
-          rv_584_, arg1_583_ = ImGui.Checkbox(ctx, "Track", _24)
+          local arg1_701_ = layout.scrolling.enable_track
+          local _24 = arg1_701_
+          local _241 = arg1_701_
+          rv_702_, arg1_700_ = ImGui.Checkbox(ctx, "Track", _24)
         end
-        layout.scrolling.enable_track = arg1_583_
+        layout.scrolling.enable_track = arg1_700_
       end
       ImGui.PushItemWidth(ctx, 100)
       ImGui.SameLine(ctx, 140)
-      local _587_
+      local _706_
       do
-        local rv_586_, arg1_585_ = nil, nil
+        local rv_705_, arg1_703_ = nil, nil
         do
-          local arg1_585_ = layout.scrolling.track_item
-          local _24 = arg1_585_
-          local _241 = arg1_585_
-          rv_586_, arg1_585_ = ImGui.DragInt(ctx, "##item", _24, 0.25, 0, 99, "Item = %d")
+          local arg1_704_ = layout.scrolling.track_item
+          local _24 = arg1_704_
+          local _241 = arg1_704_
+          rv_705_, arg1_703_ = ImGui.DragInt(ctx, "##item", _24, 0.25, 0, 99, "Item = %d")
         end
-        layout.scrolling.track_item = arg1_585_
-        _587_ = rv_586_
+        layout.scrolling.track_item = arg1_703_
+        _706_ = rv_705_
       end
-      if _587_ then
+      if _706_ then
         layout.scrolling.enable_track = true
       else
       end
@@ -3890,15 +3890,15 @@ demo.ShowDemoWindowLayout = function()
         local _ = ImGui.SameLine(ctx, 140)
         local rv0
         do
-          local rv_590_, arg1_589_ = nil, nil
+          local rv_710_, arg1_708_ = nil, nil
           do
-            local arg1_589_ = layout.scrolling.scroll_to_off_px
-            local _24 = arg1_589_
-            local _241 = arg1_589_
-            rv_590_, arg1_589_ = ImGui.DragDouble(ctx, "##off", _24, 1, 0, FLT_MAX, "+%.0f px")
+            local arg1_709_ = layout.scrolling.scroll_to_off_px
+            local _24 = arg1_709_
+            local _241 = arg1_709_
+            rv_710_, arg1_708_ = ImGui.DragDouble(ctx, "##off", _24, 1, 0, FLT_MAX, "+%.0f px")
           end
-          layout.scrolling.scroll_to_off_px = arg1_589_
-          rv0 = rv_590_, arg1_589_
+          layout.scrolling.scroll_to_off_px = arg1_708_
+          rv0 = rv_710_, arg1_708_
         end
         local scroll_to_off0
         if rv0 then
@@ -3910,15 +3910,15 @@ demo.ShowDemoWindowLayout = function()
         local _0 = ImGui.SameLine(ctx, 140)
         local rv1
         do
-          local rv_593_, arg1_592_ = nil, nil
+          local rv_714_, arg1_712_ = nil, nil
           do
-            local arg1_592_ = layout.scrolling.scroll_to_pos_px
-            local _24 = arg1_592_
-            local _241 = arg1_592_
-            rv_593_, arg1_592_ = ImGui.DragDouble(ctx, "##pos", _24, 1, ( - 10), FLT_MAX, "X/Y = %.0f px")
+            local arg1_713_ = layout.scrolling.scroll_to_pos_px
+            local _24 = arg1_713_
+            local _241 = arg1_713_
+            rv_714_, arg1_712_ = ImGui.DragDouble(ctx, "##pos", _24, 1, ( - 10), FLT_MAX, "X/Y = %.0f px")
           end
-          layout.scrolling.scroll_to_pos_px = arg1_592_
-          rv1 = rv_593_, arg1_592_
+          layout.scrolling.scroll_to_pos_px = arg1_712_
+          rv1 = rv_714_, arg1_712_
         end
         local scroll_to_pos0
         if rv1 then
@@ -3989,14 +3989,14 @@ demo.ShowDemoWindowLayout = function()
         local window_padding_y = select(2, ImGui.GetStyleVar(ctx, ImGui.StyleVar_WindowPadding()))
         local child_height = (ImGui.GetTextLineHeight(ctx) + scrollbar_size + (window_padding_y * 2))
         local child_flags0
-        local function _603_()
+        local function _724_()
           if layout.scrolling.enable_extra_decorations then
             return ImGui.WindowFlags_AlwaysVerticalScrollbar()
           else
             return 0
           end
         end
-        child_flags0 = (ImGui.WindowFlags_HorizontalScrollbar() | _603_())
+        child_flags0 = (ImGui.WindowFlags_HorizontalScrollbar() | _724_())
         for i, name in ipairs(names) do
           local scroll_x, scroll_max_x = 0.0, 0.0
           if ImGui.BeginChild(ctx, i, -100, child_height, true, child_flags0) then
@@ -4033,14 +4033,14 @@ demo.ShowDemoWindowLayout = function()
       ImGui.PopID(ctx)
       demo.HelpMarker("Horizontal scrolling for a window is enabled via the ImGuiWindowFlags_HorizontalScrollbar flag.\n\n    You may want to also explicitly specify content width by using SetNextWindowContentWidth() before Begin().")
       do
-        local rv_610_, arg1_609_ = nil, nil
+        local rv_732_, arg1_730_ = nil, nil
         do
-          local arg1_609_ = layout.scrolling.lines
-          local _24 = arg1_609_
-          local _241 = arg1_609_
-          rv_610_, arg1_609_ = ImGui.SliderInt(ctx, "Lines", _24, 1, 15)
+          local arg1_731_ = layout.scrolling.lines
+          local _24 = arg1_731_
+          local _241 = arg1_731_
+          rv_732_, arg1_730_ = ImGui.SliderInt(ctx, "Lines", _24, 1, 15)
         end
-        layout.scrolling.lines = arg1_609_
+        layout.scrolling.lines = arg1_730_
       end
       ImGui.PushStyleVar(ctx, ImGui.StyleVar_FrameRounding(), 3)
       ImGui.PushStyleVar(ctx, ImGui.StyleVar_FramePadding(), 2, 1)
@@ -4106,140 +4106,140 @@ demo.ShowDemoWindowLayout = function()
       end
       ImGui.Spacing(ctx)
       do
-        local rv_619_, arg1_618_ = nil, nil
+        local rv_742_, arg1_740_ = nil, nil
         do
-          local arg1_618_ = layout.scrolling.show_horizontal_contents_size_demo_window
-          local _24 = arg1_618_
-          local _241 = arg1_618_
-          rv_619_, arg1_618_ = ImGui.Checkbox(ctx, "Show Horizontal contents size demo window", _24)
+          local arg1_741_ = layout.scrolling.show_horizontal_contents_size_demo_window
+          local _24 = arg1_741_
+          local _241 = arg1_741_
+          rv_742_, arg1_740_ = ImGui.Checkbox(ctx, "Show Horizontal contents size demo window", _24)
         end
-        layout.scrolling.show_horizontal_contents_size_demo_window = arg1_618_
+        layout.scrolling.show_horizontal_contents_size_demo_window = arg1_740_
       end
       if layout.scrolling.show_horizontal_contents_size_demo_window then
         if not layout.horizontal_window then
-          layout.horizontal_window = {contents_size_x = 300.0, show_button = true, show_columns = true, show_h_scrollbar = true, show_tab_bar = true, show_tree_nodes = true, show_child = false, show_text_wrapped = false, explicit_content_size = false}
+          layout.horizontal_window = {contents_size_x = 300.0, show_button = true, show_columns = true, show_h_scrollbar = true, show_tab_bar = true, show_tree_nodes = true, show_child = false, explicit_content_size = false, show_text_wrapped = false}
         else
         end
         if layout.horizontal_window.explicit_content_size then
           ImGui.SetNextWindowContentSize(ctx, layout.horizontal_window.contents_size_x, 0)
         else
         end
-        local _624_
+        local _748_
         do
-          local rv_623_, arg1_622_ = nil, nil
+          local rv_747_, arg1_745_ = nil, nil
           do
-            local arg1_622_ = layout.scrolling.show_horizontal_contents_size_demo_window
-            local _24 = arg1_622_
-            local _241 = arg1_622_
-            local function _625_()
+            local arg1_746_ = layout.scrolling.show_horizontal_contents_size_demo_window
+            local _24 = arg1_746_
+            local _241 = arg1_746_
+            local function _749_()
               if layout.horizontal_window.show_h_scrollbar then
                 return ImGui.WindowFlags_HorizontalScrollbar()
               else
                 return ImGui.WindowFlags_None()
               end
             end
-            rv_623_, arg1_622_ = ImGui.Begin(ctx, "Horizontal contents size demo window", true, _625_())
+            rv_747_, arg1_745_ = ImGui.Begin(ctx, "Horizontal contents size demo window", true, _749_())
           end
-          layout.scrolling.show_horizontal_contents_size_demo_window = arg1_622_
-          _624_ = rv_623_
+          layout.scrolling.show_horizontal_contents_size_demo_window = arg1_745_
+          _748_ = rv_747_
         end
-        if _624_ then
+        if _748_ then
           ImGui.PushStyleVar(ctx, ImGui.StyleVar_ItemSpacing(), 2, 0)
           ImGui.PushStyleVar(ctx, ImGui.StyleVar_FramePadding(), 2, 0)
           demo.HelpMarker("Test of different widgets react and impact the work rectangle growing when horizontal scrolling is enabled.\n\nUse 'Metrics->Tools->Show windows rectangles' to visualize rectangles.")
           do
-            local rv_627_, arg1_626_ = nil, nil
+            local rv_752_, arg1_750_ = nil, nil
             do
-              local arg1_626_ = layout.horizontal_window.show_h_scrollbar
-              local _24 = arg1_626_
-              local _241 = arg1_626_
-              rv_627_, arg1_626_ = ImGui.Checkbox(ctx, "H-scrollbar", _24)
+              local arg1_751_ = layout.horizontal_window.show_h_scrollbar
+              local _24 = arg1_751_
+              local _241 = arg1_751_
+              rv_752_, arg1_750_ = ImGui.Checkbox(ctx, "H-scrollbar", _24)
             end
-            layout.horizontal_window.show_h_scrollbar = arg1_626_
+            layout.horizontal_window.show_h_scrollbar = arg1_750_
           end
           do
-            local rv_629_, arg1_628_ = nil, nil
+            local rv_755_, arg1_753_ = nil, nil
             do
-              local arg1_628_ = layout.horizontal_window.show_button
-              local _24 = arg1_628_
-              local _241 = arg1_628_
-              rv_629_, arg1_628_ = ImGui.Checkbox(ctx, "Button", _24)
+              local arg1_754_ = layout.horizontal_window.show_button
+              local _24 = arg1_754_
+              local _241 = arg1_754_
+              rv_755_, arg1_753_ = ImGui.Checkbox(ctx, "Button", _24)
             end
-            layout.horizontal_window.show_button = arg1_628_
+            layout.horizontal_window.show_button = arg1_753_
           end
           do
-            local rv_631_, arg1_630_ = nil, nil
+            local rv_758_, arg1_756_ = nil, nil
             do
-              local arg1_630_ = layout.horizontal_window.show_tree_nodes
-              local _24 = arg1_630_
-              local _241 = arg1_630_
-              rv_631_, arg1_630_ = ImGui.Checkbox(ctx, "Tree nodes", _24)
+              local arg1_757_ = layout.horizontal_window.show_tree_nodes
+              local _24 = arg1_757_
+              local _241 = arg1_757_
+              rv_758_, arg1_756_ = ImGui.Checkbox(ctx, "Tree nodes", _24)
             end
-            layout.horizontal_window.show_tree_nodes = arg1_630_
+            layout.horizontal_window.show_tree_nodes = arg1_756_
           end
           do
-            local rv_633_, arg1_632_ = nil, nil
+            local rv_761_, arg1_759_ = nil, nil
             do
-              local arg1_632_ = layout.horizontal_window.show_text_wrapped
-              local _24 = arg1_632_
-              local _241 = arg1_632_
-              rv_633_, arg1_632_ = ImGui.Checkbox(ctx, "Text wrapped", _24)
+              local arg1_760_ = layout.horizontal_window.show_text_wrapped
+              local _24 = arg1_760_
+              local _241 = arg1_760_
+              rv_761_, arg1_759_ = ImGui.Checkbox(ctx, "Text wrapped", _24)
             end
-            layout.horizontal_window.show_text_wrapped = arg1_632_
+            layout.horizontal_window.show_text_wrapped = arg1_759_
           end
           do
-            local rv_635_, arg1_634_ = nil, nil
+            local rv_764_, arg1_762_ = nil, nil
             do
-              local arg1_634_ = layout.horizontal_window.show_columns
-              local _24 = arg1_634_
-              local _241 = arg1_634_
-              rv_635_, arg1_634_ = ImGui.Checkbox(ctx, "Columns", _24)
+              local arg1_763_ = layout.horizontal_window.show_columns
+              local _24 = arg1_763_
+              local _241 = arg1_763_
+              rv_764_, arg1_762_ = ImGui.Checkbox(ctx, "Columns", _24)
             end
-            layout.horizontal_window.show_columns = arg1_634_
+            layout.horizontal_window.show_columns = arg1_762_
           end
           do
-            local rv_637_, arg1_636_ = nil, nil
+            local rv_767_, arg1_765_ = nil, nil
             do
-              local arg1_636_ = layout.horizontal_window.show_tab_bar
-              local _24 = arg1_636_
-              local _241 = arg1_636_
-              rv_637_, arg1_636_ = ImGui.Checkbox(ctx, "Tab bar", _24)
+              local arg1_766_ = layout.horizontal_window.show_tab_bar
+              local _24 = arg1_766_
+              local _241 = arg1_766_
+              rv_767_, arg1_765_ = ImGui.Checkbox(ctx, "Tab bar", _24)
             end
-            layout.horizontal_window.show_tab_bar = arg1_636_
+            layout.horizontal_window.show_tab_bar = arg1_765_
           end
           do
-            local rv_639_, arg1_638_ = nil, nil
+            local rv_770_, arg1_768_ = nil, nil
             do
-              local arg1_638_ = layout.horizontal_window.show_child
-              local _24 = arg1_638_
-              local _241 = arg1_638_
-              rv_639_, arg1_638_ = ImGui.Checkbox(ctx, "Child", _24)
+              local arg1_769_ = layout.horizontal_window.show_child
+              local _24 = arg1_769_
+              local _241 = arg1_769_
+              rv_770_, arg1_768_ = ImGui.Checkbox(ctx, "Child", _24)
             end
-            layout.horizontal_window.show_child = arg1_638_
+            layout.horizontal_window.show_child = arg1_768_
           end
           do
-            local rv_641_, arg1_640_ = nil, nil
+            local rv_773_, arg1_771_ = nil, nil
             do
-              local arg1_640_ = layout.horizontal_window.explicit_content_size
-              local _24 = arg1_640_
-              local _241 = arg1_640_
-              rv_641_, arg1_640_ = ImGui.Checkbox(ctx, "Explicit content size", _24)
+              local arg1_772_ = layout.horizontal_window.explicit_content_size
+              local _24 = arg1_772_
+              local _241 = arg1_772_
+              rv_773_, arg1_771_ = ImGui.Checkbox(ctx, "Explicit content size", _24)
             end
-            layout.horizontal_window.explicit_content_size = arg1_640_
+            layout.horizontal_window.explicit_content_size = arg1_771_
           end
           ImGui.Text(ctx, ("Scroll %.1f/%.1f %.1f/%.1f"):format(ImGui.GetScrollX(ctx), ImGui.GetScrollMaxX(ctx), ImGui.GetScrollY(ctx), ImGui.GetScrollMaxY(ctx)))
           if layout.horizontal_window.explicit_content_size then
             ImGui.SameLine(ctx)
             ImGui.SetNextItemWidth(ctx, 100)
             do
-              local rv_643_, arg1_642_ = nil, nil
+              local rv_776_, arg1_774_ = nil, nil
               do
-                local arg1_642_ = layout.horizontal_window.contents_size_x
-                local _24 = arg1_642_
-                local _241 = arg1_642_
-                rv_643_, arg1_642_ = ImGui.DragDouble(ctx, "##csx", _24)
+                local arg1_775_ = layout.horizontal_window.contents_size_x
+                local _24 = arg1_775_
+                local _241 = arg1_775_
+                rv_776_, arg1_774_ = ImGui.DragDouble(ctx, "##csx", _24)
               end
-              layout.horizontal_window.contents_size_x = arg1_642_
+              layout.horizontal_window.contents_size_x = arg1_774_
             end
             local x, y = ImGui.GetCursorScreenPos(ctx)
             local draw_list = ImGui.GetWindowDrawList(ctx)
@@ -4347,18 +4347,18 @@ demo.ShowDemoWindowLayout = function()
           local text_str = "Line 1 hello\nLine 2 clip me!"
           local text_pos = {(p0_x + layout.clipping.offset[1]), (p0_y + layout.clipping.offset[2])}
           local draw_list = ImGui.GetWindowDrawList(ctx)
-          local _664_ = n
-          if (_664_ == 0) then
+          local _797_ = n
+          if (_797_ == 0) then
             ImGui.PushClipRect(ctx, p0_x, p0_y, p1_x, p1_y, true)
             ImGui.DrawList_AddRectFilled(draw_list, p0_x, p0_y, p1_x, p1_y, 1515878655)
             ImGui.DrawList_AddText(draw_list, text_pos[1], text_pos[2], 4294967295, text_str)
             ImGui.PopClipRect(ctx)
-          elseif (_664_ == 1) then
+          elseif (_797_ == 1) then
             ImGui.DrawList_PushClipRect(draw_list, p0_x, p0_y, p1_x, p1_y, true)
             ImGui.DrawList_AddRectFilled(draw_list, p0_x, p0_y, p1_x, p1_y, 1515878655)
             ImGui.DrawList_AddText(draw_list, text_pos[1], text_pos[2], 4294967295, text_str)
             ImGui.DrawList_PopClipRect(draw_list)
-          elseif (_664_ == 2) then
+          elseif (_797_ == 2) then
             local clip_rect = {p0_x, p0_y, p1_x, p1_y}
             ImGui.DrawList_AddRectFilled(draw_list, p0_x, p0_y, p1_x, p1_y, 1515878655)
             ImGui.DrawList_AddTextEx(draw_list, ImGui.GetFont(ctx), ImGui.GetFontSize(ctx), text_pos[1], text_pos[2], 4294967295, text_str, 0, table.unpack(clip_rect))
@@ -4520,14 +4520,14 @@ demo.ShowDemoWindowPopups = function()
           end
           ImGui.SetNextItemWidth(ctx, ( - FLT_MIN))
           do
-            local rv_696_, arg1_695_ = nil, nil
+            local rv_830_, arg1_828_ = nil, nil
             do
-              local arg1_695_ = popups.context.value
-              local _24 = arg1_695_
-              local _241 = arg1_695_
-              rv_696_, arg1_695_ = ImGui.DragDouble(ctx, "##Value", _24, 0.1, 0.0, 0.0)
+              local arg1_829_ = popups.context.value
+              local _24 = arg1_829_
+              local _241 = arg1_829_
+              rv_830_, arg1_828_ = ImGui.DragDouble(ctx, "##Value", _24, 0.1, 0.0, 0.0)
             end
-            popups.context.value = arg1_695_
+            popups.context.value = arg1_828_
           end
           ImGui.EndPopup(ctx)
         else
@@ -4545,14 +4545,14 @@ demo.ShowDemoWindowPopups = function()
         if ImGui.BeginPopupContextItem(ctx) then
           ImGui.Text(ctx, "Edit name:")
           do
-            local rv_700_, arg1_699_ = nil, nil
+            local rv_835_, arg1_833_ = nil, nil
             do
-              local arg1_699_ = popups.context.name
-              local _24 = arg1_699_
-              local _241 = arg1_699_
-              rv_700_, arg1_699_ = ImGui.InputText(ctx, "##edit", _24)
+              local arg1_834_ = popups.context.name
+              local _24 = arg1_834_
+              local _241 = arg1_834_
+              rv_835_, arg1_833_ = ImGui.InputText(ctx, "##edit", _24)
             end
-            popups.context.name = arg1_699_
+            popups.context.name = arg1_833_
           end
           if ImGui.Button(ctx, "Close") then
             ImGui.CloseCurrentPopup(ctx)
@@ -4586,14 +4586,14 @@ demo.ShowDemoWindowPopups = function()
         ImGui.Separator(ctx)
         ImGui.PushStyleVar(ctx, ImGui.StyleVar_FramePadding(), 0, 0)
         do
-          local rv_707_, arg1_706_ = nil, nil
+          local rv_843_, arg1_841_ = nil, nil
           do
-            local arg1_706_ = popups.modal.dont_ask_me_next_time
-            local _24 = arg1_706_
-            local _241 = arg1_706_
-            rv_707_, arg1_706_ = ImGui.Checkbox(ctx, "Don't ask me next time", _24)
+            local arg1_842_ = popups.modal.dont_ask_me_next_time
+            local _24 = arg1_842_
+            local _241 = arg1_842_
+            rv_843_, arg1_841_ = ImGui.Checkbox(ctx, "Don't ask me next time", _24)
           end
-          popups.modal.dont_ask_me_next_time = arg1_706_
+          popups.modal.dont_ask_me_next_time = arg1_841_
         end
         ImGui.PopStyleVar(ctx)
         if ImGui.Button(ctx, "OK", 120, 0) then
@@ -4627,24 +4627,24 @@ demo.ShowDemoWindowPopups = function()
         end
         ImGui.Text(ctx, "Hello from Stacked The First\nUsing style.Colors[ImGuiCol_ModalWindowDimBg] behind it.")
         do
-          local rv_716_, arg1_715_ = nil, nil
+          local rv_853_, arg1_851_ = nil, nil
           do
-            local arg1_715_ = popups.modal.item
-            local _24 = arg1_715_
-            local _241 = arg1_715_
-            rv_716_, arg1_715_ = ImGui.Combo(ctx, "Combo", _24, "aaaa\0bbbb\0cccc\0dddd\0eeee\0")
+            local arg1_852_ = popups.modal.item
+            local _24 = arg1_852_
+            local _241 = arg1_852_
+            rv_853_, arg1_851_ = ImGui.Combo(ctx, "Combo", _24, "aaaa\0bbbb\0cccc\0dddd\0eeee\0")
           end
-          popups.modal.item = arg1_715_
+          popups.modal.item = arg1_851_
         end
         do
-          local rv_718_, arg1_717_ = nil, nil
+          local rv_856_, arg1_854_ = nil, nil
           do
-            local arg1_717_ = popups.modal.color
-            local _24 = arg1_717_
-            local _241 = arg1_717_
-            rv_718_, arg1_717_ = ImGui.ColorEdit4(ctx, "color", _24)
+            local arg1_855_ = popups.modal.color
+            local _24 = arg1_855_
+            local _241 = arg1_855_
+            rv_856_, arg1_854_ = ImGui.ColorEdit4(ctx, "color", _24)
           end
-          popups.modal.color = arg1_717_
+          popups.modal.color = arg1_854_
         end
         if ImGui.Button(ctx, "Add another modal..") then
           ImGui.OpenPopup(ctx, "Stacked 2")
@@ -4701,25 +4701,25 @@ demo.CompareTableItems = function(a, b)
       res = (a.id < b.id)
     else
       local key
-      local function _728_()
-        local _729_ = col_user_id
-        if (nil ~= _729_) then
-          local My_item_column_iD_ID0 = _729_
+      local function _866_()
+        local _867_ = col_user_id
+        if (nil ~= _867_) then
+          local My_item_column_iD_ID0 = _867_
           return "id"
-        elseif (nil ~= _729_) then
-          local My_item_column_iD_Name0 = _729_
+        elseif (nil ~= _867_) then
+          local My_item_column_iD_Name0 = _867_
           return "name"
-        elseif (nil ~= _729_) then
-          local My_item_column_iD_Quantity0 = _729_
+        elseif (nil ~= _867_) then
+          local My_item_column_iD_Quantity0 = _867_
           return "quantity"
-        elseif (nil ~= _729_) then
-          local My_item_column_iD_Description0 = _729_
+        elseif (nil ~= _867_) then
+          local My_item_column_iD_Description0 = _867_
           return "name"
         else
           return nil
         end
       end
-      key = (_728_() or error("unknown user column ID"))
+      key = (_866_() or error("unknown user column ID"))
       local is_ascending = (sort_direction == ImGui.SortDirection_Ascending())
       if (a[key] < b[key]) then
         res = is_ascending
@@ -4798,200 +4798,200 @@ demo.EditTableColumnsFlags = function(flags)
   local flags0 = flags
   local width_mask = (ImGui.TableColumnFlags_WidthStretch() | ImGui.TableColumnFlags_WidthFixed())
   do
-    local rv_739_, arg1_738_ = nil, nil
+    local rv_878_, arg1_876_ = nil, nil
     do
-      local arg1_738_ = flags0
-      local _24 = arg1_738_
-      local _241 = arg1_738_
-      rv_739_, arg1_738_ = ImGui.CheckboxFlags(ctx, "_Disabled", _24, ImGui.TableColumnFlags_Disabled())
+      local arg1_877_ = flags0
+      local _24 = arg1_877_
+      local _241 = arg1_877_
+      rv_878_, arg1_876_ = ImGui.CheckboxFlags(ctx, "_Disabled", _24, ImGui.TableColumnFlags_Disabled())
     end
-    flags0 = arg1_738_
+    flags0 = arg1_876_
   end
   ImGui.SameLine(ctx)
   demo.HelpMarker("Master disable flag (also hide from context menu)")
   do
-    local rv_741_, arg1_740_ = nil, nil
+    local rv_881_, arg1_879_ = nil, nil
     do
-      local arg1_740_ = flags0
-      local _24 = arg1_740_
-      local _241 = arg1_740_
-      rv_741_, arg1_740_ = ImGui.CheckboxFlags(ctx, "_DefaultHide", _24, ImGui.TableColumnFlags_DefaultHide())
+      local arg1_880_ = flags0
+      local _24 = arg1_880_
+      local _241 = arg1_880_
+      rv_881_, arg1_879_ = ImGui.CheckboxFlags(ctx, "_DefaultHide", _24, ImGui.TableColumnFlags_DefaultHide())
     end
-    flags0 = arg1_740_
+    flags0 = arg1_879_
   end
   do
-    local rv_743_, arg1_742_ = nil, nil
+    local rv_884_, arg1_882_ = nil, nil
     do
-      local arg1_742_ = flags0
-      local _24 = arg1_742_
-      local _241 = arg1_742_
-      rv_743_, arg1_742_ = ImGui.CheckboxFlags(ctx, "_DefaultSort", _24, ImGui.TableColumnFlags_DefaultSort())
+      local arg1_883_ = flags0
+      local _24 = arg1_883_
+      local _241 = arg1_883_
+      rv_884_, arg1_882_ = ImGui.CheckboxFlags(ctx, "_DefaultSort", _24, ImGui.TableColumnFlags_DefaultSort())
     end
-    flags0 = arg1_742_
+    flags0 = arg1_882_
   end
-  local _746_
+  local _888_
   do
-    local rv_745_, arg1_744_ = nil, nil
+    local rv_887_, arg1_885_ = nil, nil
     do
-      local arg1_744_ = flags0
-      local _24 = arg1_744_
-      local _241 = arg1_744_
-      rv_745_, arg1_744_ = ImGui.CheckboxFlags(ctx, "_WidthStretch", _24, ImGui.TableColumnFlags_WidthStretch())
+      local arg1_886_ = flags0
+      local _24 = arg1_886_
+      local _241 = arg1_886_
+      rv_887_, arg1_885_ = ImGui.CheckboxFlags(ctx, "_WidthStretch", _24, ImGui.TableColumnFlags_WidthStretch())
     end
-    flags0 = arg1_744_
-    _746_ = rv_745_
+    flags0 = arg1_885_
+    _888_ = rv_887_
   end
-  if _746_ then
+  if _888_ then
     flags0 = (flags0 & ~(width_mask ^ ImGui.TableColumnFlags_WidthStretch()))
   else
   end
-  local _750_
+  local _893_
   do
-    local rv_749_, arg1_748_ = nil, nil
+    local rv_892_, arg1_890_ = nil, nil
     do
-      local arg1_748_ = flags0
-      local _24 = arg1_748_
-      local _241 = arg1_748_
-      rv_749_, arg1_748_ = ImGui.CheckboxFlags(ctx, "_WidthFixed", _24, ImGui.TableColumnFlags_WidthFixed())
+      local arg1_891_ = flags0
+      local _24 = arg1_891_
+      local _241 = arg1_891_
+      rv_892_, arg1_890_ = ImGui.CheckboxFlags(ctx, "_WidthFixed", _24, ImGui.TableColumnFlags_WidthFixed())
     end
-    flags0 = arg1_748_
-    _750_ = rv_749_
+    flags0 = arg1_890_
+    _893_ = rv_892_
   end
-  if _750_ then
+  if _893_ then
     flags0 = (flags0 & ~(width_mask ^ ImGui.TableColumnFlags_WidthFixed()))
   else
   end
   do
-    local rv_753_, arg1_752_ = nil, nil
+    local rv_897_, arg1_895_ = nil, nil
     do
-      local arg1_752_ = flags0
-      local _24 = arg1_752_
-      local _241 = arg1_752_
-      rv_753_, arg1_752_ = ImGui.CheckboxFlags(ctx, "_NoResize", _24, ImGui.TableColumnFlags_NoResize())
+      local arg1_896_ = flags0
+      local _24 = arg1_896_
+      local _241 = arg1_896_
+      rv_897_, arg1_895_ = ImGui.CheckboxFlags(ctx, "_NoResize", _24, ImGui.TableColumnFlags_NoResize())
     end
-    flags0 = arg1_752_
+    flags0 = arg1_895_
   end
   do
-    local rv_755_, arg1_754_ = nil, nil
+    local rv_900_, arg1_898_ = nil, nil
     do
-      local arg1_754_ = flags0
-      local _24 = arg1_754_
-      local _241 = arg1_754_
-      rv_755_, arg1_754_ = ImGui.CheckboxFlags(ctx, "_NoReorder", _24, ImGui.TableColumnFlags_NoReorder())
+      local arg1_899_ = flags0
+      local _24 = arg1_899_
+      local _241 = arg1_899_
+      rv_900_, arg1_898_ = ImGui.CheckboxFlags(ctx, "_NoReorder", _24, ImGui.TableColumnFlags_NoReorder())
     end
-    flags0 = arg1_754_
+    flags0 = arg1_898_
   end
   do
-    local rv_757_, arg1_756_ = nil, nil
+    local rv_903_, arg1_901_ = nil, nil
     do
-      local arg1_756_ = flags0
-      local _24 = arg1_756_
-      local _241 = arg1_756_
-      rv_757_, arg1_756_ = ImGui.CheckboxFlags(ctx, "_NoHide", _24, ImGui.TableColumnFlags_NoHide())
+      local arg1_902_ = flags0
+      local _24 = arg1_902_
+      local _241 = arg1_902_
+      rv_903_, arg1_901_ = ImGui.CheckboxFlags(ctx, "_NoHide", _24, ImGui.TableColumnFlags_NoHide())
     end
-    flags0 = arg1_756_
+    flags0 = arg1_901_
   end
   do
-    local rv_759_, arg1_758_ = nil, nil
+    local rv_906_, arg1_904_ = nil, nil
     do
-      local arg1_758_ = flags0
-      local _24 = arg1_758_
-      local _241 = arg1_758_
-      rv_759_, arg1_758_ = ImGui.CheckboxFlags(ctx, "_NoClip", _24, ImGui.TableColumnFlags_NoClip())
+      local arg1_905_ = flags0
+      local _24 = arg1_905_
+      local _241 = arg1_905_
+      rv_906_, arg1_904_ = ImGui.CheckboxFlags(ctx, "_NoClip", _24, ImGui.TableColumnFlags_NoClip())
     end
-    flags0 = arg1_758_
+    flags0 = arg1_904_
   end
   do
-    local rv_761_, arg1_760_ = nil, nil
+    local rv_909_, arg1_907_ = nil, nil
     do
-      local arg1_760_ = flags0
-      local _24 = arg1_760_
-      local _241 = arg1_760_
-      rv_761_, arg1_760_ = ImGui.CheckboxFlags(ctx, "_NoSort", _24, ImGui.TableColumnFlags_NoSort())
+      local arg1_908_ = flags0
+      local _24 = arg1_908_
+      local _241 = arg1_908_
+      rv_909_, arg1_907_ = ImGui.CheckboxFlags(ctx, "_NoSort", _24, ImGui.TableColumnFlags_NoSort())
     end
-    flags0 = arg1_760_
+    flags0 = arg1_907_
   end
   do
-    local rv_763_, arg1_762_ = nil, nil
+    local rv_912_, arg1_910_ = nil, nil
     do
-      local arg1_762_ = flags0
-      local _24 = arg1_762_
-      local _241 = arg1_762_
-      rv_763_, arg1_762_ = ImGui.CheckboxFlags(ctx, "_NoSortAscending", _24, ImGui.TableColumnFlags_NoSortAscending())
+      local arg1_911_ = flags0
+      local _24 = arg1_911_
+      local _241 = arg1_911_
+      rv_912_, arg1_910_ = ImGui.CheckboxFlags(ctx, "_NoSortAscending", _24, ImGui.TableColumnFlags_NoSortAscending())
     end
-    flags0 = arg1_762_
+    flags0 = arg1_910_
   end
   do
-    local rv_765_, arg1_764_ = nil, nil
+    local rv_915_, arg1_913_ = nil, nil
     do
-      local arg1_764_ = flags0
-      local _24 = arg1_764_
-      local _241 = arg1_764_
-      rv_765_, arg1_764_ = ImGui.CheckboxFlags(ctx, "_NoSortDescending", _24, ImGui.TableColumnFlags_NoSortDescending())
+      local arg1_914_ = flags0
+      local _24 = arg1_914_
+      local _241 = arg1_914_
+      rv_915_, arg1_913_ = ImGui.CheckboxFlags(ctx, "_NoSortDescending", _24, ImGui.TableColumnFlags_NoSortDescending())
     end
-    flags0 = arg1_764_
+    flags0 = arg1_913_
   end
   do
-    local rv_767_, arg1_766_ = nil, nil
+    local rv_918_, arg1_916_ = nil, nil
     do
-      local arg1_766_ = flags0
-      local _24 = arg1_766_
-      local _241 = arg1_766_
-      rv_767_, arg1_766_ = ImGui.CheckboxFlags(ctx, "_NoHeaderLabel", _24, ImGui.TableColumnFlags_NoHeaderLabel())
+      local arg1_917_ = flags0
+      local _24 = arg1_917_
+      local _241 = arg1_917_
+      rv_918_, arg1_916_ = ImGui.CheckboxFlags(ctx, "_NoHeaderLabel", _24, ImGui.TableColumnFlags_NoHeaderLabel())
     end
-    flags0 = arg1_766_
+    flags0 = arg1_916_
   end
   do
-    local rv_769_, arg1_768_ = nil, nil
+    local rv_921_, arg1_919_ = nil, nil
     do
-      local arg1_768_ = flags0
-      local _24 = arg1_768_
-      local _241 = arg1_768_
-      rv_769_, arg1_768_ = ImGui.CheckboxFlags(ctx, "_NoHeaderWidth", _24, ImGui.TableColumnFlags_NoHeaderWidth())
+      local arg1_920_ = flags0
+      local _24 = arg1_920_
+      local _241 = arg1_920_
+      rv_921_, arg1_919_ = ImGui.CheckboxFlags(ctx, "_NoHeaderWidth", _24, ImGui.TableColumnFlags_NoHeaderWidth())
     end
-    flags0 = arg1_768_
+    flags0 = arg1_919_
   end
   do
-    local rv_771_, arg1_770_ = nil, nil
+    local rv_924_, arg1_922_ = nil, nil
     do
-      local arg1_770_ = flags0
-      local _24 = arg1_770_
-      local _241 = arg1_770_
-      rv_771_, arg1_770_ = ImGui.CheckboxFlags(ctx, "_PreferSortAscending", _24, ImGui.TableColumnFlags_PreferSortAscending())
+      local arg1_923_ = flags0
+      local _24 = arg1_923_
+      local _241 = arg1_923_
+      rv_924_, arg1_922_ = ImGui.CheckboxFlags(ctx, "_PreferSortAscending", _24, ImGui.TableColumnFlags_PreferSortAscending())
     end
-    flags0 = arg1_770_
+    flags0 = arg1_922_
   end
   do
-    local rv_773_, arg1_772_ = nil, nil
+    local rv_927_, arg1_925_ = nil, nil
     do
-      local arg1_772_ = flags0
-      local _24 = arg1_772_
-      local _241 = arg1_772_
-      rv_773_, arg1_772_ = ImGui.CheckboxFlags(ctx, "_PreferSortDescending", _24, ImGui.TableColumnFlags_PreferSortDescending())
+      local arg1_926_ = flags0
+      local _24 = arg1_926_
+      local _241 = arg1_926_
+      rv_927_, arg1_925_ = ImGui.CheckboxFlags(ctx, "_PreferSortDescending", _24, ImGui.TableColumnFlags_PreferSortDescending())
     end
-    flags0 = arg1_772_
+    flags0 = arg1_925_
   end
   do
-    local rv_775_, arg1_774_ = nil, nil
+    local rv_930_, arg1_928_ = nil, nil
     do
-      local arg1_774_ = flags0
-      local _24 = arg1_774_
-      local _241 = arg1_774_
-      rv_775_, arg1_774_ = ImGui.CheckboxFlags(ctx, "_IndentEnable", _24, ImGui.TableColumnFlags_IndentEnable())
+      local arg1_929_ = flags0
+      local _24 = arg1_929_
+      local _241 = arg1_929_
+      rv_930_, arg1_928_ = ImGui.CheckboxFlags(ctx, "_IndentEnable", _24, ImGui.TableColumnFlags_IndentEnable())
     end
-    flags0 = arg1_774_
+    flags0 = arg1_928_
   end
   ImGui.SameLine(ctx)
   demo.HelpMarker("Default for column 0")
   do
-    local rv_777_, arg1_776_ = nil, nil
+    local rv_933_, arg1_931_ = nil, nil
     do
-      local arg1_776_ = flags0
-      local _24 = arg1_776_
-      local _241 = arg1_776_
-      rv_777_, arg1_776_ = ImGui.CheckboxFlags(ctx, "_IndentDisable", _24, ImGui.TableColumnFlags_IndentDisable())
+      local arg1_932_ = flags0
+      local _24 = arg1_932_
+      local _241 = arg1_932_
+      rv_933_, arg1_931_ = ImGui.CheckboxFlags(ctx, "_IndentDisable", _24, ImGui.TableColumnFlags_IndentDisable())
     end
-    flags0 = arg1_776_
+    flags0 = arg1_931_
   end
   ImGui.SameLine(ctx)
   demo.HelpMarker("Default for column >0")
@@ -5025,14 +5025,14 @@ demo.ShowDemoWindowTables = function()
     else
     end
     do
-      local rv_782_, arg1_781_ = nil, nil
+      local rv_939_, arg1_937_ = nil, nil
       do
-        local arg1_781_ = tables.disable_indent
-        local _24 = arg1_781_
-        local _241 = arg1_781_
-        rv_782_, arg1_781_ = ImGui.Checkbox(ctx, "Disable tree indentation", _24)
+        local arg1_938_ = tables.disable_indent
+        local _24 = arg1_938_
+        local _241 = arg1_938_
+        rv_939_, arg1_937_ = ImGui.Checkbox(ctx, "Disable tree indentation", _24)
       end
-      tables.disable_indent = arg1_781_
+      tables.disable_indent = arg1_937_
     end
     ImGui.SameLine(ctx)
     demo.HelpMarker("Disable the indenting of tree nodes so demo tables can use the full window width.")
@@ -5096,146 +5096,146 @@ demo.ShowDemoWindowTables = function()
       end
       demo.PushStyleCompact()
       do
-        local rv_791_, arg1_790_ = nil, nil
+        local rv_949_, arg1_947_ = nil, nil
         do
-          local arg1_790_ = tables.borders_bg.flags
-          local _24 = arg1_790_
-          local _241 = arg1_790_
-          rv_791_, arg1_790_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_RowBg", _24, ImGui.TableFlags_RowBg())
+          local arg1_948_ = tables.borders_bg.flags
+          local _24 = arg1_948_
+          local _241 = arg1_948_
+          rv_949_, arg1_947_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_RowBg", _24, ImGui.TableFlags_RowBg())
         end
-        tables.borders_bg.flags = arg1_790_
+        tables.borders_bg.flags = arg1_947_
       end
       do
-        local rv_793_, arg1_792_ = nil, nil
+        local rv_952_, arg1_950_ = nil, nil
         do
-          local arg1_792_ = tables.borders_bg.flags
-          local _24 = arg1_792_
-          local _241 = arg1_792_
-          rv_793_, arg1_792_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Borders", _24, ImGui.TableFlags_Borders())
+          local arg1_951_ = tables.borders_bg.flags
+          local _24 = arg1_951_
+          local _241 = arg1_951_
+          rv_952_, arg1_950_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Borders", _24, ImGui.TableFlags_Borders())
         end
-        tables.borders_bg.flags = arg1_792_
+        tables.borders_bg.flags = arg1_950_
       end
       ImGui.SameLine(ctx)
       demo.HelpMarker("ImGuiTableFlags_Borders\n      = ImGuiTableFlags_BordersInnerV\n      | ImGuiTableFlags_BordersOuterV\n      | ImGuiTableFlags_BordersInnerV\n      | ImGuiTableFlags_BordersOuterH")
       ImGui.Indent(ctx)
       do
-        local rv_795_, arg1_794_ = nil, nil
+        local rv_955_, arg1_953_ = nil, nil
         do
-          local arg1_794_ = tables.borders_bg.flags
-          local _24 = arg1_794_
-          local _241 = arg1_794_
-          rv_795_, arg1_794_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersH", _24, ImGui.TableFlags_BordersH())
+          local arg1_954_ = tables.borders_bg.flags
+          local _24 = arg1_954_
+          local _241 = arg1_954_
+          rv_955_, arg1_953_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersH", _24, ImGui.TableFlags_BordersH())
         end
-        tables.borders_bg.flags = arg1_794_
+        tables.borders_bg.flags = arg1_953_
       end
       ImGui.Indent(ctx)
       do
-        local rv_797_, arg1_796_ = nil, nil
+        local rv_958_, arg1_956_ = nil, nil
         do
-          local arg1_796_ = tables.borders_bg.flags
-          local _24 = arg1_796_
-          local _241 = arg1_796_
-          rv_797_, arg1_796_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersOuterH", _24, ImGui.TableFlags_BordersOuterH())
+          local arg1_957_ = tables.borders_bg.flags
+          local _24 = arg1_957_
+          local _241 = arg1_957_
+          rv_958_, arg1_956_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersOuterH", _24, ImGui.TableFlags_BordersOuterH())
         end
-        tables.borders_bg.flags = arg1_796_
+        tables.borders_bg.flags = arg1_956_
       end
       do
-        local rv_799_, arg1_798_ = nil, nil
+        local rv_961_, arg1_959_ = nil, nil
         do
-          local arg1_798_ = tables.borders_bg.flags
-          local _24 = arg1_798_
-          local _241 = arg1_798_
-          rv_799_, arg1_798_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersInnerH", _24, ImGui.TableFlags_BordersInnerH())
+          local arg1_960_ = tables.borders_bg.flags
+          local _24 = arg1_960_
+          local _241 = arg1_960_
+          rv_961_, arg1_959_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersInnerH", _24, ImGui.TableFlags_BordersInnerH())
         end
-        tables.borders_bg.flags = arg1_798_
+        tables.borders_bg.flags = arg1_959_
       end
       ImGui.Unindent(ctx)
       do
-        local rv_801_, arg1_800_ = nil, nil
+        local rv_964_, arg1_962_ = nil, nil
         do
-          local arg1_800_ = tables.borders_bg.flags
-          local _24 = arg1_800_
-          local _241 = arg1_800_
-          rv_801_, arg1_800_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersV", _24, ImGui.TableFlags_BordersV())
+          local arg1_963_ = tables.borders_bg.flags
+          local _24 = arg1_963_
+          local _241 = arg1_963_
+          rv_964_, arg1_962_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersV", _24, ImGui.TableFlags_BordersV())
         end
-        tables.borders_bg.flags = arg1_800_
+        tables.borders_bg.flags = arg1_962_
       end
       ImGui.Indent(ctx)
       do
-        local rv_803_, arg1_802_ = nil, nil
+        local rv_967_, arg1_965_ = nil, nil
         do
-          local arg1_802_ = tables.borders_bg.flags
-          local _24 = arg1_802_
-          local _241 = arg1_802_
-          rv_803_, arg1_802_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersOuterV", _24, ImGui.TableFlags_BordersOuterV())
+          local arg1_966_ = tables.borders_bg.flags
+          local _24 = arg1_966_
+          local _241 = arg1_966_
+          rv_967_, arg1_965_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersOuterV", _24, ImGui.TableFlags_BordersOuterV())
         end
-        tables.borders_bg.flags = arg1_802_
+        tables.borders_bg.flags = arg1_965_
       end
       do
-        local rv_805_, arg1_804_ = nil, nil
+        local rv_970_, arg1_968_ = nil, nil
         do
-          local arg1_804_ = tables.borders_bg.flags
-          local _24 = arg1_804_
-          local _241 = arg1_804_
-          rv_805_, arg1_804_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersInnerV", _24, ImGui.TableFlags_BordersInnerV())
+          local arg1_969_ = tables.borders_bg.flags
+          local _24 = arg1_969_
+          local _241 = arg1_969_
+          rv_970_, arg1_968_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersInnerV", _24, ImGui.TableFlags_BordersInnerV())
         end
-        tables.borders_bg.flags = arg1_804_
+        tables.borders_bg.flags = arg1_968_
       end
       ImGui.Unindent(ctx)
       do
-        local rv_807_, arg1_806_ = nil, nil
+        local rv_973_, arg1_971_ = nil, nil
         do
-          local arg1_806_ = tables.borders_bg.flags
-          local _24 = arg1_806_
-          local _241 = arg1_806_
-          rv_807_, arg1_806_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersOuter", _24, ImGui.TableFlags_BordersOuter())
+          local arg1_972_ = tables.borders_bg.flags
+          local _24 = arg1_972_
+          local _241 = arg1_972_
+          rv_973_, arg1_971_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersOuter", _24, ImGui.TableFlags_BordersOuter())
         end
-        tables.borders_bg.flags = arg1_806_
+        tables.borders_bg.flags = arg1_971_
       end
       do
-        local rv_809_, arg1_808_ = nil, nil
+        local rv_976_, arg1_974_ = nil, nil
         do
-          local arg1_808_ = tables.borders_bg.flags
-          local _24 = arg1_808_
-          local _241 = arg1_808_
-          rv_809_, arg1_808_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersInner", _24, ImGui.TableFlags_BordersInner())
+          local arg1_975_ = tables.borders_bg.flags
+          local _24 = arg1_975_
+          local _241 = arg1_975_
+          rv_976_, arg1_974_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersInner", _24, ImGui.TableFlags_BordersInner())
         end
-        tables.borders_bg.flags = arg1_808_
+        tables.borders_bg.flags = arg1_974_
       end
       ImGui.Unindent(ctx)
       ImGui.AlignTextToFramePadding(ctx)
       ImGui.Text(ctx, "Cell contents:")
       ImGui.SameLine(ctx)
       do
-        local rv_811_, arg1_810_ = nil, nil
+        local rv_979_, arg1_977_ = nil, nil
         do
-          local arg1_810_ = tables.borders_bg.contents_type
-          local _24 = arg1_810_
-          local _241 = arg1_810_
-          rv_811_, arg1_810_ = ImGui.RadioButtonEx(ctx, "Text", _24, 0)
+          local arg1_978_ = tables.borders_bg.contents_type
+          local _24 = arg1_978_
+          local _241 = arg1_978_
+          rv_979_, arg1_977_ = ImGui.RadioButtonEx(ctx, "Text", _24, 0)
         end
-        tables.borders_bg.contents_type = arg1_810_
+        tables.borders_bg.contents_type = arg1_977_
       end
       ImGui.SameLine(ctx)
       do
-        local rv_813_, arg1_812_ = nil, nil
+        local rv_982_, arg1_980_ = nil, nil
         do
-          local arg1_812_ = tables.borders_bg.contents_type
-          local _24 = arg1_812_
-          local _241 = arg1_812_
-          rv_813_, arg1_812_ = ImGui.RadioButtonEx(ctx, "FillButton", _24, 1)
+          local arg1_981_ = tables.borders_bg.contents_type
+          local _24 = arg1_981_
+          local _241 = arg1_981_
+          rv_982_, arg1_980_ = ImGui.RadioButtonEx(ctx, "FillButton", _24, 1)
         end
-        tables.borders_bg.contents_type = arg1_812_
+        tables.borders_bg.contents_type = arg1_980_
       end
       do
-        local rv_815_, arg1_814_ = nil, nil
+        local rv_985_, arg1_983_ = nil, nil
         do
-          local arg1_814_ = tables.borders_bg.display_headers
-          local _24 = arg1_814_
-          local _241 = arg1_814_
-          rv_815_, arg1_814_ = ImGui.Checkbox(ctx, "Display headers", _24)
+          local arg1_984_ = tables.borders_bg.display_headers
+          local _24 = arg1_984_
+          local _241 = arg1_984_
+          rv_985_, arg1_983_ = ImGui.Checkbox(ctx, "Display headers", _24)
         end
-        tables.borders_bg.display_headers = arg1_814_
+        tables.borders_bg.display_headers = arg1_983_
       end
       demo.PopStyleCompact()
       if ImGui.BeginTable(ctx, "table1", 3, tables.borders_bg.flags) then
@@ -5273,24 +5273,24 @@ demo.ShowDemoWindowTables = function()
       end
       demo.PushStyleCompact()
       do
-        local rv_822_, arg1_821_ = nil, nil
+        local rv_993_, arg1_991_ = nil, nil
         do
-          local arg1_821_ = tables.resz_stretch.flags
-          local _24 = arg1_821_
-          local _241 = arg1_821_
-          rv_822_, arg1_821_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Resizable", _24, ImGui.TableFlags_Resizable())
+          local arg1_992_ = tables.resz_stretch.flags
+          local _24 = arg1_992_
+          local _241 = arg1_992_
+          rv_993_, arg1_991_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Resizable", _24, ImGui.TableFlags_Resizable())
         end
-        tables.resz_stretch.flags = arg1_821_
+        tables.resz_stretch.flags = arg1_991_
       end
       do
-        local rv_824_, arg1_823_ = nil, nil
+        local rv_996_, arg1_994_ = nil, nil
         do
-          local arg1_823_ = tables.resz_stretch.flags
-          local _24 = arg1_823_
-          local _241 = arg1_823_
-          rv_824_, arg1_823_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersV", _24, ImGui.TableFlags_BordersV())
+          local arg1_995_ = tables.resz_stretch.flags
+          local _24 = arg1_995_
+          local _241 = arg1_995_
+          rv_996_, arg1_994_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersV", _24, ImGui.TableFlags_BordersV())
         end
-        tables.resz_stretch.flags = arg1_823_
+        tables.resz_stretch.flags = arg1_994_
       end
       ImGui.SameLine(ctx)
       demo.HelpMarker("Using the _Resizable flag automatically enables the _BordersInnerV flag as well, this is why the resize borders are still showing when unchecking this.")
@@ -5318,14 +5318,14 @@ demo.ShowDemoWindowTables = function()
       demo.HelpMarker("Using _Resizable + _SizingFixedFit flags.\n\n      Fixed-width columns generally makes more sense if you want to use horizontal scrolling.\n\n\n      Double-click a column border to auto-fit the column to its contents.")
       demo.PushStyleCompact()
       do
-        local rv_829_, arg1_828_ = nil, nil
+        local rv_1002_, arg1_1000_ = nil, nil
         do
-          local arg1_828_ = tables.resz_fixed.flags
-          local _24 = arg1_828_
-          local _241 = arg1_828_
-          rv_829_, arg1_828_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoHostExtendX", _24, ImGui.TableFlags_NoHostExtendX())
+          local arg1_1001_ = tables.resz_fixed.flags
+          local _24 = arg1_1001_
+          local _241 = arg1_1001_
+          rv_1002_, arg1_1000_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoHostExtendX", _24, ImGui.TableFlags_NoHostExtendX())
         end
-        tables.resz_fixed.flags = arg1_828_
+        tables.resz_fixed.flags = arg1_1000_
       end
       demo.PopStyleCompact()
       if ImGui.BeginTable(ctx, "table1", 3, tables.resz_fixed.flags) then
@@ -5358,13 +5358,13 @@ demo.ShowDemoWindowTables = function()
           ImGui.TableNextRow(ctx)
           for column = 0, 2 do
             ImGui.TableSetColumnIndex(ctx, column)
-            local _833_
+            local _1006_
             if (column == 2) then
-              _833_ = "Stretch"
+              _1006_ = "Stretch"
             else
-              _833_ = "Fixed"
+              _1006_ = "Fixed"
             end
-            ImGui.Text(ctx, ("%s %d,%d"):format(_833_, column, row))
+            ImGui.Text(ctx, ("%s %d,%d"):format(_1006_, column, row))
           end
         end
         ImGui.EndTable(ctx)
@@ -5400,34 +5400,34 @@ demo.ShowDemoWindowTables = function()
       demo.HelpMarker("Click and drag column headers to reorder columns.\n\n\n      Right-click on a header to open a context menu.")
       demo.PushStyleCompact()
       do
-        local rv_840_, arg1_839_ = nil, nil
+        local rv_1014_, arg1_1012_ = nil, nil
         do
-          local arg1_839_ = tables.reorder.flags
-          local _24 = arg1_839_
-          local _241 = arg1_839_
-          rv_840_, arg1_839_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Resizable", _24, ImGui.TableFlags_Resizable())
+          local arg1_1013_ = tables.reorder.flags
+          local _24 = arg1_1013_
+          local _241 = arg1_1013_
+          rv_1014_, arg1_1012_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Resizable", _24, ImGui.TableFlags_Resizable())
         end
-        tables.reorder.flags = arg1_839_
+        tables.reorder.flags = arg1_1012_
       end
       do
-        local rv_842_, arg1_841_ = nil, nil
+        local rv_1017_, arg1_1015_ = nil, nil
         do
-          local arg1_841_ = tables.reorder.flags
-          local _24 = arg1_841_
-          local _241 = arg1_841_
-          rv_842_, arg1_841_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Reorderable", _24, ImGui.TableFlags_Reorderable())
+          local arg1_1016_ = tables.reorder.flags
+          local _24 = arg1_1016_
+          local _241 = arg1_1016_
+          rv_1017_, arg1_1015_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Reorderable", _24, ImGui.TableFlags_Reorderable())
         end
-        tables.reorder.flags = arg1_841_
+        tables.reorder.flags = arg1_1015_
       end
       do
-        local rv_844_, arg1_843_ = nil, nil
+        local rv_1020_, arg1_1018_ = nil, nil
         do
-          local arg1_843_ = tables.reorder.flags
-          local _24 = arg1_843_
-          local _241 = arg1_843_
-          rv_844_, arg1_843_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Hideable", _24, ImGui.TableFlags_Hideable())
+          local arg1_1019_ = tables.reorder.flags
+          local _24 = arg1_1019_
+          local _241 = arg1_1019_
+          rv_1020_, arg1_1018_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Hideable", _24, ImGui.TableFlags_Hideable())
         end
-        tables.reorder.flags = arg1_843_
+        tables.reorder.flags = arg1_1018_
       end
       demo.PopStyleCompact()
       if ImGui.BeginTable(ctx, "table1", 3, tables.reorder.flags) then
@@ -6230,24 +6230,24 @@ demo.ShowDemoWindowTables = function()
       end
       demo.HelpMarker("Multiple tables with the same identifier will share their settings, width, visibility, order etc.")
       do
-        local rv_922_, arg1_921_ = nil, nil
+        local rv_1099_, arg1_1097_ = nil, nil
         do
-          local arg1_921_ = tables.synced.flags
-          local _24 = arg1_921_
-          local _241 = arg1_921_
-          rv_922_, arg1_921_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_ScrollY", _24, ImGui.TableFlags_ScrollY())
+          local arg1_1098_ = tables.synced.flags
+          local _24 = arg1_1098_
+          local _241 = arg1_1098_
+          rv_1099_, arg1_1097_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_ScrollY", _24, ImGui.TableFlags_ScrollY())
         end
-        tables.synced.flags = arg1_921_
+        tables.synced.flags = arg1_1097_
       end
       do
-        local rv_924_, arg1_923_ = nil, nil
+        local rv_1102_, arg1_1100_ = nil, nil
         do
-          local arg1_923_ = tables.synced.flags
-          local _24 = arg1_923_
-          local _241 = arg1_923_
-          rv_924_, arg1_923_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_SizingFixedFit", _24, ImGui.TableFlags_SizingFixedFit())
+          local arg1_1101_ = tables.synced.flags
+          local _24 = arg1_1101_
+          local _241 = arg1_1101_
+          rv_1102_, arg1_1100_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_SizingFixedFit", _24, ImGui.TableFlags_SizingFixedFit())
         end
-        tables.synced.flags = arg1_923_
+        tables.synced.flags = arg1_1100_
       end
       for n = 0, 2 do
         local buf = ("Synced Table %d"):format(n)
@@ -6328,7 +6328,7 @@ demo.ShowDemoWindowTables = function()
     Do_open_action()
     if ImGui.TreeNode(ctx, "Advanced") then
       if not tables.advanced then
-        tables.advanced = {contents_type = 5, flags = (ImGui.TableFlags_Resizable() | ImGui.TableFlags_Reorderable() | ImGui.TableFlags_Hideable() | ImGui.TableFlags_Sortable() | ImGui.TableFlags_SortMulti() | ImGui.TableFlags_RowBg() | ImGui.TableFlags_Borders() | ImGui.TableFlags_ScrollX() | ImGui.TableFlags_ScrollY() | ImGui.TableFlags_SizingFixedFit()), freeze_cols = 1, freeze_rows = 1, inner_width_with_scroll = 0, items = {}, items_count = (#template_items_names * 2), outer_size_enabled = true, outer_size_value = {0, (TEXT_BASE_HEIGHT * 12)}, row_min_height = 0, show_headers = true, items_need_sort = false, show_wrapped_text = false}
+        tables.advanced = {contents_type = 5, flags = (ImGui.TableFlags_Resizable() | ImGui.TableFlags_Reorderable() | ImGui.TableFlags_Hideable() | ImGui.TableFlags_Sortable() | ImGui.TableFlags_SortMulti() | ImGui.TableFlags_RowBg() | ImGui.TableFlags_Borders() | ImGui.TableFlags_ScrollX() | ImGui.TableFlags_ScrollY() | ImGui.TableFlags_SizingFixedFit()), freeze_cols = 1, freeze_rows = 1, inner_width_with_scroll = 0, items = {}, items_count = (#template_items_names * 2), outer_size_enabled = true, outer_size_value = {0, (TEXT_BASE_HEIGHT * 12)}, row_min_height = 0, show_headers = true, show_wrapped_text = false, items_need_sort = false}
       else
       end
       if ImGui.TreeNode(ctx, "Options") then
@@ -6336,138 +6336,138 @@ demo.ShowDemoWindowTables = function()
         ImGui.PushItemWidth(ctx, (TEXT_BASE_WIDTH * 28))
         if ImGui.TreeNode(ctx, "Features:", ImGui.TreeNodeFlags_DefaultOpen()) then
           do
-            local rv_933_, arg1_932_ = nil, nil
+            local rv_1112_, arg1_1110_ = nil, nil
             do
-              local arg1_932_ = tables.advanced.flags
-              local _24 = arg1_932_
-              local _241 = arg1_932_
-              rv_933_, arg1_932_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Resizable", _24, ImGui.TableFlags_Resizable())
+              local arg1_1111_ = tables.advanced.flags
+              local _24 = arg1_1111_
+              local _241 = arg1_1111_
+              rv_1112_, arg1_1110_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Resizable", _24, ImGui.TableFlags_Resizable())
             end
-            tables.advanced.flags = arg1_932_
+            tables.advanced.flags = arg1_1110_
           end
           do
-            local rv_935_, arg1_934_ = nil, nil
+            local rv_1115_, arg1_1113_ = nil, nil
             do
-              local arg1_934_ = tables.advanced.flags
-              local _24 = arg1_934_
-              local _241 = arg1_934_
-              rv_935_, arg1_934_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Reorderable", _24, ImGui.TableFlags_Reorderable())
+              local arg1_1114_ = tables.advanced.flags
+              local _24 = arg1_1114_
+              local _241 = arg1_1114_
+              rv_1115_, arg1_1113_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Reorderable", _24, ImGui.TableFlags_Reorderable())
             end
-            tables.advanced.flags = arg1_934_
+            tables.advanced.flags = arg1_1113_
           end
           do
-            local rv_937_, arg1_936_ = nil, nil
+            local rv_1118_, arg1_1116_ = nil, nil
             do
-              local arg1_936_ = tables.advanced.flags
-              local _24 = arg1_936_
-              local _241 = arg1_936_
-              rv_937_, arg1_936_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Hideable", _24, ImGui.TableFlags_Hideable())
+              local arg1_1117_ = tables.advanced.flags
+              local _24 = arg1_1117_
+              local _241 = arg1_1117_
+              rv_1118_, arg1_1116_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Hideable", _24, ImGui.TableFlags_Hideable())
             end
-            tables.advanced.flags = arg1_936_
+            tables.advanced.flags = arg1_1116_
           end
           do
-            local rv_939_, arg1_938_ = nil, nil
+            local rv_1121_, arg1_1119_ = nil, nil
             do
-              local arg1_938_ = tables.advanced.flags
-              local _24 = arg1_938_
-              local _241 = arg1_938_
-              rv_939_, arg1_938_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Sortable", _24, ImGui.TableFlags_Sortable())
+              local arg1_1120_ = tables.advanced.flags
+              local _24 = arg1_1120_
+              local _241 = arg1_1120_
+              rv_1121_, arg1_1119_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_Sortable", _24, ImGui.TableFlags_Sortable())
             end
-            tables.advanced.flags = arg1_938_
+            tables.advanced.flags = arg1_1119_
           end
           do
-            local rv_941_, arg1_940_ = nil, nil
+            local rv_1124_, arg1_1122_ = nil, nil
             do
-              local arg1_940_ = tables.advanced.flags
-              local _24 = arg1_940_
-              local _241 = arg1_940_
-              rv_941_, arg1_940_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoSavedSettings", _24, ImGui.TableFlags_NoSavedSettings())
+              local arg1_1123_ = tables.advanced.flags
+              local _24 = arg1_1123_
+              local _241 = arg1_1123_
+              rv_1124_, arg1_1122_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoSavedSettings", _24, ImGui.TableFlags_NoSavedSettings())
             end
-            tables.advanced.flags = arg1_940_
+            tables.advanced.flags = arg1_1122_
           end
           do
-            local rv_943_, arg1_942_ = nil, nil
+            local rv_1127_, arg1_1125_ = nil, nil
             do
-              local arg1_942_ = tables.advanced.flags
-              local _24 = arg1_942_
-              local _241 = arg1_942_
-              rv_943_, arg1_942_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_ContextMenuInBody", _24, ImGui.TableFlags_ContextMenuInBody())
+              local arg1_1126_ = tables.advanced.flags
+              local _24 = arg1_1126_
+              local _241 = arg1_1126_
+              rv_1127_, arg1_1125_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_ContextMenuInBody", _24, ImGui.TableFlags_ContextMenuInBody())
             end
-            tables.advanced.flags = arg1_942_
+            tables.advanced.flags = arg1_1125_
           end
           ImGui.TreePop(ctx)
         else
         end
         if ImGui.TreeNode(ctx, "Decorations:", ImGui.TreeNodeFlags_DefaultOpen()) then
           do
-            local rv_946_, arg1_945_ = nil, nil
+            local rv_1131_, arg1_1129_ = nil, nil
             do
-              local arg1_945_ = tables.advanced.flags
-              local _24 = arg1_945_
-              local _241 = arg1_945_
-              rv_946_, arg1_945_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_RowBg", _24, ImGui.TableFlags_RowBg())
+              local arg1_1130_ = tables.advanced.flags
+              local _24 = arg1_1130_
+              local _241 = arg1_1130_
+              rv_1131_, arg1_1129_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_RowBg", _24, ImGui.TableFlags_RowBg())
             end
-            tables.advanced.flags = arg1_945_
+            tables.advanced.flags = arg1_1129_
           end
           do
-            local rv_948_, arg1_947_ = nil, nil
+            local rv_1134_, arg1_1132_ = nil, nil
             do
-              local arg1_947_ = tables.advanced.flags
-              local _24 = arg1_947_
-              local _241 = arg1_947_
-              rv_948_, arg1_947_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersV", _24, ImGui.TableFlags_BordersV())
+              local arg1_1133_ = tables.advanced.flags
+              local _24 = arg1_1133_
+              local _241 = arg1_1133_
+              rv_1134_, arg1_1132_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersV", _24, ImGui.TableFlags_BordersV())
             end
-            tables.advanced.flags = arg1_947_
+            tables.advanced.flags = arg1_1132_
           end
           do
-            local rv_950_, arg1_949_ = nil, nil
+            local rv_1137_, arg1_1135_ = nil, nil
             do
-              local arg1_949_ = tables.advanced.flags
-              local _24 = arg1_949_
-              local _241 = arg1_949_
-              rv_950_, arg1_949_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersOuterV", _24, ImGui.TableFlags_BordersOuterV())
+              local arg1_1136_ = tables.advanced.flags
+              local _24 = arg1_1136_
+              local _241 = arg1_1136_
+              rv_1137_, arg1_1135_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersOuterV", _24, ImGui.TableFlags_BordersOuterV())
             end
-            tables.advanced.flags = arg1_949_
+            tables.advanced.flags = arg1_1135_
           end
           do
-            local rv_952_, arg1_951_ = nil, nil
+            local rv_1140_, arg1_1138_ = nil, nil
             do
-              local arg1_951_ = tables.advanced.flags
-              local _24 = arg1_951_
-              local _241 = arg1_951_
-              rv_952_, arg1_951_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersInnerV", _24, ImGui.TableFlags_BordersInnerV())
+              local arg1_1139_ = tables.advanced.flags
+              local _24 = arg1_1139_
+              local _241 = arg1_1139_
+              rv_1140_, arg1_1138_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersInnerV", _24, ImGui.TableFlags_BordersInnerV())
             end
-            tables.advanced.flags = arg1_951_
+            tables.advanced.flags = arg1_1138_
           end
           do
-            local rv_954_, arg1_953_ = nil, nil
+            local rv_1143_, arg1_1141_ = nil, nil
             do
-              local arg1_953_ = tables.advanced.flags
-              local _24 = arg1_953_
-              local _241 = arg1_953_
-              rv_954_, arg1_953_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersH", _24, ImGui.TableFlags_BordersH())
+              local arg1_1142_ = tables.advanced.flags
+              local _24 = arg1_1142_
+              local _241 = arg1_1142_
+              rv_1143_, arg1_1141_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersH", _24, ImGui.TableFlags_BordersH())
             end
-            tables.advanced.flags = arg1_953_
+            tables.advanced.flags = arg1_1141_
           end
           do
-            local rv_956_, arg1_955_ = nil, nil
+            local rv_1146_, arg1_1144_ = nil, nil
             do
-              local arg1_955_ = tables.advanced.flags
-              local _24 = arg1_955_
-              local _241 = arg1_955_
-              rv_956_, arg1_955_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersOuterH", _24, ImGui.TableFlags_BordersOuterH())
+              local arg1_1145_ = tables.advanced.flags
+              local _24 = arg1_1145_
+              local _241 = arg1_1145_
+              rv_1146_, arg1_1144_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersOuterH", _24, ImGui.TableFlags_BordersOuterH())
             end
-            tables.advanced.flags = arg1_955_
+            tables.advanced.flags = arg1_1144_
           end
           do
-            local rv_958_, arg1_957_ = nil, nil
+            local rv_1149_, arg1_1147_ = nil, nil
             do
-              local arg1_957_ = tables.advanced.flags
-              local _24 = arg1_957_
-              local _241 = arg1_957_
-              rv_958_, arg1_957_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersInnerH", _24, ImGui.TableFlags_BordersInnerH())
+              local arg1_1148_ = tables.advanced.flags
+              local _24 = arg1_1148_
+              local _241 = arg1_1148_
+              rv_1149_, arg1_1147_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_BordersInnerH", _24, ImGui.TableFlags_BordersInnerH())
             end
-            tables.advanced.flags = arg1_957_
+            tables.advanced.flags = arg1_1147_
           end
           ImGui.TreePop(ctx)
         else
@@ -6477,62 +6477,62 @@ demo.ShowDemoWindowTables = function()
           ImGui.SameLine(ctx)
           demo.HelpMarker("In the Advanced demo we override the policy of each column so those table-wide settings have less effect that typical.")
           do
-            local rv_961_, arg1_960_ = nil, nil
+            local rv_1153_, arg1_1151_ = nil, nil
             do
-              local arg1_960_ = tables.advanced.flags
-              local _24 = arg1_960_
-              local _241 = arg1_960_
-              rv_961_, arg1_960_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoHostExtendX", _24, ImGui.TableFlags_NoHostExtendX())
+              local arg1_1152_ = tables.advanced.flags
+              local _24 = arg1_1152_
+              local _241 = arg1_1152_
+              rv_1153_, arg1_1151_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoHostExtendX", _24, ImGui.TableFlags_NoHostExtendX())
             end
-            tables.advanced.flags = arg1_960_
+            tables.advanced.flags = arg1_1151_
           end
           ImGui.SameLine(ctx)
           demo.HelpMarker("Make outer width auto-fit to columns, overriding outer_size.x value.\n\n          Only available when ScrollX/ScrollY are disabled and Stretch columns are not used.")
           do
-            local rv_963_, arg1_962_ = nil, nil
+            local rv_1156_, arg1_1154_ = nil, nil
             do
-              local arg1_962_ = tables.advanced.flags
-              local _24 = arg1_962_
-              local _241 = arg1_962_
-              rv_963_, arg1_962_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoHostExtendY", _24, ImGui.TableFlags_NoHostExtendY())
+              local arg1_1155_ = tables.advanced.flags
+              local _24 = arg1_1155_
+              local _241 = arg1_1155_
+              rv_1156_, arg1_1154_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoHostExtendY", _24, ImGui.TableFlags_NoHostExtendY())
             end
-            tables.advanced.flags = arg1_962_
+            tables.advanced.flags = arg1_1154_
           end
           ImGui.SameLine(ctx)
           demo.HelpMarker("Make outer height stop exactly at outer_size.y (prevent auto-extending table past the limit).\n\n          Only available when ScrollX/ScrollY are disabled. Data below the limit will be clipped and not visible.")
           do
-            local rv_965_, arg1_964_ = nil, nil
+            local rv_1159_, arg1_1157_ = nil, nil
             do
-              local arg1_964_ = tables.advanced.flags
-              local _24 = arg1_964_
-              local _241 = arg1_964_
-              rv_965_, arg1_964_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoKeepColumnsVisible", _24, ImGui.TableFlags_NoKeepColumnsVisible())
+              local arg1_1158_ = tables.advanced.flags
+              local _24 = arg1_1158_
+              local _241 = arg1_1158_
+              rv_1159_, arg1_1157_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoKeepColumnsVisible", _24, ImGui.TableFlags_NoKeepColumnsVisible())
             end
-            tables.advanced.flags = arg1_964_
+            tables.advanced.flags = arg1_1157_
           end
           ImGui.SameLine(ctx)
           demo.HelpMarker("Only available if ScrollX is disabled.")
           do
-            local rv_967_, arg1_966_ = nil, nil
+            local rv_1162_, arg1_1160_ = nil, nil
             do
-              local arg1_966_ = tables.advanced.flags
-              local _24 = arg1_966_
-              local _241 = arg1_966_
-              rv_967_, arg1_966_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_PreciseWidths", _24, ImGui.TableFlags_PreciseWidths())
+              local arg1_1161_ = tables.advanced.flags
+              local _24 = arg1_1161_
+              local _241 = arg1_1161_
+              rv_1162_, arg1_1160_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_PreciseWidths", _24, ImGui.TableFlags_PreciseWidths())
             end
-            tables.advanced.flags = arg1_966_
+            tables.advanced.flags = arg1_1160_
           end
           ImGui.SameLine(ctx)
           demo.HelpMarker("Disable distributing remainder width to stretched columns (width allocation on a 100-wide table with 3 columns: Without this flag: 33,33,34. With this flag: 33,33,33). With larger number of columns, resizing will appear to be less smooth.")
           do
-            local rv_969_, arg1_968_ = nil, nil
+            local rv_1165_, arg1_1163_ = nil, nil
             do
-              local arg1_968_ = tables.advanced.flags
-              local _24 = arg1_968_
-              local _241 = arg1_968_
-              rv_969_, arg1_968_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoClip", _24, ImGui.TableFlags_NoClip())
+              local arg1_1164_ = tables.advanced.flags
+              local _24 = arg1_1164_
+              local _241 = arg1_1164_
+              rv_1165_, arg1_1163_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoClip", _24, ImGui.TableFlags_NoClip())
             end
-            tables.advanced.flags = arg1_968_
+            tables.advanced.flags = arg1_1163_
           end
           ImGui.SameLine(ctx)
           demo.HelpMarker("Disable clipping rectangle for every individual columns (reduce draw command count, items will be able to overflow into other columns). Generally incompatible with ScrollFreeze options.")
@@ -6541,70 +6541,70 @@ demo.ShowDemoWindowTables = function()
         end
         if ImGui.TreeNode(ctx, "Padding:", ImGui.TreeNodeFlags_DefaultOpen()) then
           do
-            local rv_972_, arg1_971_ = nil, nil
+            local rv_1169_, arg1_1167_ = nil, nil
             do
-              local arg1_971_ = tables.advanced.flags
-              local _24 = arg1_971_
-              local _241 = arg1_971_
-              rv_972_, arg1_971_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_PadOuterX", _24, ImGui.TableFlags_PadOuterX())
+              local arg1_1168_ = tables.advanced.flags
+              local _24 = arg1_1168_
+              local _241 = arg1_1168_
+              rv_1169_, arg1_1167_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_PadOuterX", _24, ImGui.TableFlags_PadOuterX())
             end
-            tables.advanced.flags = arg1_971_
+            tables.advanced.flags = arg1_1167_
           end
           do
-            local rv_974_, arg1_973_ = nil, nil
+            local rv_1172_, arg1_1170_ = nil, nil
             do
-              local arg1_973_ = tables.advanced.flags
-              local _24 = arg1_973_
-              local _241 = arg1_973_
-              rv_974_, arg1_973_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoPadOuterX", _24, ImGui.TableFlags_NoPadOuterX())
+              local arg1_1171_ = tables.advanced.flags
+              local _24 = arg1_1171_
+              local _241 = arg1_1171_
+              rv_1172_, arg1_1170_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoPadOuterX", _24, ImGui.TableFlags_NoPadOuterX())
             end
-            tables.advanced.flags = arg1_973_
+            tables.advanced.flags = arg1_1170_
           end
           do
-            local rv_976_, arg1_975_ = nil, nil
+            local rv_1175_, arg1_1173_ = nil, nil
             do
-              local arg1_975_ = tables.advanced.flags
-              local _24 = arg1_975_
-              local _241 = arg1_975_
-              rv_976_, arg1_975_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoPadInnerX", _24, ImGui.TableFlags_NoPadInnerX())
+              local arg1_1174_ = tables.advanced.flags
+              local _24 = arg1_1174_
+              local _241 = arg1_1174_
+              rv_1175_, arg1_1173_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_NoPadInnerX", _24, ImGui.TableFlags_NoPadInnerX())
             end
-            tables.advanced.flags = arg1_975_
+            tables.advanced.flags = arg1_1173_
           end
           ImGui.TreePop(ctx)
         else
         end
         if ImGui.TreeNode(ctx, "Scrolling:", ImGui.TreeNodeFlags_DefaultOpen()) then
           do
-            local rv_979_, arg1_978_ = nil, nil
+            local rv_1179_, arg1_1177_ = nil, nil
             do
-              local arg1_978_ = tables.advanced.flags
-              local _24 = arg1_978_
-              local _241 = arg1_978_
-              rv_979_, arg1_978_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_ScrollX", _24, ImGui.TableFlags_ScrollX())
+              local arg1_1178_ = tables.advanced.flags
+              local _24 = arg1_1178_
+              local _241 = arg1_1178_
+              rv_1179_, arg1_1177_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_ScrollX", _24, ImGui.TableFlags_ScrollX())
             end
-            tables.advanced.flags = arg1_978_
+            tables.advanced.flags = arg1_1177_
           end
           ImGui.SameLine(ctx)
           ImGui.SetNextItemWidth(ctx, ImGui.GetFrameHeight(ctx))
           do
-            local rv_981_, arg1_980_ = nil, nil
+            local rv_1182_, arg1_1180_ = nil, nil
             do
-              local arg1_980_ = tables.advanced.freeze_cols
-              local _24 = arg1_980_
-              local _241 = arg1_980_
-              rv_981_, arg1_980_ = ImGui.DragInt(ctx, "freeze_cols", _24, 0.2, 0, 9, nil, ImGui.SliderFlags_NoInput())
+              local arg1_1181_ = tables.advanced.freeze_cols
+              local _24 = arg1_1181_
+              local _241 = arg1_1181_
+              rv_1182_, arg1_1180_ = ImGui.DragInt(ctx, "freeze_cols", _24, 0.2, 0, 9, nil, ImGui.SliderFlags_NoInput())
             end
-            tables.advanced.freeze_cols = arg1_980_
+            tables.advanced.freeze_cols = arg1_1180_
           end
           do
-            local rv_983_, arg1_982_ = nil, nil
+            local rv_1185_, arg1_1183_ = nil, nil
             do
-              local arg1_982_ = tables.advanced.flags
-              local _24 = arg1_982_
-              local _241 = arg1_982_
-              rv_983_, arg1_982_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_ScrollY", _24, ImGui.TableFlags_ScrollY())
+              local arg1_1184_ = tables.advanced.flags
+              local _24 = arg1_1184_
+              local _241 = arg1_1184_
+              rv_1185_, arg1_1183_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_ScrollY", _24, ImGui.TableFlags_ScrollY())
             end
-            tables.advanced.flags = arg1_982_
+            tables.advanced.flags = arg1_1183_
           end
           ImGui.SameLine(ctx)
           ImGui.SetNextItemWidth(ctx, ImGui.GetFrameHeight(ctx))
@@ -6614,26 +6614,26 @@ demo.ShowDemoWindowTables = function()
         end
         if ImGui.TreeNode(ctx, "Sorting:", ImGui.TreeNodeFlags_DefaultOpen()) then
           do
-            local rv_986_, arg1_985_ = nil, nil
+            local rv_1189_, arg1_1187_ = nil, nil
             do
-              local arg1_985_ = tables.advanced.flags
-              local _24 = arg1_985_
-              local _241 = arg1_985_
-              rv_986_, arg1_985_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_SortMulti", _24, ImGui.TableFlags_SortMulti())
+              local arg1_1188_ = tables.advanced.flags
+              local _24 = arg1_1188_
+              local _241 = arg1_1188_
+              rv_1189_, arg1_1187_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_SortMulti", _24, ImGui.TableFlags_SortMulti())
             end
-            tables.advanced.flags = arg1_985_
+            tables.advanced.flags = arg1_1187_
           end
           ImGui.SameLine(ctx)
           demo.HelpMarker("When sorting is enabled: hold shift when clicking headers to sort on multiple column. TableGetSortSpecs() may return specs where (SpecsCount > 1).")
           do
-            local rv_988_, arg1_987_ = nil, nil
+            local rv_1192_, arg1_1190_ = nil, nil
             do
-              local arg1_987_ = tables.advanced.flags
-              local _24 = arg1_987_
-              local _241 = arg1_987_
-              rv_988_, arg1_987_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_SortTristate", _24, ImGui.TableFlags_SortTristate())
+              local arg1_1191_ = tables.advanced.flags
+              local _24 = arg1_1191_
+              local _241 = arg1_1191_
+              rv_1192_, arg1_1190_ = ImGui.CheckboxFlags(ctx, "ImGuiTableFlags_SortTristate", _24, ImGui.TableFlags_SortTristate())
             end
-            tables.advanced.flags = arg1_987_
+            tables.advanced.flags = arg1_1190_
           end
           ImGui.SameLine(ctx)
           demo.HelpMarker("When sorting is enabled: allow no sorting, disable default sorting. TableGetSortSpecs() may return specs where (SpecsCount == 0).")
@@ -6642,82 +6642,82 @@ demo.ShowDemoWindowTables = function()
         end
         if ImGui.TreeNode(ctx, "Other:", ImGui.TreeNodeFlags_DefaultOpen()) then
           do
-            local rv_991_, arg1_990_ = nil, nil
+            local rv_1196_, arg1_1194_ = nil, nil
             do
-              local arg1_990_ = tables.advanced.show_headers
-              local _24 = arg1_990_
-              local _241 = arg1_990_
-              rv_991_, arg1_990_ = ImGui.Checkbox(ctx, "show_headers", _24)
+              local arg1_1195_ = tables.advanced.show_headers
+              local _24 = arg1_1195_
+              local _241 = arg1_1195_
+              rv_1196_, arg1_1194_ = ImGui.Checkbox(ctx, "show_headers", _24)
             end
-            tables.advanced.show_headers = arg1_990_
+            tables.advanced.show_headers = arg1_1194_
           end
           do
-            local rv_993_, arg1_992_ = nil, nil
+            local rv_1199_, arg1_1197_ = nil, nil
             do
-              local arg1_992_ = tables.advanced.show_wrapped_text
-              local _24 = arg1_992_
-              local _241 = arg1_992_
-              rv_993_, arg1_992_ = ImGui.Checkbox(ctx, "show_wrapped_text", _24)
+              local arg1_1198_ = tables.advanced.show_wrapped_text
+              local _24 = arg1_1198_
+              local _241 = arg1_1198_
+              rv_1199_, arg1_1197_ = ImGui.Checkbox(ctx, "show_wrapped_text", _24)
             end
-            tables.advanced.show_wrapped_text = arg1_992_
+            tables.advanced.show_wrapped_text = arg1_1197_
           end
           rv, osv1, osv2 = ImGui.DragDouble2(ctx, "##OuterSize", table.unpack(tables.advanced.outer_size_value))
           do end (tables.advanced.outer_size_value)[1] = osv1
           tables.advanced.outer_size_value[2] = osv2
           ImGui.SameLine(ctx, 0, ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemInnerSpacing()))
           do
-            local rv_995_, arg1_994_ = nil, nil
+            local rv_1202_, arg1_1200_ = nil, nil
             do
-              local arg1_994_ = tables.advanced.outer_size_enabled
-              local _24 = arg1_994_
-              local _241 = arg1_994_
-              rv_995_, arg1_994_ = ImGui.Checkbox(ctx, "outer_size", _24)
+              local arg1_1201_ = tables.advanced.outer_size_enabled
+              local _24 = arg1_1201_
+              local _241 = arg1_1201_
+              rv_1202_, arg1_1200_ = ImGui.Checkbox(ctx, "outer_size", _24)
             end
-            tables.advanced.outer_size_enabled = arg1_994_
+            tables.advanced.outer_size_enabled = arg1_1200_
           end
           ImGui.SameLine(ctx)
           demo.HelpMarker("If scrolling is disabled (ScrollX and ScrollY not set):\n      - The table is output directly in the parent window.\n      - OuterSize.x < 0.0 will right-align the table.\n      - OuterSize.x = 0.0 will narrow fit the table unless there are any Stretch columns.\n      - OuterSize.y then becomes the minimum size for the table, which will extend vertically if there are more rows (unless NoHostExtendY is set).")
           do
-            local rv_997_, arg1_996_ = nil, nil
+            local rv_1205_, arg1_1203_ = nil, nil
             do
-              local arg1_996_ = tables.advanced.inner_width_with_scroll
-              local _24 = arg1_996_
-              local _241 = arg1_996_
-              rv_997_, arg1_996_ = ImGui.DragDouble(ctx, "inner_width (when ScrollX active)", _24, 1, 0, FLT_MAX)
+              local arg1_1204_ = tables.advanced.inner_width_with_scroll
+              local _24 = arg1_1204_
+              local _241 = arg1_1204_
+              rv_1205_, arg1_1203_ = ImGui.DragDouble(ctx, "inner_width (when ScrollX active)", _24, 1, 0, FLT_MAX)
             end
-            tables.advanced.inner_width_with_scroll = arg1_996_
+            tables.advanced.inner_width_with_scroll = arg1_1203_
           end
           do
-            local rv_999_, arg1_998_ = nil, nil
+            local rv_1208_, arg1_1206_ = nil, nil
             do
-              local arg1_998_ = tables.advanced.row_min_height
-              local _24 = arg1_998_
-              local _241 = arg1_998_
-              rv_999_, arg1_998_ = ImGui.DragDouble(ctx, "row_min_height", _24, 1, 0, FLT_MAX)
+              local arg1_1207_ = tables.advanced.row_min_height
+              local _24 = arg1_1207_
+              local _241 = arg1_1207_
+              rv_1208_, arg1_1206_ = ImGui.DragDouble(ctx, "row_min_height", _24, 1, 0, FLT_MAX)
             end
-            tables.advanced.row_min_height = arg1_998_
+            tables.advanced.row_min_height = arg1_1206_
           end
           ImGui.SameLine(ctx)
           demo.HelpMarker("Specify height of the Selectable item.")
           do
-            local rv_1001_, arg1_1000_ = nil, nil
+            local rv_1211_, arg1_1209_ = nil, nil
             do
-              local arg1_1000_ = tables.advanced.items_count
-              local _24 = arg1_1000_
-              local _241 = arg1_1000_
-              rv_1001_, arg1_1000_ = ImGui.DragInt(ctx, "items_count", _24, 0.1, 0, 9999)
+              local arg1_1210_ = tables.advanced.items_count
+              local _24 = arg1_1210_
+              local _241 = arg1_1210_
+              rv_1211_, arg1_1209_ = ImGui.DragInt(ctx, "items_count", _24, 0.1, 0, 9999)
             end
-            tables.advanced.items_count = arg1_1000_
+            tables.advanced.items_count = arg1_1209_
           end
           do
-            local rv_1003_, arg1_1002_ = nil, nil
+            local rv_1214_, arg1_1212_ = nil, nil
             do
-              local arg1_1002_ = tables.advanced.contents_type
-              local _24 = arg1_1002_
-              local _241 = arg1_1002_
-              rv_1003_, arg1_1002_ = ImGui.Combo(ctx, "items_type (first column)", _24, "Text\0Button\0SmallButton\0FillButton\0Selectable\0Selectable (span row)\0")
+              local arg1_1213_ = tables.advanced.contents_type
+              local _24 = arg1_1213_
+              local _241 = arg1_1213_
+              rv_1214_, arg1_1212_ = ImGui.Combo(ctx, "items_type (first column)", _24, "Text\0Button\0SmallButton\0FillButton\0Selectable\0Selectable (span row)\0")
             end
-            tables.advanced.contents_type = arg1_1002_
+            tables.advanced.contents_type = arg1_1212_
           end
           ImGui.TreePop(ctx)
         else
@@ -6738,14 +6738,14 @@ demo.ShowDemoWindowTables = function()
       else
       end
       local inner_width_to_use
-      local function _1007_()
+      local function _1218_()
         if ((tables.advanced.flags & ImGui.TableFlags_ScrollX()) ~= 0) then
           return tables.advanced.inner_width_with_scroll
         else
           return nil
         end
       end
-      inner_width_to_use = (_1007_() or 0)
+      inner_width_to_use = (_1218_() or 0)
       local w, h = 0, 0
       if tables.advanced.outer_size_enabled then
         w, h = table.unpack(tables.advanced.outer_size_value)
@@ -6917,14 +6917,14 @@ demo.ShowDemoWindowInputs = function()
       local capture_override_desc = {"None", "Set to false", "Set to true"}
       ImGui.SetNextItemWidth(ctx, (ImGui.GetFontSize(ctx) * 15))
       do
-        local rv_1035_, arg1_1034_ = nil, nil
+        local rv_1247_, arg1_1245_ = nil, nil
         do
-          local arg1_1034_ = misc.capture_override.keyboard
-          local _24 = arg1_1034_
-          local _241 = arg1_1034_
-          rv_1035_, arg1_1034_ = ImGui.SliderInt(ctx, "SetNextFrameWantCaptureKeyboard() on hover", _24, ( - 1), 1, capture_override_desc[(_24 + 2)], ImGui.SliderFlags_AlwaysClamp())
+          local arg1_1246_ = misc.capture_override.keyboard
+          local _24 = arg1_1246_
+          local _241 = arg1_1246_
+          rv_1247_, arg1_1245_ = ImGui.SliderInt(ctx, "SetNextFrameWantCaptureKeyboard() on hover", _24, ( - 1), 1, capture_override_desc[(_24 + 2)], ImGui.SliderFlags_AlwaysClamp())
         end
-        misc.capture_override.keyboard = arg1_1034_
+        misc.capture_override.keyboard = arg1_1245_
       end
       ImGui.ColorButton(ctx, "##panel", 2988028671, (ImGui.ColorEditFlags_NoTooltip() | ImGui.ColorEditFlags_NoDragDrop()), 128, 96)
       if (ImGui.IsItemHovered(ctx) and (misc.capture_override.keyboard ~= -1)) then
@@ -6965,58 +6965,58 @@ demo.ShowDemoWindowInputs = function()
       end
       ImGui.Text(ctx, "Use TAB/SHIFT+TAB to cycle through keyboard editable fields.")
       do
-        local rv_1043_, arg1_1042_ = nil, nil
+        local rv_1256_, arg1_1254_ = nil, nil
         do
-          local arg1_1042_ = misc.tabbing.buf
-          local _24 = arg1_1042_
-          local _241 = arg1_1042_
-          rv_1043_, arg1_1042_ = ImGui.InputText(ctx, "1", _24)
+          local arg1_1255_ = misc.tabbing.buf
+          local _24 = arg1_1255_
+          local _241 = arg1_1255_
+          rv_1256_, arg1_1254_ = ImGui.InputText(ctx, "1", _24)
         end
-        misc.tabbing.buf = arg1_1042_
+        misc.tabbing.buf = arg1_1254_
       end
       do
-        local rv_1045_, arg1_1044_ = nil, nil
+        local rv_1259_, arg1_1257_ = nil, nil
         do
-          local arg1_1044_ = misc.tabbing.buf
-          local _24 = arg1_1044_
-          local _241 = arg1_1044_
-          rv_1045_, arg1_1044_ = ImGui.InputText(ctx, "2", _24)
+          local arg1_1258_ = misc.tabbing.buf
+          local _24 = arg1_1258_
+          local _241 = arg1_1258_
+          rv_1259_, arg1_1257_ = ImGui.InputText(ctx, "2", _24)
         end
-        misc.tabbing.buf = arg1_1044_
+        misc.tabbing.buf = arg1_1257_
       end
       do
-        local rv_1047_, arg1_1046_ = nil, nil
+        local rv_1262_, arg1_1260_ = nil, nil
         do
-          local arg1_1046_ = misc.tabbing.buf
-          local _24 = arg1_1046_
-          local _241 = arg1_1046_
-          rv_1047_, arg1_1046_ = ImGui.InputText(ctx, "3", _24)
+          local arg1_1261_ = misc.tabbing.buf
+          local _24 = arg1_1261_
+          local _241 = arg1_1261_
+          rv_1262_, arg1_1260_ = ImGui.InputText(ctx, "3", _24)
         end
-        misc.tabbing.buf = arg1_1046_
+        misc.tabbing.buf = arg1_1260_
       end
       ImGui.PushAllowKeyboardFocus(ctx, false)
       do
-        local rv_1049_, arg1_1048_ = nil, nil
+        local rv_1265_, arg1_1263_ = nil, nil
         do
-          local arg1_1048_ = misc.tabbing.buf
-          local _24 = arg1_1048_
-          local _241 = arg1_1048_
-          rv_1049_, arg1_1048_ = ImGui.InputText(ctx, "4 (tab skip)", _24)
+          local arg1_1264_ = misc.tabbing.buf
+          local _24 = arg1_1264_
+          local _241 = arg1_1264_
+          rv_1265_, arg1_1263_ = ImGui.InputText(ctx, "4 (tab skip)", _24)
         end
-        misc.tabbing.buf = arg1_1048_
+        misc.tabbing.buf = arg1_1263_
       end
       ImGui.SameLine(ctx)
       demo.HelpMarker("Item won't be cycled through when using TAB or Shift+Tab.")
       ImGui.PopAllowKeyboardFocus(ctx)
       do
-        local rv_1051_, arg1_1050_ = nil, nil
+        local rv_1268_, arg1_1266_ = nil, nil
         do
-          local arg1_1050_ = misc.tabbing.buf
-          local _24 = arg1_1050_
-          local _241 = arg1_1050_
-          rv_1051_, arg1_1050_ = ImGui.InputText(ctx, "5", _24)
+          local arg1_1267_ = misc.tabbing.buf
+          local _24 = arg1_1267_
+          local _241 = arg1_1267_
+          rv_1268_, arg1_1266_ = ImGui.InputText(ctx, "5", _24)
         end
-        misc.tabbing.buf = arg1_1050_
+        misc.tabbing.buf = arg1_1266_
       end
       ImGui.TreePop(ctx)
     else
@@ -7037,14 +7037,14 @@ demo.ShowDemoWindowInputs = function()
       else
       end
       do
-        local rv_1056_, arg1_1055_ = nil, nil
+        local rv_1274_, arg1_1272_ = nil, nil
         do
-          local arg1_1055_ = misc.focus.buf
-          local _24 = arg1_1055_
-          local _241 = arg1_1055_
-          rv_1056_, arg1_1055_ = ImGui.InputText(ctx, "1", _24)
+          local arg1_1273_ = misc.focus.buf
+          local _24 = arg1_1273_
+          local _241 = arg1_1273_
+          rv_1274_, arg1_1272_ = ImGui.InputText(ctx, "1", _24)
         end
-        misc.focus.buf = arg1_1055_
+        misc.focus.buf = arg1_1272_
       end
       if ImGui.IsItemActive(ctx) then
         has_focus = 1
@@ -7055,14 +7055,14 @@ demo.ShowDemoWindowInputs = function()
       else
       end
       do
-        local rv_1060_, arg1_1059_ = nil, nil
+        local rv_1279_, arg1_1277_ = nil, nil
         do
-          local arg1_1059_ = misc.focus.buf
-          local _24 = arg1_1059_
-          local _241 = arg1_1059_
-          rv_1060_, arg1_1059_ = ImGui.InputText(ctx, "2", _24)
+          local arg1_1278_ = misc.focus.buf
+          local _24 = arg1_1278_
+          local _241 = arg1_1278_
+          rv_1279_, arg1_1277_ = ImGui.InputText(ctx, "2", _24)
         end
-        misc.focus.buf = arg1_1059_
+        misc.focus.buf = arg1_1277_
       end
       if ImGui.IsItemActive(ctx) then
         has_focus = 2
@@ -7074,14 +7074,14 @@ demo.ShowDemoWindowInputs = function()
       else
       end
       do
-        local rv_1064_, arg1_1063_ = nil, nil
+        local rv_1284_, arg1_1282_ = nil, nil
         do
-          local arg1_1063_ = misc.focus.buf
-          local _24 = arg1_1063_
-          local _241 = arg1_1063_
-          rv_1064_, arg1_1063_ = ImGui.InputText(ctx, "3 (tab skip)", _24)
+          local arg1_1283_ = misc.focus.buf
+          local _24 = arg1_1283_
+          local _241 = arg1_1283_
+          rv_1284_, arg1_1282_ = ImGui.InputText(ctx, "3 (tab skip)", _24)
         end
-        misc.focus.buf = arg1_1063_
+        misc.focus.buf = arg1_1282_
       end
       if ImGui.IsItemActive(ctx) then
         has_focus = 3
@@ -7167,13 +7167,13 @@ demo.GetStyleData = function()
       else
       end
     end
-    local _1076_
+    local _1296_
     if is_vec2 then
-      _1076_ = rv
+      _1296_ = rv
     else
-      _1076_ = rv[1]
+      _1296_ = rv[1]
     end
-    data.vars[i] = _1076_
+    data.vars[i] = _1296_
   end
   for i in demo.EachEnum("Col") do
     data.colors[i] = ImGui.GetStyleColor(ctx, i)
@@ -7182,13 +7182,13 @@ demo.GetStyleData = function()
 end
 demo.CopyStyleData = function(source, target)
   for i, value in pairs(source.vars) do
-    local _1078_
+    local _1298_
     if (type(value) == "table") then
-      _1078_ = {table.unpack(value)}
+      _1298_ = {table.unpack(value)}
     else
-      _1078_ = value
+      _1298_ = value
     end
-    target.vars[i] = _1078_
+    target.vars[i] = _1298_
   end
   for i, value in pairs(source.colors) do
     target.colors[i] = value
@@ -7199,14 +7199,14 @@ demo.PushStyle = function()
   if app.style_editor then
     app.style_editor.push_count = (app.style_editor.push_count + 1)
     for i, value in pairs(app.style_editor.style.vars) do
-      local function _1080_()
+      local function _1300_()
         if ("table" == type(value)) then
           return table.unpack(value)
         else
           return value
         end
       end
-      ImGui.PushStyleVar(ctx, i, _1080_())
+      ImGui.PushStyleVar(ctx, i, _1300_())
     end
     for i, value in pairs(app.style_editor.style.colors) do
       ImGui.PushStyleColor(ctx, i, value)
@@ -7217,16 +7217,16 @@ demo.PushStyle = function()
   end
 end
 demo.PopStyle = function()
-  local _1083_
+  local _1303_
   do
-    local _1082_ = app.style_editor
-    if (nil ~= _1082_) then
-      _1083_ = (_1082_ > 0)
+    local _1302_ = app.style_editor
+    if (nil ~= _1302_) then
+      _1303_ = (_1302_ > 0)
     else
-      _1083_ = _1082_
+      _1303_ = _1302_
     end
   end
-  if _1083_ then
+  if _1303_ then
     app.style_editor.push_count = (app.style_editor.push_count - 1)
     ImGui.PopStyleColor(ctx, #cache.Col)
     return ImGui.PopStyleVar(ctx, #cache.StyleVar)
@@ -7300,32 +7300,32 @@ demo.ShowStyleEditor = function()
     return ImGui.LogFinish(ctx)
   end
   if ImGui.Button(ctx, "Export Vars") then
-    local function _1095_(a, b)
+    local function _1315_(a, b)
       if (type(a) == "table") then
         return ((a[1] == b[1]) and (a[2] == b[2]))
       else
         return (a == b)
       end
     end
-    local function _1097_(val)
+    local function _1317_(val)
       if (type(val) == "table") then
         return ("%g, %g"):format(table.unpack(val))
       else
         return ("%g"):format(val)
       end
     end
-    export("StyleVar", "StyleVar", app.style_editor.style.vars, app.style_editor.ref.vars, _1095_, _1097_)
+    export("StyleVar", "StyleVar", app.style_editor.style.vars, app.style_editor.ref.vars, _1315_, _1317_)
   else
   end
   ImGui.SameLine(ctx)
   if ImGui.Button(ctx, "Export Colors") then
-    local function _1100_(a, b)
+    local function _1320_(a, b)
       return (a == b)
     end
-    local function _1101_(val)
+    local function _1321_(val)
       return ("0x%08X"):format((val & 4294967295))
     end
-    export("Col", "StyleColor", app.style_editor.style.colors, app.style_editor.ref.colors, _1100_, _1101_)
+    export("Col", "StyleColor", app.style_editor.style.colors, app.style_editor.ref.colors, _1320_, _1321_)
   else
   end
   ImGui.SameLine(ctx)
@@ -7605,14 +7605,14 @@ Example_app_log.draw = function(self, title, p_open)
     end
     if ImGui.BeginPopup(self.ctx, "Options") then
       do
-        local rv_1137_, arg1_1136_ = nil, nil
+        local rv_1358_, arg1_1356_ = nil, nil
         do
-          local arg1_1136_ = self.auto_scroll
-          local _24 = arg1_1136_
-          local _241 = arg1_1136_
-          rv_1137_, arg1_1136_ = ImGui.Checkbox(self.ctx, "Auto-scroll", _24)
+          local arg1_1357_ = self.auto_scroll
+          local _24 = arg1_1357_
+          local _241 = arg1_1357_
+          rv_1358_, arg1_1356_ = ImGui.Checkbox(self.ctx, "Auto-scroll", _24)
         end
-        self.auto_scroll = arg1_1136_
+        self.auto_scroll = arg1_1356_
       end
       ImGui.EndPopup(self.ctx)
     else
@@ -7674,9 +7674,9 @@ Example_app_log.draw = function(self, title, p_open)
 end
 demo.ShowExampleAppLog = function()
   if not app.log then
-    local _1148_ = Example_app_log:new(ctx)
-    do end (_1148_)["counter"] = 0
-    app.log = _1148_
+    local _1369_ = Example_app_log:new(ctx)
+    do end (_1369_)["counter"] = 0
+    app.log = _1369_
   else
   end
   ImGui.SetNextWindowSize(ctx, 500, 400, ImGui.Cond_FirstUseEver())
@@ -7787,14 +7787,14 @@ demo.ShowPlaceholderObject = function(prefix, uid)
         end
         ImGui.TableSetColumnIndex(ctx, 1)
         ImGui.SetNextItemWidth(ctx, ( - FLT_MIN))
-        local function _1165_()
+        local function _1386_()
           if (i >= 5) then
             return 1
           else
             return 0.01
           end
         end
-        _, pmi = ImGui.DragDouble(ctx, "##value", app.property_editor.placeholder_members[i], _1165_())
+        _, pmi = ImGui.DragDouble(ctx, "##value", app.property_editor.placeholder_members[i], _1386_())
         do end (app.property_editor.placeholder_members)[i] = pmi
       end
       ImGui.PopID(ctx)
@@ -7837,14 +7837,14 @@ demo.ShowExampleAppLongText = function()
   if rv then
     ImGui.Text(ctx, "Printing unusually long amount of text.")
     do
-      local rv_1173_, arg1_1172_ = nil, nil
+      local rv_1395_, arg1_1393_ = nil, nil
       do
-        local arg1_1172_ = app.long_text.test_type
-        local _24 = arg1_1172_
-        local _241 = arg1_1172_
-        rv_1173_, arg1_1172_ = ImGui.Combo(ctx, "Test type", _24, "Single call to Text()\0\n                                Multiple calls to Text(), clipped\0\n                                Multiple calls to Text(), not clipped (slow)\0")
+        local arg1_1394_ = app.long_text.test_type
+        local _24 = arg1_1394_
+        local _241 = arg1_1394_
+        rv_1395_, arg1_1393_ = ImGui.Combo(ctx, "Test type", _24, "Single call to Text()\0\n                                Multiple calls to Text(), clipped\0\n                                Multiple calls to Text(), not clipped (slow)\0")
       end
-      app.long_text.test_type = arg1_1172_
+      app.long_text.test_type = arg1_1393_
     end
     ImGui.Text(ctx, ("Buffer contents: %d lines, %d bytes"):format(app.long_text.lines, (app.long_text.log):len()))
     if ImGui.Button(ctx, "Clear") then
@@ -7864,10 +7864,10 @@ demo.ShowExampleAppLongText = function()
     end
     if ImGui.BeginChild(ctx, "Log") then
       do
-        local _1176_ = app.long_text.test_type
-        if (_1176_ == 0) then
+        local _1398_ = app.long_text.test_type
+        if (_1398_ == 0) then
           ImGui.Text(ctx, app.long_text.log)
-        elseif (_1176_ == 1) then
+        elseif (_1398_ == 1) then
           ImGui.PushStyleVar(ctx, ImGui.StyleVar_ItemSpacing(), 0, 0)
           local clipper = ImGui.CreateListClipper(ctx)
           ImGui.ListClipper_Begin(clipper, app.long_text.lines)
@@ -7878,7 +7878,7 @@ demo.ShowExampleAppLongText = function()
             end
           end
           ImGui.PopStyleVar(ctx)
-        elseif (_1176_ == 2) then
+        elseif (_1398_ == 2) then
           ImGui.PushStyleVar(ctx, ImGui.StyleVar_ItemSpacing(), 0, 0)
           for i = 0, app.long_text.lines do
             ImGui.Text(ctx, ("%i The quick brown fox jumps over the lazy dog"):format(i))
@@ -7904,14 +7904,14 @@ demo.ShowExampleAppAutoResize = function()
   if rv then
     ImGui.Text(ctx, "Window will resize every-frame to the size of its content.\n                  Note that you probably don't want to query the window size to\n                  output your content because that would create a feedback loop.")
     do
-      local rv_1182_, arg1_1181_ = nil, nil
+      local rv_1405_, arg1_1403_ = nil, nil
       do
-        local arg1_1181_ = app.auto_resize.lines
-        local _24 = arg1_1181_
-        local _241 = arg1_1181_
-        rv_1182_, arg1_1181_ = ImGui.SliderInt(ctx, "Number of lines", _24, 1, 20)
+        local arg1_1404_ = app.auto_resize.lines
+        local _24 = arg1_1404_
+        local _241 = arg1_1404_
+        rv_1405_, arg1_1403_ = ImGui.SliderInt(ctx, "Number of lines", _24, 1, 20)
       end
-      app.auto_resize.lines = arg1_1181_
+      app.auto_resize.lines = arg1_1403_
     end
     for i = 1, app.auto_resize.lines do
       ImGui.Text(ctx, ("%sThis is line %d"):format((" "):rep((i * 4)), i))
@@ -7927,16 +7927,16 @@ demo.ShowExampleAppConstrainedResize = function()
   else
   end
   do
-    local _1185_ = app.constrained_resize.type
-    if (_1185_ == 0) then
+    local _1408_ = app.constrained_resize.type
+    if (_1408_ == 0) then
       ImGui.SetNextWindowSizeConstraints(ctx, 100, 100, 500, 500)
-    elseif (_1185_ == 1) then
+    elseif (_1408_ == 1) then
       ImGui.SetNextWindowSizeConstraints(ctx, 100, 100, FLT_MAX, FLT_MAX)
-    elseif (_1185_ == 2) then
+    elseif (_1408_ == 2) then
       ImGui.SetNextWindowSizeConstraints(ctx, -1, 0, -1, FLT_MAX)
-    elseif (_1185_ == 3) then
+    elseif (_1408_ == 3) then
       ImGui.SetNextWindowSizeConstraints(ctx, 0, -1, FLT_MAX, -1)
-    elseif (_1185_ == 4) then
+    elseif (_1408_ == 4) then
       ImGui.SetNextWindowSizeConstraints(ctx, 400, -1, 500, -1)
     else
     end
@@ -7985,45 +7985,45 @@ demo.ShowExampleAppConstrainedResize = function()
       end
       ImGui.SetNextItemWidth(ctx, (ImGui.GetFontSize(ctx) * 20))
       do
-        local rv_1195_, arg1_1194_ = nil, nil
+        local rv_1419_, arg1_1417_ = nil, nil
         do
-          local arg1_1194_ = app.constrained_resize.type
-          local _24 = arg1_1194_
-          local _241 = arg1_1194_
-          rv_1195_, arg1_1194_ = ImGui.Combo(ctx, "Constraint", _24, "Between 100x100 and 500x500\0\n                                   At least 100x100\0\n                                   Resize vertical only\0\n                                   Resize horizontal only\0\n                                   Width Between 400 and 500\0")
+          local arg1_1418_ = app.constrained_resize.type
+          local _24 = arg1_1418_
+          local _241 = arg1_1418_
+          rv_1419_, arg1_1417_ = ImGui.Combo(ctx, "Constraint", _24, "Between 100x100 and 500x500\0\n                                   At least 100x100\0\n                                   Resize vertical only\0\n                                   Resize horizontal only\0\n                                   Width Between 400 and 500\0")
         end
-        app.constrained_resize.type = arg1_1194_
+        app.constrained_resize.type = arg1_1417_
       end
       ImGui.SetNextItemWidth(ctx, (ImGui.GetFontSize(ctx) * 20))
       do
-        local rv_1197_, arg1_1196_ = nil, nil
+        local rv_1422_, arg1_1420_ = nil, nil
         do
-          local arg1_1196_ = app.constrained_resize.display_lines
-          local _24 = arg1_1196_
-          local _241 = arg1_1196_
-          rv_1197_, arg1_1196_ = ImGui.DragInt(ctx, "Lines", _24, 0.2, 1, 100)
+          local arg1_1421_ = app.constrained_resize.display_lines
+          local _24 = arg1_1421_
+          local _241 = arg1_1421_
+          rv_1422_, arg1_1420_ = ImGui.DragInt(ctx, "Lines", _24, 0.2, 1, 100)
         end
-        app.constrained_resize.display_lines = arg1_1196_
+        app.constrained_resize.display_lines = arg1_1420_
       end
       do
-        local rv_1199_, arg1_1198_ = nil, nil
+        local rv_1425_, arg1_1423_ = nil, nil
         do
-          local arg1_1198_ = app.constrained_resize.auto_resize
-          local _24 = arg1_1198_
-          local _241 = arg1_1198_
-          rv_1199_, arg1_1198_ = ImGui.Checkbox(ctx, "Auto-resize", _24)
+          local arg1_1424_ = app.constrained_resize.auto_resize
+          local _24 = arg1_1424_
+          local _241 = arg1_1424_
+          rv_1425_, arg1_1423_ = ImGui.Checkbox(ctx, "Auto-resize", _24)
         end
-        app.constrained_resize.auto_resize = arg1_1198_
+        app.constrained_resize.auto_resize = arg1_1423_
       end
       do
-        local rv_1201_, arg1_1200_ = nil, nil
+        local rv_1428_, arg1_1426_ = nil, nil
         do
-          local arg1_1200_ = app.constrained_resize.window_padding
-          local _24 = arg1_1200_
-          local _241 = arg1_1200_
-          rv_1201_, arg1_1200_ = ImGui.Checkbox(ctx, "Window padding", _24)
+          local arg1_1427_ = app.constrained_resize.window_padding
+          local _24 = arg1_1427_
+          local _241 = arg1_1427_
+          rv_1428_, arg1_1426_ = ImGui.Checkbox(ctx, "Window padding", _24)
         end
-        app.constrained_resize.window_padding = arg1_1200_
+        app.constrained_resize.window_padding = arg1_1426_
       end
       for i = 1, app.constrained_resize.display_lines do
         ImGui.Text(ctx, ("%sHello, sailor! Making this line long enough for the example."):format((" "):rep((i * 4))))
@@ -8136,55 +8136,55 @@ demo.ShowExampleAppFullscreen = function()
     ImGui.SameLine(ctx)
     demo.HelpMarker("Main Area = entire viewport,\n    Work Area = entire viewport minus sections used by the main menu bars, task bars etc.\n\n    Enable the main-menu bar in Examples menu to see the difference.")
     do
-      local rv_1221_, arg1_1220_ = nil, nil
+      local rv_1449_, arg1_1447_ = nil, nil
       do
-        local arg1_1220_ = app.fullscreen.flags
-        local _24 = arg1_1220_
-        local _241 = arg1_1220_
-        rv_1221_, arg1_1220_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoBackground", _24, ImGui.WindowFlags_NoBackground())
+        local arg1_1448_ = app.fullscreen.flags
+        local _24 = arg1_1448_
+        local _241 = arg1_1448_
+        rv_1449_, arg1_1447_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoBackground", _24, ImGui.WindowFlags_NoBackground())
       end
-      app.fullscreen.flags = arg1_1220_
+      app.fullscreen.flags = arg1_1447_
     end
     do
-      local rv_1223_, arg1_1222_ = nil, nil
+      local rv_1452_, arg1_1450_ = nil, nil
       do
-        local arg1_1222_ = app.fullscreen.flags
-        local _24 = arg1_1222_
-        local _241 = arg1_1222_
-        rv_1223_, arg1_1222_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoDecoration", _24, ImGui.WindowFlags_NoDecoration())
+        local arg1_1451_ = app.fullscreen.flags
+        local _24 = arg1_1451_
+        local _241 = arg1_1451_
+        rv_1452_, arg1_1450_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoDecoration", _24, ImGui.WindowFlags_NoDecoration())
       end
-      app.fullscreen.flags = arg1_1222_
+      app.fullscreen.flags = arg1_1450_
     end
     ImGui.Indent(ctx)
     do
-      local rv_1225_, arg1_1224_ = nil, nil
+      local rv_1455_, arg1_1453_ = nil, nil
       do
-        local arg1_1224_ = app.fullscreen.flags
-        local _24 = arg1_1224_
-        local _241 = arg1_1224_
-        rv_1225_, arg1_1224_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoTitleBar", _24, ImGui.WindowFlags_NoTitleBar())
+        local arg1_1454_ = app.fullscreen.flags
+        local _24 = arg1_1454_
+        local _241 = arg1_1454_
+        rv_1455_, arg1_1453_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoTitleBar", _24, ImGui.WindowFlags_NoTitleBar())
       end
-      app.fullscreen.flags = arg1_1224_
+      app.fullscreen.flags = arg1_1453_
     end
     do
-      local rv_1227_, arg1_1226_ = nil, nil
+      local rv_1458_, arg1_1456_ = nil, nil
       do
-        local arg1_1226_ = app.fullscreen.flags
-        local _24 = arg1_1226_
-        local _241 = arg1_1226_
-        rv_1227_, arg1_1226_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoCollapse", _24, ImGui.WindowFlags_NoCollapse())
+        local arg1_1457_ = app.fullscreen.flags
+        local _24 = arg1_1457_
+        local _241 = arg1_1457_
+        rv_1458_, arg1_1456_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoCollapse", _24, ImGui.WindowFlags_NoCollapse())
       end
-      app.fullscreen.flags = arg1_1226_
+      app.fullscreen.flags = arg1_1456_
     end
     do
-      local rv_1229_, arg1_1228_ = nil, nil
+      local rv_1461_, arg1_1459_ = nil, nil
       do
-        local arg1_1228_ = app.fullscreen.flags
-        local _24 = arg1_1228_
-        local _241 = arg1_1228_
-        rv_1229_, arg1_1228_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoScrollbar", _24, ImGui.WindowFlags_NoScrollbar())
+        local arg1_1460_ = app.fullscreen.flags
+        local _24 = arg1_1460_
+        local _241 = arg1_1460_
+        rv_1461_, arg1_1459_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoScrollbar", _24, ImGui.WindowFlags_NoScrollbar())
       end
-      app.fullscreen.flags = arg1_1228_
+      app.fullscreen.flags = arg1_1459_
     end
     ImGui.Unindent(ctx)
     if ImGui.Button(ctx, "Close this window") then
@@ -8223,7 +8223,7 @@ demo.ShowExampleAppWindowTitles = function()
 end
 demo.ShowExampleAppCustomRendering = function()
   if not app.rendering then
-    app.rendering = {circle_segments_override_v = 12, col = 4294928127, curve_segments_override_v = 8, draw_bg = true, draw_fg = true, ngon_sides = 6, opt_enable_context_menu = true, opt_enable_grid = true, points = {}, scrolling = {0, 0}, sz = 36, thickness = 3, curve_segments_override = false, circle_segments_override = false, adding_line = false}
+    app.rendering = {circle_segments_override_v = 12, col = 4294928127, curve_segments_override_v = 8, draw_bg = true, draw_fg = true, ngon_sides = 6, opt_enable_context_menu = true, opt_enable_grid = true, points = {}, scrolling = {0, 0}, sz = 36, thickness = 3, circle_segments_override = false, curve_segments_override = false, adding_line = false}
   else
   end
   local rv, open = ImGui.Begin(ctx, "Example: Custom rendering", true)
@@ -8252,44 +8252,44 @@ demo.ShowExampleAppCustomRendering = function()
       local item_inner_spacing_x = ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemInnerSpacing())
       ImGui.Text(ctx, "All primitives")
       do
-        local rv_1238_, arg1_1237_ = nil, nil
+        local rv_1471_, arg1_1469_ = nil, nil
         do
-          local arg1_1237_ = app.rendering.sz
-          local _24 = arg1_1237_
-          local _241 = arg1_1237_
-          rv_1238_, arg1_1237_ = ImGui.DragDouble(ctx, "Size", _24, 0.2, 2, 100, "%.0f")
+          local arg1_1470_ = app.rendering.sz
+          local _24 = arg1_1470_
+          local _241 = arg1_1470_
+          rv_1471_, arg1_1469_ = ImGui.DragDouble(ctx, "Size", _24, 0.2, 2, 100, "%.0f")
         end
-        app.rendering.sz = arg1_1237_
+        app.rendering.sz = arg1_1469_
       end
       do
-        local rv_1240_, arg1_1239_ = nil, nil
+        local rv_1474_, arg1_1472_ = nil, nil
         do
-          local arg1_1239_ = app.rendering.thickness
-          local _24 = arg1_1239_
-          local _241 = arg1_1239_
-          rv_1240_, arg1_1239_ = ImGui.DragDouble(ctx, "Thickness", _24, 0.05, 1, 8, "%.02f")
+          local arg1_1473_ = app.rendering.thickness
+          local _24 = arg1_1473_
+          local _241 = arg1_1473_
+          rv_1474_, arg1_1472_ = ImGui.DragDouble(ctx, "Thickness", _24, 0.05, 1, 8, "%.02f")
         end
-        app.rendering.thickness = arg1_1239_
+        app.rendering.thickness = arg1_1472_
       end
       do
-        local rv_1242_, arg1_1241_ = nil, nil
+        local rv_1477_, arg1_1475_ = nil, nil
         do
-          local arg1_1241_ = app.rendering.ngon_sides
-          local _24 = arg1_1241_
-          local _241 = arg1_1241_
-          rv_1242_, arg1_1241_ = ImGui.SliderInt(ctx, "N-gon sides", _24, 3, 12)
+          local arg1_1476_ = app.rendering.ngon_sides
+          local _24 = arg1_1476_
+          local _241 = arg1_1476_
+          rv_1477_, arg1_1475_ = ImGui.SliderInt(ctx, "N-gon sides", _24, 3, 12)
         end
-        app.rendering.ngon_sides = arg1_1241_
+        app.rendering.ngon_sides = arg1_1475_
       end
       do
-        local rv_1244_, arg1_1243_ = nil, nil
+        local rv_1480_, arg1_1478_ = nil, nil
         do
-          local arg1_1243_ = app.rendering.circle_segments_override
-          local _24 = arg1_1243_
-          local _241 = arg1_1243_
-          rv_1244_, arg1_1243_ = ImGui.Checkbox(ctx, "##circlesegmentoverride", _24)
+          local arg1_1479_ = app.rendering.circle_segments_override
+          local _24 = arg1_1479_
+          local _241 = arg1_1479_
+          rv_1480_, arg1_1478_ = ImGui.Checkbox(ctx, "##circlesegmentoverride", _24)
         end
-        app.rendering.circle_segments_override = arg1_1243_
+        app.rendering.circle_segments_override = arg1_1478_
       end
       ImGui.SameLine(ctx, 0, item_inner_spacing_x)
       rv, app.rendering.circle_segments_override_v = ImGui.SliderInt(ctx, "Circle segments override", app.rendering.circle_segments_override_v, 3, 40)
@@ -8298,14 +8298,14 @@ demo.ShowExampleAppCustomRendering = function()
       else
       end
       do
-        local rv_1247_, arg1_1246_ = nil, nil
+        local rv_1484_, arg1_1482_ = nil, nil
         do
-          local arg1_1246_ = app.rendering.curve_segments_override
-          local _24 = arg1_1246_
-          local _241 = arg1_1246_
-          rv_1247_, arg1_1246_ = ImGui.Checkbox(ctx, "##curvessegmentoverride", _24)
+          local arg1_1483_ = app.rendering.curve_segments_override
+          local _24 = arg1_1483_
+          local _241 = arg1_1483_
+          rv_1484_, arg1_1482_ = ImGui.Checkbox(ctx, "##curvessegmentoverride", _24)
         end
-        app.rendering.curve_segments_override = arg1_1246_
+        app.rendering.curve_segments_override = arg1_1482_
       end
       ImGui.SameLine(ctx, 0, item_inner_spacing_x)
       rv, app.rendering.curve_segments_override_v = ImGui.SliderInt(ctx, "Curves segments override", app.rendering.curve_segments_override_v, 3, 40)
@@ -8314,14 +8314,14 @@ demo.ShowExampleAppCustomRendering = function()
       else
       end
       do
-        local rv_1250_, arg1_1249_ = nil, nil
+        local rv_1488_, arg1_1486_ = nil, nil
         do
-          local arg1_1249_ = app.rendering.col
-          local _24 = arg1_1249_
-          local _241 = arg1_1249_
-          rv_1250_, arg1_1249_ = ImGui.ColorEdit4(ctx, "Color", _24)
+          local arg1_1487_ = app.rendering.col
+          local _24 = arg1_1487_
+          local _241 = arg1_1487_
+          rv_1488_, arg1_1486_ = ImGui.ColorEdit4(ctx, "Color", _24)
         end
-        app.rendering.col = arg1_1249_
+        app.rendering.col = arg1_1486_
       end
       local p = {ImGui.GetCursorScreenPos(ctx)}
       local spacing = 10
@@ -8510,11 +8510,11 @@ end
 local tbl_14_auto = {}
 for _, f in ipairs({"ShowDemoWindow", "ShowStyleEditor", "PushStyle", "PopStyle"}) do
   local k_15_auto, v_16_auto = nil, nil
-  local function _1269_(user_ctx, ...)
+  local function _1507_(user_ctx, ...)
     ctx = user_ctx
     return demo[f](...)
   end
-  k_15_auto, v_16_auto = f, _1269_
+  k_15_auto, v_16_auto = f, _1507_
   if ((k_15_auto ~= nil) and (v_16_auto ~= nil)) then
     tbl_14_auto[k_15_auto] = v_16_auto
   else
