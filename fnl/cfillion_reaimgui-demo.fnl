@@ -247,9 +247,7 @@
   (when show-app.stack_tool (set show-app.stack_tool (ImGui.ShowStackToolWindow ctx show-app.stack_tool)))
   (when show-app.about      (set show-app.about      (ImGui.ShowAboutWindow     ctx show-app.about)))
   (when show-app.style_editor
-    (var rv nil)
-    (set (rv show-app.style_editor) (ImGui.Begin ctx "Dear ImGui Style Editor" true))
-    (when rv
+    (when (doimgui show-app.style_editor (ImGui.Begin ctx "Dear ImGui Style Editor" true))
       (demo.ShowStyleEditor)
       (ImGui.End ctx)))
   ;; Demonstrate the various window flags. Typically you would just use the default!
@@ -284,322 +282,318 @@
     (set demo.set_dock_id nil))
 
   ;; Main body of the Demo window starts here.
-  (do
-    (var rv nil)
-    (set (rv open) (ImGui.Begin ctx "Dear ImGui Demo" open window-flags))
-    ;; Early out if the window is collapsed
-    (when (not rv) (lua "return open")))
-  ;; Most "big" widgets share a common width settings by default. See 'Demo->Layout->Widgets Width' for details.
+  ;; Early out if the window is collapsed
+  (when (doimgui open (ImGui.Begin ctx "Dear ImGui Demo" $ window-flags))
+    ;; Most "big" widgets share a common width settings by default. See 'Demo->Layout->Widgets Width' for details.
 
-  ;; e.g. Use 2/3 of the space for widgets and 1/3 for labels (right align)
-  ;;ImGui.PushItemWidth(ctx, -ImGui.GetWindowWidth(ctx) * 0.35)
+    ;; e.g. Use 2/3 of the space for widgets and 1/3 for labels (right align)
+    ;;ImGui.PushItemWidth(ctx, -ImGui.GetWindowWidth(ctx) * 0.35)
 
-  ;; e.g. Leave a fixed amount of width for labels (by passing a negative value), the rest goes to widgets.
-  (ImGui.PushItemWidth ctx (* (ImGui.GetFontSize ctx) (- 12)))
-  ;; Menu Bar
-  (when (ImGui.BeginMenuBar ctx)
-    (when (ImGui.BeginMenu ctx :Menu) (demo.ShowExampleMenuFile)
-      (ImGui.EndMenu ctx))
-    (when (ImGui.BeginMenu ctx :Examples)
-      ;;(doimgui show_app.main_menu_bar (ImGui.MenuItem ctx "Main menu bar" nil $ false))
-      (doimgui show-app.console            (ImGui.MenuItem ctx :Console nil $ false))
-      (doimgui show-app.log                (ImGui.MenuItem ctx :Log nil $))
-      (doimgui show-app.layout             (ImGui.MenuItem ctx "Simple layout" nil $))
-      (doimgui show-app.property_editor    (ImGui.MenuItem ctx "Property editor" nil $))
-      (doimgui show-app.long_text          (ImGui.MenuItem ctx "Long text display" nil $))
-      (doimgui show-app.auto_resize        (ImGui.MenuItem ctx "Auto-resizing window" nil $))
-      (doimgui show-app.constrained_resize (ImGui.MenuItem ctx "Constrained-resizing window" nil $))
-      (doimgui show-app.simple_overlay     (ImGui.MenuItem ctx "Simple overlay" nil $))
-      (doimgui show-app.fullscreen         (ImGui.MenuItem ctx "Fullscreen window" nil $))
-      (doimgui show-app.window_titles      (ImGui.MenuItem ctx "Manipulating window titles" nil $))
-      (doimgui show-app.custom_rendering   (ImGui.MenuItem ctx "Custom rendering" nil $))
-      ;; _,show_app.dockspace =
-      ;;   ImGui.MenuItem(ctx, 'Dockspace', nil, show_app.dockspace, false)
-      (doimgui show-app.documents          (ImGui.MenuItem ctx :Documents nil $ false))
-      (ImGui.EndMenu ctx))
-    ;; if ImGui.MenuItem(ctx, 'MenuItem') then end -- You can also use MenuItem() inside a menu bar!
-    (when (ImGui.BeginMenu ctx :Tools)
-      (doimgui show-app.metrics      (ImGui.MenuItem ctx :Metrics/Debugger nil $))
-      (doimgui show-app.debug_log    (ImGui.MenuItem ctx "Debug Log" nil $))
-      (doimgui show-app.stack_tool   (ImGui.MenuItem ctx "Stack Tool" nil $))
-      (doimgui show-app.style_editor (ImGui.MenuItem ctx "Style Editor" nil $))
-      (doimgui show-app.about        (ImGui.MenuItem ctx "About Dear ImGui" nil $))
-      (ImGui.EndMenu ctx))
-    (when (ImGui.SmallButton ctx :Documentation)
-      (local doc (: "%s/Data/reaper_imgui_doc.html" :format (reaper.GetResourcePath)))
-      (if reaper.CF_ShellExecute
-        (reaper.CF_ShellExecute doc)
-        (reaper.MB doc "ReaImGui Documentation" 0)))
-    (ImGui.EndMenuBar ctx))
-  (ImGui.Text ctx (: "dear imgui says hello. (%s) (%d) (ReaImGui %s)" :format IMGUI_VERSION IMGUI_VERSION_NUM REAIMGUI_VERSION))
-  (ImGui.Spacing ctx)
-  (when (ImGui.CollapsingHeader ctx :Help)
-    (ImGui.Text ctx "ABOUT THIS DEMO:")
-    (ImGui.BulletText ctx "Sections below are demonstrating many aspects of the library.")
-    (ImGui.BulletText ctx "The \"Examples\" menu above leads to more demo contents.")
-    (ImGui.BulletText ctx (.. "The \"Tools\" menu above gives access to: About Box, Style Editor, "
-                               "and Metrics/Debugger (general purpose Dear ImGui debugging tool)."))
-    (ImGui.Separator ctx)
-    (ImGui.Text ctx "PROGRAMMER GUIDE:")
-    (ImGui.BulletText ctx "See the ShowDemoWindow() code in ReaImGui_Demo.lua. <- you are here!")
-    ;; ImGui.BulletText(ctx, 'See comments in imgui.cpp.')
-    (ImGui.BulletText ctx "See example scripts in the examples/ folder.")
-    (ImGui.Indent ctx)
-    (demo.Link "https://github.com/cfillion/reaimgui/tree/master/examples")
-    (ImGui.Unindent ctx)
-    (ImGui.BulletText ctx "Read the FAQ at ")
-    (ImGui.SameLine ctx 0 0)
-    (demo.Link "https://www.dearimgui.org/faq/")
-    ;; ImGui.BulletText(ctx, "Set 'io.ConfigFlags |= NavEnableKeyboard' for keyboard controls.")
-    ;; ImGui.BulletText(ctx, "Set 'io.ConfigFlags |= NavEnableGamepad' for gamepad controls.")
-    (ImGui.Separator ctx)
-
-    (ImGui.Text ctx "USER GUIDE:")
-    (demo.ShowUserGuide))
-  (when (ImGui.CollapsingHeader ctx :Configuration)
-    (when (ImGui.TreeNode ctx "Configuration##2")
-      (fn config-var-checkbox [name]
-        (let [conf-var ((assert (. reaper (: "ImGui_%s" :format name))
-                                "unknown var"))
-              (rv val) (ImGui.Checkbox ctx name (ImGui.GetConfigVar ctx conf-var))]
-          (when rv
-            (ImGui.SetConfigVar ctx conf-var (if val 1 0)))))
-      (set config.flags (ImGui.GetConfigVar ctx (ImGui.ConfigVar_Flags)))
-
-      (ImGui.SeparatorText ctx :General)
-      ;; ImGui.CheckboxFlags("io.ConfigFlags: NavEnableGamepad",     &io.ConfigFlags, ImGuiConfigFlags_NavEnableGamepad)
-      ;; ImGui.SameLine(ctx); demo.HelpMarker("Enable gamepad controls. Require backend to set io.BackendFlags |= ImGuiBackendFlags_HasGamepad.\n\nRead instructions in imgui.cpp for details.")
-      (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NavEnableKeyboard $ (ImGui.ConfigFlags_NavEnableKeyboard)))
-      (ImGui.SameLine ctx)
-      (demo.HelpMarker "Enable keyboard controls.")
-      ;; ImGui.CheckboxFlags("io.ConfigFlags: NavEnableGamepad",     &io.ConfigFlags, ImGuiConfigFlags_NavEnableGamepad)
-      ;; ImGui.SameLine(ctx); demo.HelpMarker("Enable gamepad controls. Require backend to set io.BackendFlags |= ImGuiBackendFlags_HasGamepad.\n\nRead instructions in imgui.cpp for details.")
-      (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NavEnableSetMousePos $ (ImGui.ConfigFlags_NavEnableSetMousePos)))
-      (ImGui.SameLine ctx)
-      (demo.HelpMarker "Instruct navigation to move the mouse cursor.")
-      (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NoMouse $ (ImGui.ConfigFlags_NoMouse)))
-      (when (not= (band config.flags (ImGui.ConfigFlags_NoMouse)) 0)
-        ;; The "NoMouse" option can get us stuck with a disabled mouse! Let's provide an alternative way to fix it:
-        (when (< (% (ImGui.GetTime ctx) 0.40)
-                 0.20)
-          (ImGui.SameLine ctx)
-          (ImGui.Text ctx "<<PRESS SPACE TO DISABLE>>"))
-        (when (ImGui.IsKeyPressed ctx (ImGui.Key_Space))
-          (set config.flags (band config.flags (bnot (ImGui.ConfigFlags_NoMouse))))))
-      (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NoMouseCursorChange $ (ImGui.ConfigFlags_NoMouseCursorChange)))
-      (ImGui.SameLine ctx)
-      (demo.HelpMarker "Instruct backend to not alter mouse cursor shape and visibility.")
-      (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NoSavedSettings $ (ImGui.ConfigFlags_NoSavedSettings)))
-      (ImGui.SameLine ctx)
-      (demo.HelpMarker "Globally disable loading and saving state to an .ini file")
-
-      (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_DockingEnable $ (ImGui.ConfigFlags_DockingEnable)))
-      (ImGui.SameLine ctx)
-      (demo.HelpMarker 
-        (format "Drag from window title bar or their tab to dock/undock. Hold SHIFT to %s docking.\n\nDrag from window menu button (upper-left button) to undock an entire node (all windows)."
-                (if (ImGui.GetConfigVar ctx (ImGui.ConfigVar_DockingWithShift)) :enable :disable)))
-      (when (not= 0 (band config.flags (ImGui.ConfigFlags_DockingEnable)))
-        (ImGui.Indent ctx)
-        (config-var-checkbox :ConfigVar_DockingNoSplit)
-        (ImGui.SameLine ctx)
-        (demo.HelpMarker "Simplified docking mode: disable window splitting, so docking is limited to merging multiple windows together into tab-bars.")
-        (config-var-checkbox :ConfigVar_DockingWithShift)
-        (ImGui.SameLine ctx)
-        (demo.HelpMarker "Enable docking when holding Shift only (allow to drop in wider space, reduce visual noise)")
-        ;; ImGui.Checkbox(ctx, 'io.ConfigDockingAlwaysTabBar', &io.ConfigDockingAlwaysTabBar)
-        ;; ImGui.SameLine(ctx); demo.HelpMarker('Create a docking node and tab-bar on single floating windows.')
-        (config-var-checkbox :ConfigVar_DockingTransparentPayload)
-        (ImGui.SameLine ctx)
-        (demo.HelpMarker "Make window or viewport transparent when docking and only display docking boxes on the target viewport.")
-        (ImGui.Unindent ctx))
-      ;; ImGui::CheckboxFlags("io.ConfigFlags: ViewportsEnable", &io.ConfigFlags, ImGuiConfigFlags_ViewportsEnable);
-      ;; ImGui::SameLine(); HelpMarker("[beta] Enable beta multi-viewports support. See ImGuiPlatformIO for details.");
-      ;; if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-      ;; {
-      ;;     ImGui::Indent();
-      ;;     ImGui::Checkbox("io.ConfigViewportsNoAutoMerge", &io.ConfigViewportsNoAutoMerge);
-      ;;     ImGui::SameLine(); HelpMarker("Set to make all floating imgui windows always create their own viewport. Otherwise, they are merged into the main host viewports when overlapping it.");
-      ;;     ImGui::Checkbox("io.ConfigViewportsNoTaskBarIcon", &io.ConfigViewportsNoTaskBarIcon);
-      ;;     ImGui::SameLine(); HelpMarker("Toggling this at runtime is normally unsupported (most platform backends won't refresh the task bar icon state right away).");
-      (config-var-checkbox :ConfigVar_ViewportsNoDecoration)
-      ;;     ImGui::Checkbox("io.ConfigViewportsNoDefaultParent", &io.ConfigViewportsNoDefaultParent);
-      ;;     ImGui::SameLine(); HelpMarker("Toggling this at runtime is normally unsupported (most platform backends won't refresh the parenting right away).");
-      ;;     ImGui::Unindent();
-      ;; }
-      (config-var-checkbox :ConfigVar_InputTrickleEventQueue)
-      (ImGui.SameLine ctx)
-      (demo.HelpMarker "Enable input queue trickling: some types of events submitted during the same frame (e.g. button down + up) will be spread over multiple frames, improving interactions with low framerates.")
-      ;; ImGui.Checkbox(ctx, 'io.MouseDrawCursor', &io.MouseDrawCursor)
-      ;; ImGui.SameLine(ctx); HelpMarker('Instruct Dear ImGui to render a mouse cursor itself. Note that a mouse cursor rendered via your application GPU rendering path will feel more laggy than hardware cursor, but will be more in sync with your other visuals.\n\nSome desktop applications may use both kinds of cursors (e.g. enable software cursor only when resizing/dragging something).')
-
-      (ImGui.SeparatorText ctx :Widgets)
-      (config-var-checkbox :ConfigVar_InputTextCursorBlink)
-      (ImGui.SameLine ctx)
-      (demo.HelpMarker "Enable blinking cursor (optional as some users consider it to be distracting).")
-      (config-var-checkbox :ConfigVar_InputTextEnterKeepActive)
-      (ImGui.SameLine ctx)
-      (demo.HelpMarker "Pressing Enter will keep item active and select contents (single-line only).")
-      (config-var-checkbox :ConfigVar_DragClickToInputText)
-      (ImGui.SameLine ctx)
-      (demo.HelpMarker "Enable turning DragXXX widgets into text input with a simple mouse click-release (without moving).")
-      (config-var-checkbox :ConfigVar_WindowsResizeFromEdges)
-      (ImGui.SameLine ctx)
-      (demo.HelpMarker "Enable resizing of windows from their edges and from the lower-left corner.")
-      (config-var-checkbox :ConfigVar_WindowsMoveFromTitleBarOnly)
-      (ImGui.SameLine ctx)
-      (demo.HelpMarker "Does not apply to windows without a title bar.")
-      (config-var-checkbox :ConfigVar_MacOSXBehaviors)
-      (ImGui.Text ctx "Also see Style->Rendering for rendering options.")
-
-      (ImGui.SetConfigVar ctx (ImGui.ConfigVar_Flags) config.flags)
-      (ImGui.TreePop ctx)
-      (ImGui.Spacing ctx))
-
-;;         if (ImGui.TreeNode("Backend Flags"))
-;;         {
-;;             HelpMarker(
-;;                 "Those flags are set by the backends (imgui_impl_xxx files) to specify their capabilities.\n"
-;;                 "Here we expose then as read-only fields to avoid breaking interactions with your backend.");
-;;
-;;             // Make a local copy to avoid modifying actual backend flags.
-;;             // FIXME: We don't use BeginDisabled() to keep label bright, maybe we need a BeginReadonly() equivalent..
-;;             ImGuiBackendFlags backend_flags = io.BackendFlags;
-;;             ImGui::CheckboxFlags("io.BackendFlags: HasGamepad",             &backend_flags, ImGuiBackendFlags_HasGamepad);
-;;             ImGui::CheckboxFlags("io.BackendFlags: HasMouseCursors",        &backend_flags, ImGuiBackendFlags_HasMouseCursors);
-;;             ImGui::CheckboxFlags("io.BackendFlags: HasSetMousePos",         &backend_flags, ImGuiBackendFlags_HasSetMousePos);
-;;             ImGui::CheckboxFlags("io.BackendFlags: PlatformHasViewports",   &backend_flags, ImGuiBackendFlags_PlatformHasViewports);
-;;             ImGui::CheckboxFlags("io.BackendFlags: HasMouseHoveredViewport",&backend_flags, ImGuiBackendFlags_HasMouseHoveredViewport);
-;;             ImGui::CheckboxFlags("io.BackendFlags: RendererHasVtxOffset",   &backend_flags, ImGuiBackendFlags_RendererHasVtxOffset);
-;;             ImGui::CheckboxFlags("io.BackendFlags: RendererHasViewports",   &backend_flags, ImGuiBackendFlags_RendererHasViewports);
-;;             ImGui.TreePop();
-;;             ImGui.Spacing();
-;;         }
-
-    (when (ImGui.TreeNode ctx :Style)
-      (demo.HelpMarker "The same contents can be accessed in 'Tools->Style Editor'.")
-      (demo.ShowStyleEditor)
-      (ImGui.TreePop ctx)
-      (ImGui.Spacing ctx))
-    (when (ImGui.TreeNode ctx :Capture/Logging)
-      (set-when-not config.logging {:auto_open_depth 2})
-      (demo.HelpMarker "The logging API redirects all text output so you can easily capture the content of a window or a block. Tree nodes can be automatically expanded.\nTry opening any of the contents below in this window and then click one of the \"Log To\" button.")
-      (ImGui.PushID ctx :LogButtons)
-      (let [log-to-tty (ImGui.Button ctx "Log To TTY")
-            _ (ImGui.SameLine ctx)
-            log-to-file (ImGui.Button ctx "Log To File")
-            _ (ImGui.SameLine ctx)
-            log-to-clipboard (ImGui.Button ctx "Log To Clipboard")
-            _ (do
-                (ImGui.SameLine ctx)
-                (ImGui.PushAllowKeyboardFocus ctx false)
-                (ImGui.SetNextItemWidth ctx 80)
-                (doimgui config.logging.auto_open_depth (ImGui.SliderInt ctx "Open Depth" $ 0 9))
-                (ImGui.PopAllowKeyboardFocus ctx)
-                (ImGui.PopID ctx))
-            ;; Start logging at the end of the function so that the buttons don't appear in the log
-            depth config.logging.auto_open_depth]
-        (when log-to-tty (ImGui.LogToTTY ctx depth))
-        (when log-to-file (ImGui.LogToFile ctx depth))
-        (when log-to-clipboard (ImGui.LogToClipboard ctx depth)))
-
-      (demo.HelpMarker "You can also call ImGui.LogText() to output directly to the log without a visual output.")
-      (when (ImGui.Button ctx "Copy \"Hello, world!\" to clipboard")
-        (ImGui.LogToClipboard ctx depth)
-        (ImGui.LogText ctx "Hello, world!")
-        (ImGui.LogFinish ctx))
-      (ImGui.TreePop ctx)))
-
-  (when (ImGui.CollapsingHeader ctx "Window options")
-    (when (ImGui.BeginTable ctx :split 3)
-      (ImGui.TableNextColumn ctx)
-      (macro table-column! [ctx str fld]
-        (assert-compile (sym? ctx))
-        `(do (ImGui.TableNextColumn ,ctx)
-           (set (_ ,fld) (ImGui.Checkbox ,ctx ,str ,fld))))
-      (table-column! ctx "Always on top" demo.topmost)
-      (table-column! ctx "No titlebar"   demo.no_titlebar)
-      (table-column! ctx "No scrollbar"  demo.no_scrollbar)
-      (table-column! ctx "No menu"       demo.no_menu)
-      (table-column! ctx "No move"       demo.no_move)
-      (table-column! ctx "No resize"     demo.no_resize)
-      (table-column! ctx "No collapse"   demo.no_collapse)
-      (table-column! ctx "No close"      demo.no_close)
-      (table-column! ctx "No nav"        demo.no_nav)
-      (table-column! ctx "No background" demo.no_background)
-      ;;(table-column! ctx "No bring to front" demo.no_bring_to_front)
-      (table-column! ctx "No docking" demo.no_docking)
-      (table-column! ctx "Unsaved document" demo.unsaved_document)
-      (ImGui.EndTable ctx))
-
-    (local flags (ImGui.GetConfigVar ctx (ImGui.ConfigVar_Flags)))
-    (local docking-disabled (or demo.no_docking
-                                (= (band flags (ImGui.ConfigFlags_DockingEnable))
-                                   0)))
-
+    ;; e.g. Leave a fixed amount of width for labels (by passing a negative value), the rest goes to widgets.
+    (ImGui.PushItemWidth ctx (* (ImGui.GetFontSize ctx) (- 12)))
+    ;; Menu Bar
+    (when (ImGui.BeginMenuBar ctx)
+      (when (ImGui.BeginMenu ctx :Menu) (demo.ShowExampleMenuFile)
+        (ImGui.EndMenu ctx))
+      (when (ImGui.BeginMenu ctx :Examples)
+        ;;(doimgui show_app.main_menu_bar (ImGui.MenuItem ctx "Main menu bar" nil $ false))
+        (doimgui show-app.console            (ImGui.MenuItem ctx :Console nil $ false))
+        (doimgui show-app.log                (ImGui.MenuItem ctx :Log nil $))
+        (doimgui show-app.layout             (ImGui.MenuItem ctx "Simple layout" nil $))
+        (doimgui show-app.property_editor    (ImGui.MenuItem ctx "Property editor" nil $))
+        (doimgui show-app.long_text          (ImGui.MenuItem ctx "Long text display" nil $))
+        (doimgui show-app.auto_resize        (ImGui.MenuItem ctx "Auto-resizing window" nil $))
+        (doimgui show-app.constrained_resize (ImGui.MenuItem ctx "Constrained-resizing window" nil $))
+        (doimgui show-app.simple_overlay     (ImGui.MenuItem ctx "Simple overlay" nil $))
+        (doimgui show-app.fullscreen         (ImGui.MenuItem ctx "Fullscreen window" nil $))
+        (doimgui show-app.window_titles      (ImGui.MenuItem ctx "Manipulating window titles" nil $))
+        (doimgui show-app.custom_rendering   (ImGui.MenuItem ctx "Custom rendering" nil $))
+        ;; _,show_app.dockspace =
+        ;;   ImGui.MenuItem(ctx, 'Dockspace', nil, show_app.dockspace, false)
+        (doimgui show-app.documents          (ImGui.MenuItem ctx :Documents nil $ false))
+        (ImGui.EndMenu ctx))
+      ;; if ImGui.MenuItem(ctx, 'MenuItem') then end -- You can also use MenuItem() inside a menu bar!
+      (when (ImGui.BeginMenu ctx :Tools)
+        (doimgui show-app.metrics      (ImGui.MenuItem ctx :Metrics/Debugger nil $))
+        (doimgui show-app.debug_log    (ImGui.MenuItem ctx "Debug Log" nil $))
+        (doimgui show-app.stack_tool   (ImGui.MenuItem ctx "Stack Tool" nil $))
+        (doimgui show-app.style_editor (ImGui.MenuItem ctx "Style Editor" nil $))
+        (doimgui show-app.about        (ImGui.MenuItem ctx "About Dear ImGui" nil $))
+        (ImGui.EndMenu ctx))
+      (when (ImGui.SmallButton ctx :Documentation)
+        (local doc (: "%s/Data/reaper_imgui_doc.html" :format (reaper.GetResourcePath)))
+        (if reaper.CF_ShellExecute
+          (reaper.CF_ShellExecute doc)
+          (reaper.MB doc "ReaImGui Documentation" 0)))
+      (ImGui.EndMenuBar ctx))
+    (ImGui.Text ctx (: "dear imgui says hello. (%s) (%d) (ReaImGui %s)" :format IMGUI_VERSION IMGUI_VERSION_NUM REAIMGUI_VERSION))
     (ImGui.Spacing ctx)
-    (when docking-disabled (ImGui.BeginDisabled ctx))
+    (when (ImGui.CollapsingHeader ctx :Help)
+      (ImGui.Text ctx "ABOUT THIS DEMO:")
+      (ImGui.BulletText ctx "Sections below are demonstrating many aspects of the library.")
+      (ImGui.BulletText ctx "The \"Examples\" menu above leads to more demo contents.")
+      (ImGui.BulletText ctx (.. "The \"Tools\" menu above gives access to: About Box, Style Editor, "
+                                 "and Metrics/Debugger (general purpose Dear ImGui debugging tool)."))
+      (ImGui.Separator ctx)
+      (ImGui.Text ctx "PROGRAMMER GUIDE:")
+      (ImGui.BulletText ctx "See the ShowDemoWindow() code in ReaImGui_Demo.lua. <- you are here!")
+      ;; ImGui.BulletText(ctx, 'See comments in imgui.cpp.')
+      (ImGui.BulletText ctx "See example scripts in the examples/ folder.")
+      (ImGui.Indent ctx)
+      (demo.Link "https://github.com/cfillion/reaimgui/tree/master/examples")
+      (ImGui.Unindent ctx)
+      (ImGui.BulletText ctx "Read the FAQ at ")
+      (ImGui.SameLine ctx 0 0)
+      (demo.Link "https://www.dearimgui.org/faq/")
+      ;; ImGui.BulletText(ctx, "Set 'io.ConfigFlags |= NavEnableKeyboard' for keyboard controls.")
+      ;; ImGui.BulletText(ctx, "Set 'io.ConfigFlags |= NavEnableGamepad' for gamepad controls.")
+      (ImGui.Separator ctx)
 
-    (let [dock-id (ImGui.GetWindowDockID ctx)]
-      (ImGui.AlignTextToFramePadding ctx)
-      (ImGui.Text ctx "Dock in docker:")
-      (ImGui.SameLine ctx)
-      (ImGui.SetNextItemWidth ctx 222)
-      (when (ImGui.BeginCombo ctx "##docker" (demo.DockName dock-id))
-        (when (ImGui.Selectable ctx :Floating (= dock-id 0))
-          (set demo.set_dock_id 0))
-        (for [id (- 1) (- 16) (- 1)]
-          (when (ImGui.Selectable ctx (demo.DockName id) (= dock-id id))
-            (set demo.set_dock_id id)))
-        (ImGui.EndCombo ctx)))
+      (ImGui.Text ctx "USER GUIDE:")
+      (demo.ShowUserGuide))
+    (when (ImGui.CollapsingHeader ctx :Configuration)
+      (when (ImGui.TreeNode ctx "Configuration##2")
+        (fn config-var-checkbox [name]
+          (let [conf-var ((assert (. reaper (: "ImGui_%s" :format name))
+                                  "unknown var"))
+                (rv val) (ImGui.Checkbox ctx name (ImGui.GetConfigVar ctx conf-var))]
+            (when rv
+              (ImGui.SetConfigVar ctx conf-var (if val 1 0)))))
+        (set config.flags (ImGui.GetConfigVar ctx (ImGui.ConfigVar_Flags)))
 
-    (when docking-disabled
-      (ImGui.SameLine ctx)
-      (ImGui.Text ctx (: "Disabled via %s" :format (if demo.no_docking :WindowFlags :ConfigFlags)))
-      (ImGui.EndDisabled ctx)))
+        (ImGui.SeparatorText ctx :General)
+        ;; ImGui.CheckboxFlags("io.ConfigFlags: NavEnableGamepad",     &io.ConfigFlags, ImGuiConfigFlags_NavEnableGamepad)
+        ;; ImGui.SameLine(ctx); demo.HelpMarker("Enable gamepad controls. Require backend to set io.BackendFlags |= ImGuiBackendFlags_HasGamepad.\n\nRead instructions in imgui.cpp for details.")
+        (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NavEnableKeyboard $ (ImGui.ConfigFlags_NavEnableKeyboard)))
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Enable keyboard controls.")
+        ;; ImGui.CheckboxFlags("io.ConfigFlags: NavEnableGamepad",     &io.ConfigFlags, ImGuiConfigFlags_NavEnableGamepad)
+        ;; ImGui.SameLine(ctx); demo.HelpMarker("Enable gamepad controls. Require backend to set io.BackendFlags |= ImGuiBackendFlags_HasGamepad.\n\nRead instructions in imgui.cpp for details.")
+        (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NavEnableSetMousePos $ (ImGui.ConfigFlags_NavEnableSetMousePos)))
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Instruct navigation to move the mouse cursor.")
+        (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NoMouse $ (ImGui.ConfigFlags_NoMouse)))
+        (when (not= (band config.flags (ImGui.ConfigFlags_NoMouse)) 0)
+          ;; The "NoMouse" option can get us stuck with a disabled mouse! Let's provide an alternative way to fix it:
+          (when (< (% (ImGui.GetTime ctx) 0.40)
+                   0.20)
+            (ImGui.SameLine ctx)
+            (ImGui.Text ctx "<<PRESS SPACE TO DISABLE>>"))
+          (when (ImGui.IsKeyPressed ctx (ImGui.Key_Space))
+            (set config.flags (band config.flags (bnot (ImGui.ConfigFlags_NoMouse))))))
+        (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NoMouseCursorChange $ (ImGui.ConfigFlags_NoMouseCursorChange)))
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Instruct backend to not alter mouse cursor shape and visibility.")
+        (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_NoSavedSettings $ (ImGui.ConfigFlags_NoSavedSettings)))
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Globally disable loading and saving state to an .ini file")
 
-  ;; All demo contents
-  (demo.ShowDemoWindowWidgets)
-  (demo.ShowDemoWindowLayout)
-  (demo.ShowDemoWindowPopups)
-  (demo.ShowDemoWindowTables)
-  (demo.ShowDemoWindowInputs)
+        (doimgui config.flags (ImGui.CheckboxFlags ctx :ConfigFlags_DockingEnable $ (ImGui.ConfigFlags_DockingEnable)))
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker 
+          (format "Drag from window title bar or their tab to dock/undock. Hold SHIFT to %s docking.\n\nDrag from window menu button (upper-left button) to undock an entire node (all windows)."
+                  (if (ImGui.GetConfigVar ctx (ImGui.ConfigVar_DockingWithShift)) :enable :disable)))
+        (when (not= 0 (band config.flags (ImGui.ConfigFlags_DockingEnable)))
+          (ImGui.Indent ctx)
+          (config-var-checkbox :ConfigVar_DockingNoSplit)
+          (ImGui.SameLine ctx)
+          (demo.HelpMarker "Simplified docking mode: disable window splitting, so docking is limited to merging multiple windows together into tab-bars.")
+          (config-var-checkbox :ConfigVar_DockingWithShift)
+          (ImGui.SameLine ctx)
+          (demo.HelpMarker "Enable docking when holding Shift only (allow to drop in wider space, reduce visual noise)")
+          ;; ImGui.Checkbox(ctx, 'io.ConfigDockingAlwaysTabBar', &io.ConfigDockingAlwaysTabBar)
+          ;; ImGui.SameLine(ctx); demo.HelpMarker('Create a docking node and tab-bar on single floating windows.')
+          (config-var-checkbox :ConfigVar_DockingTransparentPayload)
+          (ImGui.SameLine ctx)
+          (demo.HelpMarker "Make window or viewport transparent when docking and only display docking boxes on the target viewport.")
+          (ImGui.Unindent ctx))
+        ;; ImGui::CheckboxFlags("io.ConfigFlags: ViewportsEnable", &io.ConfigFlags, ImGuiConfigFlags_ViewportsEnable);
+        ;; ImGui::SameLine(); HelpMarker("[beta] Enable beta multi-viewports support. See ImGuiPlatformIO for details.");
+        ;; if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        ;; {
+        ;;     ImGui::Indent();
+        ;;     ImGui::Checkbox("io.ConfigViewportsNoAutoMerge", &io.ConfigViewportsNoAutoMerge);
+        ;;     ImGui::SameLine(); HelpMarker("Set to make all floating imgui windows always create their own viewport. Otherwise, they are merged into the main host viewports when overlapping it.");
+        ;;     ImGui::Checkbox("io.ConfigViewportsNoTaskBarIcon", &io.ConfigViewportsNoTaskBarIcon);
+        ;;     ImGui::SameLine(); HelpMarker("Toggling this at runtime is normally unsupported (most platform backends won't refresh the task bar icon state right away).");
+        (config-var-checkbox :ConfigVar_ViewportsNoDecoration)
+        ;;     ImGui::Checkbox("io.ConfigViewportsNoDefaultParent", &io.ConfigViewportsNoDefaultParent);
+        ;;     ImGui::SameLine(); HelpMarker("Toggling this at runtime is normally unsupported (most platform backends won't refresh the parenting right away).");
+        ;;     ImGui::Unindent();
+        ;; }
+        (config-var-checkbox :ConfigVar_InputTrickleEventQueue)
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Enable input queue trickling: some types of events submitted during the same frame (e.g. button down + up) will be spread over multiple frames, improving interactions with low framerates.")
+        ;; ImGui.Checkbox(ctx, 'io.MouseDrawCursor', &io.MouseDrawCursor)
+        ;; ImGui.SameLine(ctx); HelpMarker('Instruct Dear ImGui to render a mouse cursor itself. Note that a mouse cursor rendered via your application GPU rendering path will feel more laggy than hardware cursor, but will be more in sync with your other visuals.\n\nSome desktop applications may use both kinds of cursors (e.g. enable software cursor only when resizing/dragging something).')
 
-  ;; End of ShowDemoWindow()
-  (ImGui.PopItemWidth ctx)
-  (ImGui.End ctx)
-  open)
+        (ImGui.SeparatorText ctx :Widgets)
+        (config-var-checkbox :ConfigVar_InputTextCursorBlink)
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Enable blinking cursor (optional as some users consider it to be distracting).")
+        (config-var-checkbox :ConfigVar_InputTextEnterKeepActive)
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Pressing Enter will keep item active and select contents (single-line only).")
+        (config-var-checkbox :ConfigVar_DragClickToInputText)
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Enable turning DragXXX widgets into text input with a simple mouse click-release (without moving).")
+        (config-var-checkbox :ConfigVar_WindowsResizeFromEdges)
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Enable resizing of windows from their edges and from the lower-left corner.")
+        (config-var-checkbox :ConfigVar_WindowsMoveFromTitleBarOnly)
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Does not apply to windows without a title bar.")
+        (config-var-checkbox :ConfigVar_MacOSXBehaviors)
+        (ImGui.Text ctx "Also see Style->Rendering for rendering options.")
+
+        (ImGui.SetConfigVar ctx (ImGui.ConfigVar_Flags) config.flags)
+        (ImGui.TreePop ctx)
+        (ImGui.Spacing ctx))
+
+  ;;         if (ImGui.TreeNode("Backend Flags"))
+  ;;         {
+  ;;             HelpMarker(
+  ;;                 "Those flags are set by the backends (imgui_impl_xxx files) to specify their capabilities.\n"
+  ;;                 "Here we expose then as read-only fields to avoid breaking interactions with your backend.");
+  ;;
+  ;;             // Make a local copy to avoid modifying actual backend flags.
+  ;;             // FIXME: We don't use BeginDisabled() to keep label bright, maybe we need a BeginReadonly() equivalent..
+  ;;             ImGuiBackendFlags backend_flags = io.BackendFlags;
+  ;;             ImGui::CheckboxFlags("io.BackendFlags: HasGamepad",             &backend_flags, ImGuiBackendFlags_HasGamepad);
+  ;;             ImGui::CheckboxFlags("io.BackendFlags: HasMouseCursors",        &backend_flags, ImGuiBackendFlags_HasMouseCursors);
+  ;;             ImGui::CheckboxFlags("io.BackendFlags: HasSetMousePos",         &backend_flags, ImGuiBackendFlags_HasSetMousePos);
+  ;;             ImGui::CheckboxFlags("io.BackendFlags: PlatformHasViewports",   &backend_flags, ImGuiBackendFlags_PlatformHasViewports);
+  ;;             ImGui::CheckboxFlags("io.BackendFlags: HasMouseHoveredViewport",&backend_flags, ImGuiBackendFlags_HasMouseHoveredViewport);
+  ;;             ImGui::CheckboxFlags("io.BackendFlags: RendererHasVtxOffset",   &backend_flags, ImGuiBackendFlags_RendererHasVtxOffset);
+  ;;             ImGui::CheckboxFlags("io.BackendFlags: RendererHasViewports",   &backend_flags, ImGuiBackendFlags_RendererHasViewports);
+  ;;             ImGui.TreePop();
+  ;;             ImGui.Spacing();
+  ;;         }
+
+      (when (ImGui.TreeNode ctx :Style)
+        (demo.HelpMarker "The same contents can be accessed in 'Tools->Style Editor'.")
+        (demo.ShowStyleEditor)
+        (ImGui.TreePop ctx)
+        (ImGui.Spacing ctx))
+      (when (ImGui.TreeNode ctx :Capture/Logging)
+        (set-when-not config.logging {:auto_open_depth 2})
+        (demo.HelpMarker "The logging API redirects all text output so you can easily capture the content of a window or a block. Tree nodes can be automatically expanded.\nTry opening any of the contents below in this window and then click one of the \"Log To\" button.")
+        (ImGui.PushID ctx :LogButtons)
+        (let [log-to-tty (ImGui.Button ctx "Log To TTY")
+              _ (ImGui.SameLine ctx)
+              log-to-file (ImGui.Button ctx "Log To File")
+              _ (ImGui.SameLine ctx)
+              log-to-clipboard (ImGui.Button ctx "Log To Clipboard")
+              _ (do
+                  (ImGui.SameLine ctx)
+                  (ImGui.PushAllowKeyboardFocus ctx false)
+                  (ImGui.SetNextItemWidth ctx 80)
+                  (doimgui config.logging.auto_open_depth (ImGui.SliderInt ctx "Open Depth" $ 0 9))
+                  (ImGui.PopAllowKeyboardFocus ctx)
+                  (ImGui.PopID ctx))
+              ;; Start logging at the end of the function so that the buttons don't appear in the log
+              depth config.logging.auto_open_depth]
+          (when log-to-tty (ImGui.LogToTTY ctx depth))
+          (when log-to-file (ImGui.LogToFile ctx depth))
+          (when log-to-clipboard (ImGui.LogToClipboard ctx depth)))
+
+        (demo.HelpMarker "You can also call ImGui.LogText() to output directly to the log without a visual output.")
+        (when (ImGui.Button ctx "Copy \"Hello, world!\" to clipboard")
+          (ImGui.LogToClipboard ctx depth)
+          (ImGui.LogText ctx "Hello, world!")
+          (ImGui.LogFinish ctx))
+        (ImGui.TreePop ctx)))
+
+    (when (ImGui.CollapsingHeader ctx "Window options")
+      (when (ImGui.BeginTable ctx :split 3)
+        (ImGui.TableNextColumn ctx)
+        (macro table-column! [ctx str fld]
+          (assert-compile (sym? ctx))
+          `(do (ImGui.TableNextColumn ,ctx)
+             (set (_ ,fld) (ImGui.Checkbox ,ctx ,str ,fld))))
+        (table-column! ctx "Always on top" demo.topmost)
+        (table-column! ctx "No titlebar"   demo.no_titlebar)
+        (table-column! ctx "No scrollbar"  demo.no_scrollbar)
+        (table-column! ctx "No menu"       demo.no_menu)
+        (table-column! ctx "No move"       demo.no_move)
+        (table-column! ctx "No resize"     demo.no_resize)
+        (table-column! ctx "No collapse"   demo.no_collapse)
+        (table-column! ctx "No close"      demo.no_close)
+        (table-column! ctx "No nav"        demo.no_nav)
+        (table-column! ctx "No background" demo.no_background)
+        ;;(table-column! ctx "No bring to front" demo.no_bring_to_front)
+        (table-column! ctx "No docking" demo.no_docking)
+        (table-column! ctx "Unsaved document" demo.unsaved_document)
+        (ImGui.EndTable ctx))
+
+      (local flags (ImGui.GetConfigVar ctx (ImGui.ConfigVar_Flags)))
+      (local docking-disabled (or demo.no_docking
+                                  (= (band flags (ImGui.ConfigFlags_DockingEnable))
+                                     0)))
+
+      (ImGui.Spacing ctx)
+      (when docking-disabled (ImGui.BeginDisabled ctx))
+
+      (let [dock-id (ImGui.GetWindowDockID ctx)]
+        (ImGui.AlignTextToFramePadding ctx)
+        (ImGui.Text ctx "Dock in docker:")
+        (ImGui.SameLine ctx)
+        (ImGui.SetNextItemWidth ctx 222)
+        (when (ImGui.BeginCombo ctx "##docker" (demo.DockName dock-id))
+          (when (ImGui.Selectable ctx :Floating (= dock-id 0))
+            (set demo.set_dock_id 0))
+          (for [id -1 -16 -1]
+            (when (ImGui.Selectable ctx (demo.DockName id) (= dock-id id))
+              (set demo.set_dock_id id)))
+          (ImGui.EndCombo ctx)))
+
+      (when docking-disabled
+        (ImGui.SameLine ctx)
+        (ImGui.Text ctx (: "Disabled via %s" :format (if demo.no_docking :WindowFlags :ConfigFlags)))
+        (ImGui.EndDisabled ctx)))
+
+    ;; All demo contents
+    (demo.ShowDemoWindowWidgets)
+    (demo.ShowDemoWindowLayout)
+    (demo.ShowDemoWindowPopups)
+    (demo.ShowDemoWindowTables)
+    (demo.ShowDemoWindowInputs)
+
+    ;; End of ShowDemoWindow()
+    (ImGui.PopItemWidth ctx)
+    (ImGui.End ctx)
+    open))
 
 (fn demo.ShowDemoWindowWidgets []
   (when (ImGui.CollapsingHeader ctx :Widgets)
     (when widgets.disable_all (ImGui.BeginDisabled ctx))
     (var rv nil)
     (when (ImGui.TreeNode ctx :Basic)
-      (when (not widgets.basic)
-        (set widgets.basic
-             {:angle 0
-              :check true
-              :clicked 0
-              :col1 16711731
-              :col2 1722941567
-              :counter 0
-              :curitem 0
-              :d0 999999.00000001
-              :d1 10000000000
-              :d2 1
-              :d3 0.0067
-              :d4 0.123
-              :d5 0
-              :elem 1
-              :i0 123
-              :i1 50
-              :i2 42
-              :i3 0
-              :listcur 0
-              :radio 0
-              :str0 "Hello, world!"
-              :str1 ""
-              :tooltip (reaper.new_array [0.6 0.1 1 0.5 0.92 0.1 0.2])
-              :vec4a (reaper.new_array [0.1 0.2 0.3 0.44])}))
+      (set-when-not widgets.basic
+                    {:angle 0
+                     :check true
+                     :clicked 0
+                     :col1 16711731
+                     :col2 1722941567
+                     :counter 0
+                     :curitem 0
+                     :d0 999999.00000001
+                     :d1 10000000000
+                     :d2 1
+                     :d3 0.0067
+                     :d4 0.123
+                     :d5 0
+                     :elem 1
+                     :i0 123
+                     :i1 50
+                     :i2 42
+                     :i3 0
+                     :listcur 0
+                     :radio 0
+                     :str0 "Hello, world!"
+                     :str1 ""
+                     :tooltip (reaper.new_array [0.6 0.1 1 0.5 0.92 0.1 0.2])
+                     :vec4a (reaper.new_array [0.1 0.2 0.3 0.44])})
       (ImGui.SeparatorText ctx :General)
       (when (ImGui.Button ctx :Button)
         (set widgets.basic.clicked (+ widgets.basic.clicked 1)))
@@ -614,12 +608,9 @@
       (for [i 0 6]
         (when (> i 0) (ImGui.SameLine ctx))
         (ImGui.PushID ctx i)
-        (ImGui.PushStyleColor ctx (ImGui.Col_Button)
-                              (demo.HSV (/ i 7) 0.6 0.6 1))
-        (ImGui.PushStyleColor ctx (ImGui.Col_ButtonHovered)
-                              (demo.HSV (/ i 7) 0.7 0.7 1))
-        (ImGui.PushStyleColor ctx (ImGui.Col_ButtonActive)
-                              (demo.HSV (/ i 7) 0.8 0.8 1))
+        (ImGui.PushStyleColor ctx (ImGui.Col_Button) (demo.HSV (/ i 7) 0.6 0.6 1))
+        (ImGui.PushStyleColor ctx (ImGui.Col_ButtonHovered) (demo.HSV (/ i 7) 0.7 0.7 1))
+        (ImGui.PushStyleColor ctx (ImGui.Col_ButtonActive) (demo.HSV (/ i 7) 0.8 0.8 1))
         (ImGui.Button ctx :Click)
         (ImGui.PopStyleColor ctx 3)
         (ImGui.PopID ctx))
@@ -647,9 +638,7 @@
           (ImGui.BeginTooltip ctx)
           (ImGui.Text ctx "I am a fancy tooltip")
           (ImGui.PlotLines ctx :Curve widgets.basic.tooltip)
-          (ImGui.Text ctx
-                      (: "Sin(time) = %f" :format
-                         (math.sin (ImGui.GetTime ctx))))
+          (ImGui.Text ctx (: "Sin(time) = %f" :format (math.sin (ImGui.GetTime ctx))))
           (ImGui.EndTooltip ctx))
         (ImGui.SameLine ctx)
         (ImGui.Button ctx :Delayed)
@@ -679,70 +668,70 @@
         (demo.HelpMarker "You can input value using the scientific notation,
         e.g. \"1e+8\" becomes \"100000000\".")
         (ImGui.InputDoubleN ctx "input reaper.array" widgets.basic.vec4a))
-(ImGui.SeparatorText ctx :Drags)
-(do
-  (set (rv widgets.basic.i1)
-       (ImGui.DragInt ctx "drag int" widgets.basic.i1 1))
-  (ImGui.SameLine ctx)
-  (demo.HelpMarker "Click and drag to edit value.
-  Hold SHIFT/ALT for faster/slower edit.
-  Double-click or CTRL+click to input value.")
-  (set (rv widgets.basic.i2)
-       (ImGui.DragInt ctx "drag int 0..100" widgets.basic.i2 1 0 100
-                      "%d%%" (ImGui.SliderFlags_AlwaysClamp)))
-  (set (rv widgets.basic.d2)
-       (ImGui.DragDouble ctx "drag double" widgets.basic.d2 0.005))
-  (set (rv widgets.basic.d3)
-       (ImGui.DragDouble ctx "drag small double" widgets.basic.d3 0.0001 0
-                         0 "%.06f ns")))
-(ImGui.SeparatorText ctx :Sliders)
-(do
-  (set (rv widgets.basic.i3)
-       (ImGui.SliderInt ctx "slider int" widgets.basic.i3 (- 1) 3))
-  (ImGui.SameLine ctx)
-  (demo.HelpMarker "CTRL+click to input value.")
-  (set (rv widgets.basic.d4)
-       (ImGui.SliderDouble ctx "slider double" widgets.basic.d4 0 1
-                           "ratio = %.3f"))
-  (set (rv widgets.basic.d5)
-       (ImGui.SliderDouble ctx "slider double (log)" widgets.basic.d5
-                           (- 10) 10 "%.4f"
-                           (ImGui.SliderFlags_Logarithmic)))
-  (set (rv widgets.basic.angle)
-       (ImGui.SliderAngle ctx "slider angle" widgets.basic.angle))
-  (local elements [:Fire :Earth :Air :Water])
-  (local current-elem (or (. elements widgets.basic.elem) :Unknown))
-  (set (rv widgets.basic.elem)
-       (ImGui.SliderInt ctx "slider enum" widgets.basic.elem 1
-                        (length elements) current-elem))
-  (ImGui.SameLine ctx)
-  (demo.HelpMarker "Using the format string parameter to display a name instead of the underlying integer."))
-(ImGui.SeparatorText ctx :Selectors/Pickers)
-(do
-  (global foo widgets.basic.col1)
-  (set (rv widgets.basic.col1)
-       (ImGui.ColorEdit3 ctx "color 1" widgets.basic.col1))
-  (ImGui.SameLine ctx)
-  (demo.HelpMarker "Click on the color square to open a color picker.
-  Click and hold to use drag and drop.
-  Right-click on the color square to show options.
-  CTRL+click on individual component to input value.")
-  (set (rv widgets.basic.col2)
-       (ImGui.ColorEdit4 ctx "color 2" widgets.basic.col2)))
-(let [items "AAAA\000BBBB\000CCCC\000DDDD\000EEEE\000FFFF\000GGGG\000HHHH\000IIIIIII\000JJJJ\000KKKKKKK\000"]
-  (set (rv widgets.basic.curitem)
-       (ImGui.Combo ctx :combo widgets.basic.curitem items))
-  (ImGui.SameLine ctx)
-  (demo.HelpMarker (.. "Using the simplified one-liner Combo API here.\n"
-                       "Refer to the \"Combo\" section below for an explanation of how to use the more flexible and general BeginCombo/EndCombo API.")))
-(let [items "Apple\000Banana\000Cherry\000Kiwi\000Mango\000Orange\000Pineapple\000Strawberry\000Watermelon\000"]
-  (set (rv widgets.basic.listcur)
-       (ImGui.ListBox ctx "listbox\n(single select)" widgets.basic.listcur
-                      items 4))
-  (ImGui.SameLine ctx)
-  (demo.HelpMarker "Using the simplified one-liner ListBox API here.
-  Refer to the \"List boxes\" section below for an explanation of how to usethe more flexible and general BeginListBox/EndListBox API."))
-(ImGui.TreePop ctx))
+      (ImGui.SeparatorText ctx :Drags)
+      (do
+        (set (rv widgets.basic.i1)
+             (ImGui.DragInt ctx "drag int" widgets.basic.i1 1))
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Click and drag to edit value.
+        Hold SHIFT/ALT for faster/slower edit.
+        Double-click or CTRL+click to input value.")
+        (set (rv widgets.basic.i2)
+             (ImGui.DragInt ctx "drag int 0..100" widgets.basic.i2 1 0 100
+                            "%d%%" (ImGui.SliderFlags_AlwaysClamp)))
+        (set (rv widgets.basic.d2)
+             (ImGui.DragDouble ctx "drag double" widgets.basic.d2 0.005))
+        (set (rv widgets.basic.d3)
+             (ImGui.DragDouble ctx "drag small double" widgets.basic.d3 0.0001 0
+                               0 "%.06f ns")))
+      (ImGui.SeparatorText ctx :Sliders)
+      (do
+        (set (rv widgets.basic.i3)
+             (ImGui.SliderInt ctx "slider int" widgets.basic.i3 (- 1) 3))
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "CTRL+click to input value.")
+        (set (rv widgets.basic.d4)
+             (ImGui.SliderDouble ctx "slider double" widgets.basic.d4 0 1
+                                 "ratio = %.3f"))
+        (set (rv widgets.basic.d5)
+             (ImGui.SliderDouble ctx "slider double (log)" widgets.basic.d5
+                                 (- 10) 10 "%.4f"
+                                 (ImGui.SliderFlags_Logarithmic)))
+        (set (rv widgets.basic.angle)
+             (ImGui.SliderAngle ctx "slider angle" widgets.basic.angle))
+        (local elements [:Fire :Earth :Air :Water])
+        (local current-elem (or (. elements widgets.basic.elem) :Unknown))
+        (set (rv widgets.basic.elem)
+             (ImGui.SliderInt ctx "slider enum" widgets.basic.elem 1
+                              (length elements) current-elem))
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Using the format string parameter to display a name instead of the underlying integer."))
+      (ImGui.SeparatorText ctx :Selectors/Pickers)
+      (do
+        (global foo widgets.basic.col1)
+        (set (rv widgets.basic.col1)
+             (ImGui.ColorEdit3 ctx "color 1" widgets.basic.col1))
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Click on the color square to open a color picker.
+        Click and hold to use drag and drop.
+        Right-click on the color square to show options.
+        CTRL+click on individual component to input value.")
+        (set (rv widgets.basic.col2)
+             (ImGui.ColorEdit4 ctx "color 2" widgets.basic.col2)))
+      (let [items "AAAA\000BBBB\000CCCC\000DDDD\000EEEE\000FFFF\000GGGG\000HHHH\000IIIIIII\000JJJJ\000KKKKKKK\000"]
+        (set (rv widgets.basic.curitem)
+             (ImGui.Combo ctx :combo widgets.basic.curitem items))
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker (.. "Using the simplified one-liner Combo API here.\n"
+                             "Refer to the \"Combo\" section below for an explanation of how to use the more flexible and general BeginCombo/EndCombo API.")))
+      (let [items "Apple\000Banana\000Cherry\000Kiwi\000Mango\000Orange\000Pineapple\000Strawberry\000Watermelon\000"]
+        (set (rv widgets.basic.listcur)
+             (ImGui.ListBox ctx "listbox\n(single select)" widgets.basic.listcur
+                            items 4))
+        (ImGui.SameLine ctx)
+        (demo.HelpMarker "Using the simplified one-liner ListBox API here.
+        Refer to the \"List boxes\" section below for an explanation of how to usethe more flexible and general BeginListBox/EndListBox API."))
+      (ImGui.TreePop ctx))
 (when (ImGui.TreeNode ctx :Trees)
   (when (not widgets.trees)
     (set widgets.trees {:align_label_with_current_x_position false
@@ -1895,10 +1884,12 @@ We don't have a getter to avoidencouraging you to persistently save values that 
                                                            (ImGui.ColorEditFlags_InputHSV)
                                                            (ImGui.ColorEditFlags_Float))))
     (local raw-hsv widgets.colors.raw_hsv)
-    (tset raw-hsv 1 (/ (band (rshift widgets.colors.hsva 24) 0xFF) 255.0)) ;; H
-    (tset raw-hsv 2 (/ (band (rshift widgets.colors.hsva 16) 0xFF) 255.0)) ;; S
-    (tset raw-hsv 3 (/ (band (rshift widgets.colors.hsva 8)  0xFF) 255.0)) ;; V
-    (tset raw-hsv 4 (/ (band         widgets.colors.hsva     0xFF) 255.0)) ;; A
+    (doto raw-hsv
+      (tset 1 (/ (band (rshift widgets.colors.hsva 24) 0xFF) 255.0)) ;; H
+      (tset 2 (/ (band (rshift widgets.colors.hsva 16) 0xFF) 255.0)) ;; S
+      (tset 3 (/ (band (rshift widgets.colors.hsva 8)  0xFF) 255.0)) ;; V
+      (tset 4 (/ (band         widgets.colors.hsva     0xFF) 255.0)));; A
+      
     (when (ImGui.DragDoubleN ctx "Raw HSV values" raw-hsv 0.01 0.0 1.0)
       (set widgets.colors.hsva
            (bor (-> (demo.round (* (. raw-hsv 1) 0xFF)) (lshift 24))
@@ -1909,12 +1900,11 @@ We don't have a getter to avoidencouraging you to persistently save values that 
     (ImGui.TreePop ctx))
 
   (when (ImGui.TreeNode ctx "Drag/Slider Flags")
-    (when (not widgets.sliders)
-      (set widgets.sliders {:drag_d 0.5
-                            :drag_i 50
-                            :flags (ImGui.SliderFlags_None)
-                            :slider_d 0.5
-                            :slider_i 50}))
+    (set-when-not widgets.sliders {:drag_d 0.5
+                                   :drag_i 50
+                                   :flags (ImGui.SliderFlags_None)
+                                   :slider_d 0.5
+                                   :slider_i 50})
 
     ;; Demonstrate using advanced flags for DragXXX and SliderXXX functions. Note that the flags are the same!
     (doimgui widgets.sliders.flags
