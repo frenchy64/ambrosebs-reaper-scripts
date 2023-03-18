@@ -5560,7 +5560,7 @@ Hovering the colored canvas will call SetNextFrameWantCaptureXXX.")
       (ImGui.PushStyleColor ctx i value))))
 
 (fn demo.PopStyle []
-  (when (-?> app.style_editor (> 0))
+  (when (and app.style_editor (> app.style_editor.push_count 0))
     (set app.style_editor.push_count (- app.style_editor.push_count 1))
     (ImGui.PopStyleColor ctx (length (. cache :Col)))
     (ImGui.PopStyleVar ctx (length (. cache :StyleVar)))))
