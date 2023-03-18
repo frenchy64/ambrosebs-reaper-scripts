@@ -31,35 +31,34 @@
                             f (. args (length args))
                             args-info (icollect [i arg (ipairs args)]
                                         (when (< i nargs)
-                                          {:outer-g (gensym (.. "arg" i))
-                                           :inner-g (gensym (.. "arg" i))
+                                          {:g (gensym (.. "arg" i))
                                            :form arg}))]
                         (values args-info f))
         rv (gensym "rv")
-        outer-gs (icollect [_ {: outer-g} (ipairs args-info)] outer-g)
-        set-forms (icollect [i {: outer-g : form} (ipairs args-info)]
+        gs (icollect [_ {: g} (ipairs args-info)] g)
+        set-forms (icollect [i {: g : form} (ipairs args-info)]
                     (if
-                      (sym? form) (list (sym "set") form outer-g)
+                      (sym? form) (list (sym "set") form g)
                       ;; TODO arrays (dot forms)
                       (error (.. "arg " i " is not a symbol"))))
         bindings (let [res []
                        ;[s1# ,s ,(sym "$") s1# ,(sym "$1") ,(sym "$")]
-                       arg-bindings (each [i {: inner-g : form} (ipairs args-info)]
+                       arg-bindings (each [i {: g : form} (ipairs args-info)]
                                       (assert (sym? form))
                                       (doto res
-                                        (table.insert inner-g)
+                                        (table.insert g)
                                         (table.insert form)))
-                       dollar-bindings (each [i {: inner-g} (ipairs args-info)]
+                       dollar-bindings (each [i {: g} (ipairs args-info)]
                                          (when (= 1 i)
                                            (doto res
                                              (table.insert (sym "$"))
-                                             (table.insert inner-g)))
+                                             (table.insert g)))
                                          (doto res
                                            (table.insert (sym (.. "$" i)))
-                                           (table.insert inner-g)))]
+                                           (table.insert g)))]
                    res)
-        values-form (list (sym "values") rv (table.unpack outer-gs))]
-    `(let [(,rv ,(unpack outer-gs)) (let ,bindings ,f)]
+        values-form (list (sym "values") rv (table.unpack gs))]
+    `(let [(,rv ,(table.unpack gs)) (let ,bindings ,f)]
        ,(unpack set-forms)
        ,values-form)))
 
