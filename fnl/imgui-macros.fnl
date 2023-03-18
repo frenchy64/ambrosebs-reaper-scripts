@@ -154,8 +154,12 @@
 (fn set-when-not [s v]
   `(when (not ,s) (set ,s ,v)))
 
+(fn += [s f]
+  `(set ,s (+ ,s ,f)))
+
 {
  : set-when-not
  : doimgui
  : update-2nd-array
+ : +=
  }

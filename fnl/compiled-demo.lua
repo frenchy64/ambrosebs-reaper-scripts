@@ -22,8 +22,8 @@ end
 local ctx = nil
 local FLT_MIN, FLT_MAX = ImGui.NumericLimits_Float()
 local IMGUI_VERSION, IMGUI_VERSION_NUM, REAIMGUI_VERSION = ImGui.GetVersion()
-local demo = {open = true, menu = {b = true, enabled = true, f = 0.5, n = 0}, no_resize = false, no_menu = false, no_move = false, no_close = false, unsaved_document = false, no_titlebar = false, no_scrollbar = false, no_docking = false, no_background = false, no_nav = false, no_collapse = false}
-local show_app = {about = false, window_titles = false, simple_overlay = false, property_editor = false, style_editor = false, stack_tool = false, custom_rendering = false, log = false, layout = false, fullscreen = false, constrained_resize = false, metrics = false, console = false, documents = false, debug_log = false, long_text = false, auto_resize = false}
+local demo = {open = true, menu = {b = true, enabled = true, f = 0.5, n = 0}, no_collapse = false, no_docking = false, no_nav = false, no_close = false, unsaved_document = false, no_titlebar = false, no_background = false, no_menu = false, no_move = false, no_scrollbar = false, no_resize = false}
+local show_app = {fullscreen = false, long_text = false, documents = false, style_editor = false, log = false, console = false, metrics = false, property_editor = false, auto_resize = false, constrained_resize = false, debug_log = false, stack_tool = false, about = false, window_titles = false, custom_rendering = false, layout = false, simple_overlay = false}
 local config = {}
 local widgets = {}
 local layout = {}
@@ -2084,7 +2084,7 @@ demo.ShowDemoWindowWidgets = function()
     end
     if ImGui.TreeNode(ctx, "Color/Picker Widgets") then
       if not widgets.colors then
-        widgets.colors = {alpha = true, alpha_bar = true, alpha_preview = true, backup_color = nil, display_mode = 0, drag_and_drop = true, hsva = 1006632959, options_menu = true, picker_mode = 0, raw_hsv = reaper.new_array(4), ref_color_rgba = 4278255488, rgba = 1922079432, saved_palette = nil, side_preview = true, no_border = false, alpha_half_preview = false, ref_color = false}
+        widgets.colors = {alpha = true, alpha_bar = true, alpha_preview = true, backup_color = nil, display_mode = 0, drag_and_drop = true, hsva = 1006632959, options_menu = true, picker_mode = 0, raw_hsv = reaper.new_array(4), ref_color_rgba = 4278255488, rgba = 1922079432, saved_palette = nil, side_preview = true, no_border = false, ref_color = false, alpha_half_preview = false}
       else
       end
       ImGui.SeparatorText(ctx, "Options")
@@ -3119,7 +3119,7 @@ demo.ShowDemoWindowWidgets = function()
   end
   if ImGui.TreeNode(ctx, "Querying Window Status (Focused/Hovered etc.)") then
     if not widgets.query_window then
-      widgets.query_window = {test_window = false, embed_all_inside_a_child_window = false}
+      widgets.query_window = {embed_all_inside_a_child_window = false, test_window = false}
     else
     end
     do
@@ -3229,7 +3229,7 @@ demo.ShowDemoWindowLayout = function()
     local rv = nil
     if ImGui.TreeNode(ctx, "Child windows") then
       if not layout.child then
-        layout.child = {offset_x = 0, disable_menu = false, disable_mouse_wheel = false}
+        layout.child = {offset_x = 0, disable_mouse_wheel = false, disable_menu = false}
       else
       end
       ImGui.SeparatorText(ctx, "Child windows")
@@ -3512,7 +3512,7 @@ demo.ShowDemoWindowLayout = function()
     end
     if ImGui.TreeNode(ctx, "Basic Horizontal Layout") then
       if not layout.horizontal then
-        layout.horizontal = {d0 = 1.0, d1 = 2.0, d2 = 3.0, item = -1, selection = {0, 1, 2, 3}, c3 = false, c4 = false, c2 = false, c1 = false}
+        layout.horizontal = {d0 = 1.0, d1 = 2.0, d2 = 3.0, item = -1, selection = {0, 1, 2, 3}, c2 = false, c4 = false, c3 = false, c1 = false}
       else
       end
       ImGui.TextWrapped(ctx, "(Use ImGui.SameLine() to keep adding items to the right of the preceding item)")
@@ -3821,7 +3821,7 @@ demo.ShowDemoWindowLayout = function()
     end
     if ImGui.TreeNode(ctx, "Scrolling") then
       if not layout.scrolling then
-        layout.scrolling = {enable_track = true, lines = 7, scroll_to_off_px = 0.0, scroll_to_pos_px = 200.0, track_item = 50, enable_extra_decorations = false, show_horizontal_contents_size_demo_window = false}
+        layout.scrolling = {enable_track = true, lines = 7, scroll_to_off_px = 0.0, scroll_to_pos_px = 200.0, track_item = 50, show_horizontal_contents_size_demo_window = false, enable_extra_decorations = false}
       else
       end
       demo.HelpMarker("Use SetScrollHereY() or SetScrollFromPosY() to scroll to a given vertical position.")
@@ -4088,7 +4088,7 @@ demo.ShowDemoWindowLayout = function()
       end
       if layout.scrolling.show_horizontal_contents_size_demo_window then
         if not layout.horizontal_window then
-          layout.horizontal_window = {contents_size_x = 300.0, show_button = true, show_columns = true, show_h_scrollbar = true, show_tab_bar = true, show_tree_nodes = true, show_child = false, explicit_content_size = false, show_text_wrapped = false}
+          layout.horizontal_window = {contents_size_x = 300.0, show_button = true, show_columns = true, show_h_scrollbar = true, show_tab_bar = true, show_tree_nodes = true, explicit_content_size = false, show_text_wrapped = false, show_child = false}
         else
         end
         if layout.horizontal_window.explicit_content_size then
@@ -6241,7 +6241,7 @@ demo.ShowDemoWindowTables = function()
     Do_open_action()
     if ImGui.TreeNode(ctx, "Advanced") then
       if not tables.advanced then
-        tables.advanced = {contents_type = 5, flags = (ImGui.TableFlags_Resizable() | ImGui.TableFlags_Reorderable() | ImGui.TableFlags_Hideable() | ImGui.TableFlags_Sortable() | ImGui.TableFlags_SortMulti() | ImGui.TableFlags_RowBg() | ImGui.TableFlags_Borders() | ImGui.TableFlags_ScrollX() | ImGui.TableFlags_ScrollY() | ImGui.TableFlags_SizingFixedFit()), freeze_cols = 1, freeze_rows = 1, inner_width_with_scroll = 0, items = {}, items_count = (#template_items_names * 2), outer_size_enabled = true, outer_size_value = {0, (TEXT_BASE_HEIGHT * 12)}, row_min_height = 0, show_headers = true, items_need_sort = false, show_wrapped_text = false}
+        tables.advanced = {contents_type = 5, flags = (ImGui.TableFlags_Resizable() | ImGui.TableFlags_Reorderable() | ImGui.TableFlags_Hideable() | ImGui.TableFlags_Sortable() | ImGui.TableFlags_SortMulti() | ImGui.TableFlags_RowBg() | ImGui.TableFlags_Borders() | ImGui.TableFlags_ScrollX() | ImGui.TableFlags_ScrollY() | ImGui.TableFlags_SizingFixedFit()), freeze_cols = 1, freeze_rows = 1, inner_width_with_scroll = 0, items = {}, items_count = (#template_items_names * 2), outer_size_enabled = true, outer_size_value = {0, (TEXT_BASE_HEIGHT * 12)}, row_min_height = 0, show_headers = true, show_wrapped_text = false, items_need_sort = false}
       else
       end
       if ImGui.TreeNode(ctx, "Options") then
@@ -7104,7 +7104,7 @@ demo.ShowStyleEditor = function()
   end
   ImGui.PushItemWidth(ctx, (ImGui.GetWindowWidth(ctx) * 0.5))
   local Frame_rounding, Grab_rounding = ImGui.StyleVar_FrameRounding(), ImGui.StyleVar_GrabRounding()
-  rv, vfr = ImGui.SliderDouble(ctx, "FrameRounding", app.style_editor.style.vars[Frame_rounding], 0, 12, "%.0f")
+  rv, vfr = ImGui.SliderDouble(ctx, "FrameRounding", app.style_editor.style.vars[Frame_rounding], 0.0, 12.0, "%.0f")
   do end (app.style_editor.style.vars)[Frame_rounding] = vfr
   if rv then
     app.style_editor.style.vars[Grab_rounding] = app.style_editor.style.vars[Frame_rounding]
@@ -7286,7 +7286,7 @@ demo.ShowStyleEditor = function()
       ImGui.SameLine(ctx)
       demo.HelpMarker("In the color list:\nLeft-click on color square to open color picker,\nRight-click to open edit options menu.")
       if ImGui.BeginChild(ctx, "##colors", 0, 0, true, (ImGui.WindowFlags_AlwaysVerticalScrollbar() | ImGui.WindowFlags_AlwaysHorizontalScrollbar() | 0)) then
-        ImGui.PushItemWidth(ctx, ( - 160))
+        ImGui.PushItemWidth(ctx, -160)
         local inner_spacing = ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemInnerSpacing())
         for i, name in demo.EachEnum("Col") do
           if ImGui.TextFilter_PassFilter(app.style_editor.colors.filter.inst, name) then
@@ -7339,7 +7339,7 @@ demo.ShowStyleEditor = function()
 end
 demo.ShowUserGuide = function()
   ImGui.BulletText(ctx, "Double-click on title bar to collapse window.")
-  ImGui.BulletText(ctx, "Click and drag on lower corner to resize window\n(double-click to auto fit window to its contents).")
+  ImGui.BulletText(ctx, "Click and drag on lower corner to resize window\n    (double-click to auto fit window to its contents).")
   ImGui.BulletText(ctx, "CTRL+Click on a slider or drag box to input value as text.")
   ImGui.BulletText(ctx, "TAB/SHIFT+TAB to cycle through keyboard editable fields.")
   ImGui.BulletText(ctx, "CTRL+Tab to select a window.")
@@ -7358,7 +7358,8 @@ demo.ShowUserGuide = function()
   ImGui.BulletText(ctx, "Return to input text into a widget.")
   ImGui.BulletText(ctx, "Escape to deactivate a widget, close popup, exit child window.")
   ImGui.BulletText(ctx, "Alt to jump to the menu layer of a window.")
-  return ImGui.Unindent(ctx)
+  ImGui.Unindent(ctx)
+  return ctx
 end
 demo.ShowExampleMenuFile = function()
   local rv = nil
@@ -7370,9 +7371,11 @@ demo.ShowExampleMenuFile = function()
   else
   end
   if ImGui.BeginMenu(ctx, "Open Recent") then
-    ImGui.MenuItem(ctx, "fish_hat.c")
-    ImGui.MenuItem(ctx, "fish_hat.inl")
-    ImGui.MenuItem(ctx, "fish_hat.h")
+    do
+      ImGui.MenuItem(ctx, "fish_hat.c")
+      ImGui.MenuItem(ctx, "fish_hat.inl")
+      ImGui.MenuItem(ctx, "fish_hat.h")
+    end
     if ImGui.BeginMenu(ctx, "More..") then
       ImGui.MenuItem(ctx, "Hello")
       ImGui.MenuItem(ctx, "Sailor")
@@ -7395,7 +7398,15 @@ demo.ShowExampleMenuFile = function()
   end
   ImGui.Separator(ctx)
   if ImGui.BeginMenu(ctx, "Options") then
-    rv, demo.menu.enabled = ImGui.MenuItem(ctx, "Enabled", "", demo.menu.enabled)
+    do
+      local rv_1149_, arg1_1148_ = nil, nil
+      do
+        local arg1_1148_0 = demo.menu.enabled
+        local _24 = arg1_1148_0
+        rv_1149_, arg1_1148_ = ImGui.MenuItem(ctx, "Enabled", "", _24)
+      end
+      demo.menu.enabled = arg1_1148_
+    end
     if ImGui.BeginChild(ctx, "child", 0, 60, true) then
       for i = 0, 9 do
         ImGui.Text(ctx, ("Scrolling Text %d"):format(i))
@@ -7403,9 +7414,33 @@ demo.ShowExampleMenuFile = function()
       ImGui.EndChild(ctx)
     else
     end
-    rv, demo.menu.f = ImGui.SliderDouble(ctx, "Value", demo.menu.f, 0, 1)
-    rv, demo.menu.f = ImGui.InputDouble(ctx, "Input", demo.menu.f, 0.1)
-    rv, demo.menu.n = ImGui.Combo(ctx, "Combo", demo.menu.n, "Yes\0No\0Maybe\0")
+    do
+      local rv_1152_, arg1_1151_ = nil, nil
+      do
+        local arg1_1151_0 = demo.menu.f
+        local _24 = arg1_1151_0
+        rv_1152_, arg1_1151_ = ImGui.SliderDouble(ctx, "Value", _24, 0, 1)
+      end
+      demo.menu.f = arg1_1151_
+    end
+    do
+      local rv_1154_, arg1_1153_ = nil, nil
+      do
+        local arg1_1153_0 = demo.menu.f
+        local _24 = arg1_1153_0
+        rv_1154_, arg1_1153_ = ImGui.InputDouble(ctx, "Input", _24, 0.1)
+      end
+      demo.menu.f = arg1_1153_
+    end
+    do
+      local rv_1156_, arg1_1155_ = nil, nil
+      do
+        local arg1_1155_0 = demo.menu.n
+        local _24 = arg1_1155_0
+        rv_1156_, arg1_1155_ = ImGui.Combo(ctx, "Combo", _24, "Yes\0No\0Maybe\0")
+      end
+      demo.menu.n = arg1_1155_
+    end
     ImGui.EndMenu(ctx)
   else
   end
@@ -7423,7 +7458,15 @@ demo.ShowExampleMenuFile = function()
   else
   end
   if ImGui.BeginMenu(ctx, "Options") then
-    rv, demo.menu.b = ImGui.Checkbox(ctx, "SomeOption", demo.menu.b)
+    do
+      local rv_1160_, arg1_1159_ = nil, nil
+      do
+        local arg1_1159_0 = demo.menu.b
+        local _24 = arg1_1159_0
+        rv_1160_, arg1_1159_ = ImGui.Checkbox(ctx, "SomeOption", _24)
+      end
+      demo.menu.b = arg1_1159_
+    end
     ImGui.EndMenu(ctx)
   else
   end
@@ -7467,13 +7510,13 @@ Example_app_log.draw = function(self, title, p_open)
     end
     if ImGui.BeginPopup(self.ctx, "Options") then
       do
-        local rv_1157_, arg1_1156_ = nil, nil
+        local rv_1167_, arg1_1166_ = nil, nil
         do
-          local arg1_1156_0 = self.auto_scroll
-          local _24 = arg1_1156_0
-          rv_1157_, arg1_1156_ = ImGui.Checkbox(self.ctx, "Auto-scroll", _24)
+          local arg1_1166_0 = self.auto_scroll
+          local _24 = arg1_1166_0
+          rv_1167_, arg1_1166_ = ImGui.Checkbox(self.ctx, "Auto-scroll", _24)
         end
-        self.auto_scroll = arg1_1156_
+        self.auto_scroll = arg1_1166_
       end
       ImGui.EndPopup(self.ctx)
     else
@@ -7535,9 +7578,9 @@ Example_app_log.draw = function(self, title, p_open)
 end
 demo.ShowExampleAppLog = function()
   if not app.log then
-    local _1168_ = Example_app_log:new(ctx)
-    do end (_1168_)["counter"] = 0
-    app.log = _1168_
+    local _1178_ = Example_app_log:new(ctx)
+    do end (_1178_)["counter"] = 0
+    app.log = _1178_
   else
   end
   ImGui.SetNextWindowSize(ctx, 500, 400, ImGui.Cond_FirstUseEver())
@@ -7549,7 +7592,7 @@ demo.ShowExampleAppLog = function()
       for n = 0, (5 - 1) do
         local category = categories[((app.log.counter % #categories) + 1)]
         local word = words[((app.log.counter % #words) + 1)]
-        do end (app.log):add_log("[%05d] [%s] Hello, current time is %.1f, here's a word: '%s'\n          ", ImGui.GetFrameCount(ctx), category, ImGui.GetTime(ctx), word)
+        do end (app.log):add_log("[%05d] [%s] Hello, current time is %.1f, here's a word: '%s'\n", ImGui.GetFrameCount(ctx), category, ImGui.GetTime(ctx), word)
         app.log.counter = (app.log.counter + 1)
       end
     else
@@ -7648,14 +7691,14 @@ demo.ShowPlaceholderObject = function(prefix, uid)
         end
         ImGui.TableSetColumnIndex(ctx, 1)
         ImGui.SetNextItemWidth(ctx, ( - FLT_MIN))
-        local function _1185_()
+        local function _1195_()
           if (i >= 5) then
             return 1
           else
             return 0.01
           end
         end
-        _, pmi = ImGui.DragDouble(ctx, "##value", app.property_editor.placeholder_members[i], _1185_())
+        _, pmi = ImGui.DragDouble(ctx, "##value", app.property_editor.placeholder_members[i], _1195_())
         do end (app.property_editor.placeholder_members)[i] = pmi
       end
       ImGui.PopID(ctx)
@@ -7698,13 +7741,13 @@ demo.ShowExampleAppLongText = function()
   if rv then
     ImGui.Text(ctx, "Printing unusually long amount of text.")
     do
-      local rv_1193_, arg1_1192_ = nil, nil
+      local rv_1203_, arg1_1202_ = nil, nil
       do
-        local arg1_1192_0 = app.long_text.test_type
-        local _24 = arg1_1192_0
-        rv_1193_, arg1_1192_ = ImGui.Combo(ctx, "Test type", _24, "Single call to Text()\0\n                                Multiple calls to Text(), clipped\0\n                                Multiple calls to Text(), not clipped (slow)\0")
+        local arg1_1202_0 = app.long_text.test_type
+        local _24 = arg1_1202_0
+        rv_1203_, arg1_1202_ = ImGui.Combo(ctx, "Test type", _24, "Single call to Text()\0\n                                Multiple calls to Text(), clipped\0\n                                Multiple calls to Text(), not clipped (slow)\0")
       end
-      app.long_text.test_type = arg1_1192_
+      app.long_text.test_type = arg1_1202_
     end
     ImGui.Text(ctx, ("Buffer contents: %d lines, %d bytes"):format(app.long_text.lines, (app.long_text.log):len()))
     if ImGui.Button(ctx, "Clear") then
@@ -7724,10 +7767,10 @@ demo.ShowExampleAppLongText = function()
     end
     if ImGui.BeginChild(ctx, "Log") then
       do
-        local _1196_ = app.long_text.test_type
-        if (_1196_ == 0) then
+        local _1206_ = app.long_text.test_type
+        if (_1206_ == 0) then
           ImGui.Text(ctx, app.long_text.log)
-        elseif (_1196_ == 1) then
+        elseif (_1206_ == 1) then
           ImGui.PushStyleVar(ctx, ImGui.StyleVar_ItemSpacing(), 0, 0)
           local clipper = ImGui.CreateListClipper(ctx)
           ImGui.ListClipper_Begin(clipper, app.long_text.lines)
@@ -7738,7 +7781,7 @@ demo.ShowExampleAppLongText = function()
             end
           end
           ImGui.PopStyleVar(ctx)
-        elseif (_1196_ == 2) then
+        elseif (_1206_ == 2) then
           ImGui.PushStyleVar(ctx, ImGui.StyleVar_ItemSpacing(), 0, 0)
           for i = 0, app.long_text.lines do
             ImGui.Text(ctx, ("%i The quick brown fox jumps over the lazy dog"):format(i))
@@ -7764,13 +7807,13 @@ demo.ShowExampleAppAutoResize = function()
   if rv then
     ImGui.Text(ctx, "Window will resize every-frame to the size of its content.\n                  Note that you probably don't want to query the window size to\n                  output your content because that would create a feedback loop.")
     do
-      local rv_1202_, arg1_1201_ = nil, nil
+      local rv_1212_, arg1_1211_ = nil, nil
       do
-        local arg1_1201_0 = app.auto_resize.lines
-        local _24 = arg1_1201_0
-        rv_1202_, arg1_1201_ = ImGui.SliderInt(ctx, "Number of lines", _24, 1, 20)
+        local arg1_1211_0 = app.auto_resize.lines
+        local _24 = arg1_1211_0
+        rv_1212_, arg1_1211_ = ImGui.SliderInt(ctx, "Number of lines", _24, 1, 20)
       end
-      app.auto_resize.lines = arg1_1201_
+      app.auto_resize.lines = arg1_1211_
     end
     for i = 1, app.auto_resize.lines do
       ImGui.Text(ctx, ("%sThis is line %d"):format((" "):rep((i * 4)), i))
@@ -7786,16 +7829,16 @@ demo.ShowExampleAppConstrainedResize = function()
   else
   end
   do
-    local _1205_ = app.constrained_resize.type
-    if (_1205_ == 0) then
+    local _1215_ = app.constrained_resize.type
+    if (_1215_ == 0) then
       ImGui.SetNextWindowSizeConstraints(ctx, 100, 100, 500, 500)
-    elseif (_1205_ == 1) then
+    elseif (_1215_ == 1) then
       ImGui.SetNextWindowSizeConstraints(ctx, 100, 100, FLT_MAX, FLT_MAX)
-    elseif (_1205_ == 2) then
+    elseif (_1215_ == 2) then
       ImGui.SetNextWindowSizeConstraints(ctx, -1, 0, -1, FLT_MAX)
-    elseif (_1205_ == 3) then
+    elseif (_1215_ == 3) then
       ImGui.SetNextWindowSizeConstraints(ctx, 0, -1, FLT_MAX, -1)
-    elseif (_1205_ == 4) then
+    elseif (_1215_ == 4) then
       ImGui.SetNextWindowSizeConstraints(ctx, 400, -1, 500, -1)
     else
     end
@@ -7844,41 +7887,41 @@ demo.ShowExampleAppConstrainedResize = function()
       end
       ImGui.SetNextItemWidth(ctx, (ImGui.GetFontSize(ctx) * 20))
       do
-        local rv_1215_, arg1_1214_ = nil, nil
+        local rv_1225_, arg1_1224_ = nil, nil
         do
-          local arg1_1214_0 = app.constrained_resize.type
-          local _24 = arg1_1214_0
-          rv_1215_, arg1_1214_ = ImGui.Combo(ctx, "Constraint", _24, "Between 100x100 and 500x500\0\n                                   At least 100x100\0\n                                   Resize vertical only\0\n                                   Resize horizontal only\0\n                                   Width Between 400 and 500\0")
+          local arg1_1224_0 = app.constrained_resize.type
+          local _24 = arg1_1224_0
+          rv_1225_, arg1_1224_ = ImGui.Combo(ctx, "Constraint", _24, "Between 100x100 and 500x500\0\n                                   At least 100x100\0\n                                   Resize vertical only\0\n                                   Resize horizontal only\0\n                                   Width Between 400 and 500\0")
         end
-        app.constrained_resize.type = arg1_1214_
+        app.constrained_resize.type = arg1_1224_
       end
       ImGui.SetNextItemWidth(ctx, (ImGui.GetFontSize(ctx) * 20))
       do
-        local rv_1217_, arg1_1216_ = nil, nil
+        local rv_1227_, arg1_1226_ = nil, nil
         do
-          local arg1_1216_0 = app.constrained_resize.display_lines
-          local _24 = arg1_1216_0
-          rv_1217_, arg1_1216_ = ImGui.DragInt(ctx, "Lines", _24, 0.2, 1, 100)
+          local arg1_1226_0 = app.constrained_resize.display_lines
+          local _24 = arg1_1226_0
+          rv_1227_, arg1_1226_ = ImGui.DragInt(ctx, "Lines", _24, 0.2, 1, 100)
         end
-        app.constrained_resize.display_lines = arg1_1216_
+        app.constrained_resize.display_lines = arg1_1226_
       end
       do
-        local rv_1219_, arg1_1218_ = nil, nil
+        local rv_1229_, arg1_1228_ = nil, nil
         do
-          local arg1_1218_0 = app.constrained_resize.auto_resize
-          local _24 = arg1_1218_0
-          rv_1219_, arg1_1218_ = ImGui.Checkbox(ctx, "Auto-resize", _24)
+          local arg1_1228_0 = app.constrained_resize.auto_resize
+          local _24 = arg1_1228_0
+          rv_1229_, arg1_1228_ = ImGui.Checkbox(ctx, "Auto-resize", _24)
         end
-        app.constrained_resize.auto_resize = arg1_1218_
+        app.constrained_resize.auto_resize = arg1_1228_
       end
       do
-        local rv_1221_, arg1_1220_ = nil, nil
+        local rv_1231_, arg1_1230_ = nil, nil
         do
-          local arg1_1220_0 = app.constrained_resize.window_padding
-          local _24 = arg1_1220_0
-          rv_1221_, arg1_1220_ = ImGui.Checkbox(ctx, "Window padding", _24)
+          local arg1_1230_0 = app.constrained_resize.window_padding
+          local _24 = arg1_1230_0
+          rv_1231_, arg1_1230_ = ImGui.Checkbox(ctx, "Window padding", _24)
         end
-        app.constrained_resize.window_padding = arg1_1220_
+        app.constrained_resize.window_padding = arg1_1230_
       end
       for i = 1, app.constrained_resize.display_lines do
         ImGui.Text(ctx, ("%sHello, sailor! Making this line long enough for the example."):format((" "):rep((i * 4))))
@@ -7991,50 +8034,50 @@ demo.ShowExampleAppFullscreen = function()
     ImGui.SameLine(ctx)
     demo.HelpMarker("Main Area = entire viewport,\n    Work Area = entire viewport minus sections used by the main menu bars, task bars etc.\n\n    Enable the main-menu bar in Examples menu to see the difference.")
     do
-      local rv_1241_, arg1_1240_ = nil, nil
+      local rv_1251_, arg1_1250_ = nil, nil
       do
-        local arg1_1240_0 = app.fullscreen.flags
-        local _24 = arg1_1240_0
-        rv_1241_, arg1_1240_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoBackground", _24, ImGui.WindowFlags_NoBackground())
+        local arg1_1250_0 = app.fullscreen.flags
+        local _24 = arg1_1250_0
+        rv_1251_, arg1_1250_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoBackground", _24, ImGui.WindowFlags_NoBackground())
       end
-      app.fullscreen.flags = arg1_1240_
+      app.fullscreen.flags = arg1_1250_
     end
     do
-      local rv_1243_, arg1_1242_ = nil, nil
+      local rv_1253_, arg1_1252_ = nil, nil
       do
-        local arg1_1242_0 = app.fullscreen.flags
-        local _24 = arg1_1242_0
-        rv_1243_, arg1_1242_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoDecoration", _24, ImGui.WindowFlags_NoDecoration())
+        local arg1_1252_0 = app.fullscreen.flags
+        local _24 = arg1_1252_0
+        rv_1253_, arg1_1252_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoDecoration", _24, ImGui.WindowFlags_NoDecoration())
       end
-      app.fullscreen.flags = arg1_1242_
+      app.fullscreen.flags = arg1_1252_
     end
     ImGui.Indent(ctx)
     do
-      local rv_1245_, arg1_1244_ = nil, nil
+      local rv_1255_, arg1_1254_ = nil, nil
       do
-        local arg1_1244_0 = app.fullscreen.flags
-        local _24 = arg1_1244_0
-        rv_1245_, arg1_1244_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoTitleBar", _24, ImGui.WindowFlags_NoTitleBar())
+        local arg1_1254_0 = app.fullscreen.flags
+        local _24 = arg1_1254_0
+        rv_1255_, arg1_1254_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoTitleBar", _24, ImGui.WindowFlags_NoTitleBar())
       end
-      app.fullscreen.flags = arg1_1244_
+      app.fullscreen.flags = arg1_1254_
     end
     do
-      local rv_1247_, arg1_1246_ = nil, nil
+      local rv_1257_, arg1_1256_ = nil, nil
       do
-        local arg1_1246_0 = app.fullscreen.flags
-        local _24 = arg1_1246_0
-        rv_1247_, arg1_1246_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoCollapse", _24, ImGui.WindowFlags_NoCollapse())
+        local arg1_1256_0 = app.fullscreen.flags
+        local _24 = arg1_1256_0
+        rv_1257_, arg1_1256_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoCollapse", _24, ImGui.WindowFlags_NoCollapse())
       end
-      app.fullscreen.flags = arg1_1246_
+      app.fullscreen.flags = arg1_1256_
     end
     do
-      local rv_1249_, arg1_1248_ = nil, nil
+      local rv_1259_, arg1_1258_ = nil, nil
       do
-        local arg1_1248_0 = app.fullscreen.flags
-        local _24 = arg1_1248_0
-        rv_1249_, arg1_1248_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoScrollbar", _24, ImGui.WindowFlags_NoScrollbar())
+        local arg1_1258_0 = app.fullscreen.flags
+        local _24 = arg1_1258_0
+        rv_1259_, arg1_1258_ = ImGui.CheckboxFlags(ctx, "ImGuiWindowFlags_NoScrollbar", _24, ImGui.WindowFlags_NoScrollbar())
       end
-      app.fullscreen.flags = arg1_1248_
+      app.fullscreen.flags = arg1_1258_
     end
     ImGui.Unindent(ctx)
     if ImGui.Button(ctx, "Close this window") then
@@ -8073,7 +8116,7 @@ demo.ShowExampleAppWindowTitles = function()
 end
 demo.ShowExampleAppCustomRendering = function()
   if not app.rendering then
-    app.rendering = {circle_segments_override_v = 12, col = 4294928127, curve_segments_override_v = 8, draw_bg = true, draw_fg = true, ngon_sides = 6, opt_enable_context_menu = true, opt_enable_grid = true, points = {}, scrolling = {0, 0}, sz = 36, thickness = 3, curve_segments_override = false, circle_segments_override = false, adding_line = false}
+    app.rendering = {circle_segments_override_v = 12, col = 4294928127, curve_segments_override_v = 8, draw_bg = true, draw_fg = true, ngon_sides = 6, opt_enable_context_menu = true, opt_enable_grid = true, points = {}, scrolling = {0, 0}, sz = 36, thickness = 3, adding_line = false, curve_segments_override = false, circle_segments_override = false}
   else
   end
   local rv, open = ImGui.Begin(ctx, "Example: Custom rendering", true)
@@ -8102,40 +8145,40 @@ demo.ShowExampleAppCustomRendering = function()
       local item_inner_spacing_x = ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemInnerSpacing())
       ImGui.Text(ctx, "All primitives")
       do
-        local rv_1258_, arg1_1257_ = nil, nil
+        local rv_1268_, arg1_1267_ = nil, nil
         do
-          local arg1_1257_0 = app.rendering.sz
-          local _24 = arg1_1257_0
-          rv_1258_, arg1_1257_ = ImGui.DragDouble(ctx, "Size", _24, 0.2, 2, 100, "%.0f")
+          local arg1_1267_0 = app.rendering.sz
+          local _24 = arg1_1267_0
+          rv_1268_, arg1_1267_ = ImGui.DragDouble(ctx, "Size", _24, 0.2, 2, 100, "%.0f")
         end
-        app.rendering.sz = arg1_1257_
+        app.rendering.sz = arg1_1267_
       end
       do
-        local rv_1260_, arg1_1259_ = nil, nil
+        local rv_1270_, arg1_1269_ = nil, nil
         do
-          local arg1_1259_0 = app.rendering.thickness
-          local _24 = arg1_1259_0
-          rv_1260_, arg1_1259_ = ImGui.DragDouble(ctx, "Thickness", _24, 0.05, 1, 8, "%.02f")
+          local arg1_1269_0 = app.rendering.thickness
+          local _24 = arg1_1269_0
+          rv_1270_, arg1_1269_ = ImGui.DragDouble(ctx, "Thickness", _24, 0.05, 1, 8, "%.02f")
         end
-        app.rendering.thickness = arg1_1259_
+        app.rendering.thickness = arg1_1269_
       end
       do
-        local rv_1262_, arg1_1261_ = nil, nil
+        local rv_1272_, arg1_1271_ = nil, nil
         do
-          local arg1_1261_0 = app.rendering.ngon_sides
-          local _24 = arg1_1261_0
-          rv_1262_, arg1_1261_ = ImGui.SliderInt(ctx, "N-gon sides", _24, 3, 12)
+          local arg1_1271_0 = app.rendering.ngon_sides
+          local _24 = arg1_1271_0
+          rv_1272_, arg1_1271_ = ImGui.SliderInt(ctx, "N-gon sides", _24, 3, 12)
         end
-        app.rendering.ngon_sides = arg1_1261_
+        app.rendering.ngon_sides = arg1_1271_
       end
       do
-        local rv_1264_, arg1_1263_ = nil, nil
+        local rv_1274_, arg1_1273_ = nil, nil
         do
-          local arg1_1263_0 = app.rendering.circle_segments_override
-          local _24 = arg1_1263_0
-          rv_1264_, arg1_1263_ = ImGui.Checkbox(ctx, "##circlesegmentoverride", _24)
+          local arg1_1273_0 = app.rendering.circle_segments_override
+          local _24 = arg1_1273_0
+          rv_1274_, arg1_1273_ = ImGui.Checkbox(ctx, "##circlesegmentoverride", _24)
         end
-        app.rendering.circle_segments_override = arg1_1263_
+        app.rendering.circle_segments_override = arg1_1273_
       end
       ImGui.SameLine(ctx, 0, item_inner_spacing_x)
       rv, app.rendering.circle_segments_override_v = ImGui.SliderInt(ctx, "Circle segments override", app.rendering.circle_segments_override_v, 3, 40)
@@ -8144,13 +8187,13 @@ demo.ShowExampleAppCustomRendering = function()
       else
       end
       do
-        local rv_1267_, arg1_1266_ = nil, nil
+        local rv_1277_, arg1_1276_ = nil, nil
         do
-          local arg1_1266_0 = app.rendering.curve_segments_override
-          local _24 = arg1_1266_0
-          rv_1267_, arg1_1266_ = ImGui.Checkbox(ctx, "##curvessegmentoverride", _24)
+          local arg1_1276_0 = app.rendering.curve_segments_override
+          local _24 = arg1_1276_0
+          rv_1277_, arg1_1276_ = ImGui.Checkbox(ctx, "##curvessegmentoverride", _24)
         end
-        app.rendering.curve_segments_override = arg1_1266_
+        app.rendering.curve_segments_override = arg1_1276_
       end
       ImGui.SameLine(ctx, 0, item_inner_spacing_x)
       rv, app.rendering.curve_segments_override_v = ImGui.SliderInt(ctx, "Curves segments override", app.rendering.curve_segments_override_v, 3, 40)
@@ -8159,13 +8202,13 @@ demo.ShowExampleAppCustomRendering = function()
       else
       end
       do
-        local rv_1270_, arg1_1269_ = nil, nil
+        local rv_1280_, arg1_1279_ = nil, nil
         do
-          local arg1_1269_0 = app.rendering.col
-          local _24 = arg1_1269_0
-          rv_1270_, arg1_1269_ = ImGui.ColorEdit4(ctx, "Color", _24)
+          local arg1_1279_0 = app.rendering.col
+          local _24 = arg1_1279_0
+          rv_1280_, arg1_1279_ = ImGui.ColorEdit4(ctx, "Color", _24)
         end
-        app.rendering.col = arg1_1269_
+        app.rendering.col = arg1_1279_
       end
       local p = {ImGui.GetCursorScreenPos(ctx)}
       local spacing = 10
@@ -8180,45 +8223,45 @@ demo.ShowExampleAppCustomRendering = function()
       for n = 1, 2 do
         local th = (((n == 1) and 1) or app.rendering.thickness)
         ImGui.DrawList_AddNgon(draw_list, (x + (sz * 0.5)), (y + (sz * 0.5)), (sz * 0.5), col, app.rendering.ngon_sides, th)
-        x = ((x + sz) + spacing)
+        x = (x + (sz + spacing))
         ImGui.DrawList_AddCircle(draw_list, (x + (sz * 0.5)), (y + (sz * 0.5)), (sz * 0.5), col, circle_segments, th)
-        x = ((x + sz) + spacing)
+        x = (x + (sz + spacing))
         ImGui.DrawList_AddRect(draw_list, x, y, (x + sz), (y + sz), col, 0, ImGui.DrawFlags_None(), th)
-        x = ((x + sz) + spacing)
+        x = (x + (sz + spacing))
         ImGui.DrawList_AddRect(draw_list, x, y, (x + sz), (y + sz), col, rounding, ImGui.DrawFlags_None(), th)
-        x = ((x + sz) + spacing)
+        x = (x + (sz + spacing))
         ImGui.DrawList_AddRect(draw_list, x, y, (x + sz), (y + sz), col, rounding, corners_tl_br, th)
-        x = ((x + sz) + spacing)
+        x = (x + (sz + spacing))
         ImGui.DrawList_AddTriangle(draw_list, (x + (sz * 0.5)), y, (x + sz), ((y + sz) - 0.5), x, ((y + sz) - 0.5), col, th)
-        x = ((x + sz) + spacing)
+        x = (x + (sz + spacing))
         ImGui.DrawList_AddLine(draw_list, x, y, (x + sz), y, col, th)
-        x = ((x + sz) + spacing)
+        x = (x + (sz + spacing))
         ImGui.DrawList_AddLine(draw_list, x, y, x, (y + sz), col, th)
         x = (x + spacing)
         ImGui.DrawList_AddLine(draw_list, x, y, (x + sz), (y + sz), col, th)
-        x = ((x + sz) + spacing)
+        x = (x + (sz + spacing))
         local cp3 = {{x, (y + (sz * 0.6))}, {(x + (sz * 0.5)), (y - (sz * 0.4))}, {(x + sz), (y + sz)}}
         ImGui.DrawList_AddBezierQuadratic(draw_list, ((cp3)[1])[1], ((cp3)[1])[2], ((cp3)[2])[1], ((cp3)[2])[2], ((cp3)[3])[1], ((cp3)[3])[2], col, th, curve_segments)
         x = (x + sz + spacing)
         local cp4 = {{x, y}, {(x + (sz * 1.3)), (y + (sz * 0.3))}, {((x + sz) - (sz * 1.3)), ((y + sz) - (sz * 0.3))}, {(x + sz), (y + sz)}}
-        ImGui.DrawList_AddBezierCubic(draw_list, ((cp4)[1])[1], ((cp4)[1])[2], ((cp4)[2])[1], ((cp4)[2])[2], ((cp4)[3])[1], ((cp4)[3])[2], ((cp4)[4])[1], ((cp4)[4])[2], col, th, curve_segments)
+        ImGui.DrawList_AddBezierCubic(draw_list, (cp4)[1][1], (cp4)[1][2], (cp4)[2][1], (cp4)[2][2], (cp4)[3][1], (cp4)[3][2], (cp4)[4][1], (cp4)[4][2], col, th, curve_segments)
         x = (p[1] + 4)
-        y = ((y + sz) + spacing)
+        y = (y + sz + spacing)
       end
       ImGui.DrawList_AddNgonFilled(draw_list, (x + (sz * 0.5)), (y + (sz * 0.5)), (sz * 0.5), col, app.rendering.ngon_sides)
-      x = ((x + sz) + spacing)
+      x = (x + sz + spacing)
       ImGui.DrawList_AddCircleFilled(draw_list, (x + (sz * 0.5)), (y + (sz * 0.5)), (sz * 0.5), col, circle_segments)
-      x = ((x + sz) + spacing)
+      x = (x + sz + spacing)
       ImGui.DrawList_AddRectFilled(draw_list, x, y, (x + sz), (y + sz), col)
-      x = ((x + sz) + spacing)
+      x = (x + sz + spacing)
       ImGui.DrawList_AddRectFilled(draw_list, x, y, (x + sz), (y + sz), col, 10)
-      x = ((x + sz) + spacing)
+      x = (x + sz + spacing)
       ImGui.DrawList_AddRectFilled(draw_list, x, y, (x + sz), (y + sz), col, 10, corners_tl_br)
-      x = ((x + sz) + spacing)
+      x = (x + sz + spacing)
       ImGui.DrawList_AddTriangleFilled(draw_list, (x + (sz * 0.5)), y, (x + sz), ((y + sz) - 0.5), x, ((y + sz) - 0.5), col)
-      x = ((x + sz) + spacing)
+      x = (x + sz + spacing)
       ImGui.DrawList_AddRectFilled(draw_list, x, y, (x + sz), (y + app.rendering.thickness), col)
-      x = ((x + sz) + spacing)
+      x = (x + sz + spacing)
       ImGui.DrawList_AddRectFilled(draw_list, x, y, (x + app.rendering.thickness), (y + sz), col)
       x = (x + (spacing * 2))
       ImGui.DrawList_AddRectFilled(draw_list, x, y, (x + 1), (y + 1), col)
@@ -8354,11 +8397,11 @@ end
 local tbl_14_auto = {}
 for _, f in ipairs({"ShowDemoWindow", "ShowStyleEditor", "PushStyle", "PopStyle"}) do
   local k_15_auto, v_16_auto = nil, nil
-  local function _1289_(user_ctx, ...)
+  local function _1299_(user_ctx, ...)
     ctx = user_ctx
     return demo[f](...)
   end
-  k_15_auto, v_16_auto = f, _1289_
+  k_15_auto, v_16_auto = f, _1299_
   if ((k_15_auto ~= nil) and (v_16_auto ~= nil)) then
     tbl_14_auto[k_15_auto] = v_16_auto
   else

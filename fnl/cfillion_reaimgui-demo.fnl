@@ -2,7 +2,7 @@
 ;;
 ;;This file can be imported in other scripts to help during development:
 
-(import-macros {: doimgui : update-2nd-array : set-when-not} :imgui-macros)
+(import-macros {: doimgui : update-2nd-array : set-when-not : +=} :imgui-macros)
 
 (comment
 (local demo
@@ -5567,21 +5567,22 @@ Hovering the colored canvas will call SetNextFrameWantCaptureXXX.")
 
 (fn demo.ShowStyleEditor []
   (var rv nil)
-  (when (not app.style_editor)
-    (set app.style_editor
-         {:output_dest 0
-          :output_only_modified true
-          :push_count 0
-          :ref (demo.GetStyleData)
-          :style (demo.GetStyleData)}))
+  (set-when-not app.style_editor
+                {:output_dest 0
+                 :output_only_modified true
+                 :push_count 0
+                 :ref (demo.GetStyleData)
+                 :style (demo.GetStyleData)})
+  ;;     if (ImGui.ShowStyleSelector("Colors##Selector"))
+  ;;         ref_saved_style = style;
+  ;;     ImGui.ShowFontSelector("Fonts##Selector");
+
+  ;; Simplified Settings (expose floating-pointer border sizes as boolean representing 0.0 or 1.0)
   (ImGui.PushItemWidth ctx (* (ImGui.GetWindowWidth ctx) 0.5))
   (local (Frame-rounding Grab-rounding)
          (values (ImGui.StyleVar_FrameRounding) (ImGui.StyleVar_GrabRounding)))
   (set-forcibly! (rv vfr)
-                 (ImGui.SliderDouble ctx :FrameRounding
-                                      (. app.style_editor.style.vars
-                                         Frame-rounding)
-                                      0 12 "%.0f"))
+                 (ImGui.SliderDouble ctx :FrameRounding (. app.style_editor.style.vars Frame-rounding) 0.0 12.0 "%.0f"))
   (tset app.style_editor.style.vars Frame-rounding vfr)
   (when rv
     (tset app.style_editor.style.vars Grab-rounding
@@ -5656,19 +5657,19 @@ Hovering the colored canvas will call SetNextFrameWantCaptureXXX.")
           (local ___var___ (func))
           (if (= (type (. app.style_editor.style.vars ___var___)) :table)
               (let [(rv val1 val2) (ImGui.SliderDouble2 ctx varname
-                                                         (. (. app.style_editor.style.vars
-                                                               ___var___)
-                                                            1)
-                                                         (. (. app.style_editor.style.vars
-                                                               ___var___)
-                                                            2)
-                                                         min max format)]
+                                                        (. app.style_editor.style.vars
+                                                           ___var___
+                                                           1)
+                                                        (. app.style_editor.style.vars
+                                                           ___var___
+                                                           2)
+                                                        min max format)]
                 (when rv
                   (tset app.style_editor.style.vars ___var___ [val1 val2])))
               (let [(rv val) (ImGui.SliderDouble ctx varname
-                                                  (. app.style_editor.style.vars
-                                                     ___var___)
-                                                  min max format)]
+                                                 (. app.style_editor.style.vars
+                                                    ___var___)
+                                                 min max format)]
                 (when rv (tset app.style_editor.style.vars ___var___ val))))))
 
       (ImGui.SeparatorText ctx :Main)
@@ -5706,17 +5707,15 @@ Hovering the colored canvas will call SetNextFrameWantCaptureXXX.")
       (slider :SeparatorTextPadding 0 40 "%.0f")
       (ImGui.EndTabItem ctx))
     (when (ImGui.BeginTabItem ctx :Colors)
-      (when (not app.style_editor.colors)
-        (set app.style_editor.colors
-             {:alpha_flags (ImGui.ColorEditFlags_None)
-              :filter {:inst nil :text ""}}))
-      (when (not (ImGui.ValidatePtr app.style_editor.colors.filter.inst
-                                     :ImGui_TextFilter*))
+      (set-when-not app.style_editor.colors
+                    {:alpha_flags (ImGui.ColorEditFlags_None)
+                     :filter {:inst nil :text ""}})
+      (when (not (ImGui.ValidatePtr app.style_editor.colors.filter.inst :ImGui_TextFilter*))
         (set app.style_editor.colors.filter.inst
              (ImGui.CreateTextFilter app.style_editor.colors.filter.text)))
       (when (ImGui.TextFilter_Draw app.style_editor.colors.filter.inst ctx
-                                    "Filter colors"
-                                    (* (ImGui.GetFontSize ctx) 16))
+                                   "Filter colors"
+                                   (* (ImGui.GetFontSize ctx) 16))
         (set app.style_editor.colors.filter.text
              (ImGui.TextFilter_Get app.style_editor.colors.filter.inst)))
       (when (ImGui.RadioButton ctx :Opaque
@@ -5742,8 +5741,9 @@ Right-click to open edit options menu.")
       (when (ImGui.BeginChild ctx "##colors" 0 0 true
                                (bor (ImGui.WindowFlags_AlwaysVerticalScrollbar)
                                     (ImGui.WindowFlags_AlwaysHorizontalScrollbar)
+                                    ;; ImGui.WindowFlags_NavFlattened()) TODO: BETA/INTERNAL, not exposed yet
                                     0))
-        (ImGui.PushItemWidth ctx (- 160))
+        (ImGui.PushItemWidth ctx -160)
         (local inner-spacing
                (ImGui.GetStyleVar ctx (ImGui.StyleVar_ItemInnerSpacing)))
         (each [i name (demo.EachEnum :Col)]
@@ -5752,13 +5752,15 @@ Right-click to open edit options menu.")
             (ImGui.PushID ctx i)
             (set-forcibly! (rv ci)
                            (ImGui.ColorEdit4 ctx "##color"
-                                              (. app.style_editor.style.colors
-                                                 i)
+                                              (. app.style_editor.style.colors i)
                                               (bor (ImGui.ColorEditFlags_AlphaBar)
                                                    app.style_editor.colors.alpha_flags)))
             (tset app.style_editor.style.colors i ci)
             (when (not= (. app.style_editor.style.colors i)
                         (. app.style_editor.ref.colors i))
+              ;; Tips: in a real user application, you may want to merge and use an icon font into the main font,
+              ;; so instead of "Save"/"Revert" you'd use icons!
+              ;; Read the FAQ and docs/FONTS.md about using icon fonts. It's really easy and super convenient!
               (ImGui.SameLine ctx 0 inner-spacing)
               (when (ImGui.Button ctx :Save)
                 (tset app.style_editor.ref.colors i
@@ -5773,10 +5775,90 @@ Right-click to open edit options menu.")
         (ImGui.PopItemWidth ctx)
         (ImGui.EndChild ctx))
       (ImGui.EndTabItem ctx))
+;;         if (ImGui.BeginTabItem("Fonts"))
+;;         {
+;;             ImGuiIO& io = ImGui.GetIO();
+;;             ImFontAtlas* atlas = io.Fonts;
+;;             HelpMarker("Read FAQ and docs/FONTS.md for details on font loading.");
+;;             ImGui.ShowFontAtlas(atlas);
+;;
+;;             // Post-baking font scaling. Note that this is NOT the nice way of scaling fonts, read below.
+;;             // (we enforce hard clamping manually as by default DragFloat/SliderFloat allows CTRL+Click text to get out of bounds).
+;;             const float MIN_SCALE = 0.3f;
+;;             const float MAX_SCALE = 2.0f;
+;;             HelpMarker(
+;;                 "Those are old settings provided for convenience.\n"
+;;                 "However, the _correct_ way of scaling your UI is currently to reload your font at the designed size, "
+;;                 "rebuild the font atlas, and call app.style_editor.style.ScaleAllSizes() on a reference ImGuiStyle structure.\n"
+;;                 "Using those settings here will give you poor quality results.");
+;;             static float window_scale = 1.0f;
+;;             ImGui.PushItemWidth(ImGui.GetFontSize() * 8);
+;;             if (ImGui.DragFloat("window scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp)) // Scale only this window
+;;                 ImGui.SetWindowFontScale(window_scale);
+;;             ImGui.DragFloat("global scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp); // Scale everything
+;;             ImGui.PopItemWidth();
+;;
+;;             ImGui.EndTabItem();
+;;         }
+;;
     (when (ImGui.BeginTabItem ctx :Rendering)
+;;             ImGui.Checkbox("Anti-aliased lines", &style.AntiAliasedLines);
+;;             ImGui.SameLine();
+;;             HelpMarker("When disabling anti-aliasing lines, you'll probably want to disable borders in your style as well.");
+;;
+;;             ImGui.Checkbox("Anti-aliased lines use texture", &style.AntiAliasedLinesUseTex);
+;;             ImGui.SameLine();
+;;             HelpMarker("Faster lines using texture data. Require backend to render with bilinear filtering (not point/nearest filtering).");
+;;
+;;             ImGui.Checkbox("Anti-aliased fill", &style.AntiAliasedFill);
       (ImGui.PushItemWidth ctx (* (ImGui.GetFontSize ctx) 8))
+;;             ImGui.DragFloat("Curve Tessellation Tolerance", &style.CurveTessellationTol, 0.02f, 0.10f, 10.0f, "%.2f");
+;;             if (style.CurveTessellationTol < 0.10f) style.CurveTessellationTol = 0.10f;
+;;
+;;             // When editing the "Circle Segment Max Error" value, draw a preview of its effect on auto-tessellated circles.
+;;             ImGui.DragFloat("Circle Tessellation Max Error", &style.CircleTessellationMaxError , 0.005f, 0.10f, 5.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+;;             if (ImGui.IsItemActive())
+;;             {
+;;                 ImGui.SetNextWindowPos(ImGui.GetCursorScreenPos());
+;;                 ImGui.BeginTooltip();
+;;                 ImGui.TextUnformatted("(R = radius, N = number of segments)");
+;;                 ImGui.Spacing();
+;;                 ImDrawList* draw_list = ImGui.GetWindowDrawList();
+;;                 const float min_widget_width = ImGui.CalcTextSize("N: MMM\nR: MMM").x;
+;;                 for (int n = 0; n < 8; n++)
+;;                 {
+;;                     const float RAD_MIN = 5.0f;
+;;                     const float RAD_MAX = 70.0f;
+;;                     const float rad = RAD_MIN + (RAD_MAX - RAD_MIN) * (float)n / (8.0f - 1.0f);
+;;
+;;                     ImGui.BeginGroup();
+;;
+;;                     ImGui.Text("R: %.f\nN: %d", rad, draw_list->_CalcCircleAutoSegmentCount(rad));
+;;
+;;                     const float canvas_width = IM_MAX(min_widget_width, rad * 2.0f);
+;;                     const float offset_x     = floorf(canvas_width * 0.5f);
+;;                     const float offset_y     = floorf(RAD_MAX);
+;;
+;;                     const ImVec2 p1 = ImGui.GetCursorScreenPos();
+;;                     draw_list->AddCircle(ImVec2(p1.x + offset_x, p1.y + offset_y), rad, ImGui.GetColorU32(ImGuiCol_Text));
+;;                     ImGui.Dummy(ImVec2(canvas_width, RAD_MAX * 2));
+;;
+;;                     /*
+;;                     const ImVec2 p2 = ImGui.GetCursorScreenPos();
+;;                     draw_list->AddCircleFilled(ImVec2(p2.x + offset_x, p2.y + offset_y), rad, ImGui.GetColorU32(ImGuiCol_Text));
+;;                     ImGui.Dummy(ImVec2(canvas_width, RAD_MAX * 2));
+;;                     */
+;;
+;;                     ImGui.EndGroup();
+;;                     ImGui.SameLine();
+;;                 }
+;;                 ImGui.EndTooltip();
+;;             }
+;;             ImGui.SameLine();
+;;             HelpMarker("When drawing circle primitives with \"num_segments == 0\" tesselation will be calculated automatically.");
       (local (Alpha Disabled-alpha)
              (values (ImGui.StyleVar_Alpha) (ImGui.StyleVar_DisabledAlpha)))
+      ;; Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
       (set-forcibly! (rv v-a)
                      (ImGui.DragDouble ctx "Global Alpha"
                                         (. app.style_editor.style.vars Alpha)
@@ -5795,58 +5877,100 @@ Right-click to open edit options menu.")
     (ImGui.EndTabBar ctx))
   (ImGui.PopItemWidth ctx))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; [SECTION] User Guide / ShowUserGuide()
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
 (fn demo.ShowUserGuide []
-  (ImGui.BulletText ctx "Double-click on title bar to collapse window.")
-  (ImGui.BulletText ctx "Click and drag on lower corner to resize window
-(double-click to auto fit window to its contents).")
-  (ImGui.BulletText ctx "CTRL+Click on a slider or drag box to input value as text.")
-  (ImGui.BulletText ctx "TAB/SHIFT+TAB to cycle through keyboard editable fields.")
-  (ImGui.BulletText ctx "CTRL+Tab to select a window.")
-  (ImGui.BulletText ctx "While inputing text:\n")
-  (ImGui.Indent ctx)
-  (ImGui.BulletText ctx "CTRL+Left/Right to word jump.")
-  (ImGui.BulletText ctx "CTRL+A or double-click to select all.")
-  (ImGui.BulletText ctx "CTRL+X/C/V to use clipboard cut/copy/paste.")
-  (ImGui.BulletText ctx "CTRL+Z,CTRL+Y to undo/redo.")
-  (ImGui.BulletText ctx "ESCAPE to revert.")
-  (ImGui.Unindent ctx)
-  (ImGui.BulletText ctx "With keyboard navigation enabled:")
-  (ImGui.Indent ctx)
-  (ImGui.BulletText ctx "Arrow keys to navigate.")
-  (ImGui.BulletText ctx "Space to activate a widget.")
-  (ImGui.BulletText ctx "Return to input text into a widget.")
-  (ImGui.BulletText ctx "Escape to deactivate a widget, close popup, exit child window.")
-  (ImGui.BulletText ctx "Alt to jump to the menu layer of a window.")
-  (ImGui.Unindent ctx))
+  ;; ImGuiIO& io = ImGui.GetIO() TODO
+  (doto ctx
+    (ImGui.BulletText "Double-click on title bar to collapse window.")
+    (ImGui.BulletText "Click and drag on lower corner to resize window
+    (double-click to auto fit window to its contents).")
+    (ImGui.BulletText "CTRL+Click on a slider or drag box to input value as text.")
+    (ImGui.BulletText "TAB/SHIFT+TAB to cycle through keyboard editable fields.")
+    (ImGui.BulletText "CTRL+Tab to select a window.")
+    ;; if (io.FontAllowUserScaling)
+    ;;     ImGui.BulletText(ctx, 'CTRL+Mouse Wheel to zoom window contents.')
+    (ImGui.BulletText "While inputing text:\n")
+    ImGui.Indent
+    (ImGui.BulletText "CTRL+Left/Right to word jump.")
+    (ImGui.BulletText "CTRL+A or double-click to select all.")
+    (ImGui.BulletText "CTRL+X/C/V to use clipboard cut/copy/paste.")
+    (ImGui.BulletText "CTRL+Z,CTRL+Y to undo/redo.")
+    (ImGui.BulletText "ESCAPE to revert.")
+    ImGui.Unindent
+    (ImGui.BulletText "With keyboard navigation enabled:")
+    ImGui.Indent
+    (ImGui.BulletText "Arrow keys to navigate.")
+    (ImGui.BulletText "Space to activate a widget.")
+    (ImGui.BulletText "Return to input text into a widget.")
+    (ImGui.BulletText "Escape to deactivate a widget, close popup, exit child window.")
+    (ImGui.BulletText "Alt to jump to the menu layer of a window.")
+    ImGui.Unindent))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-
+;; [SECTION] Example App: Main Menu Bar / ShowExampleAppMainMenuBar()
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-
+;; - ShowExampleAppMainMenuBar()
+;; - ShowExampleMenuFile()
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-
+
+;; Demonstrate creating a "main" fullscreen menu bar and populating it.
+;; Note the difference between BeginMainMenuBar() and BeginMenuBar():
+;; - BeginMenuBar() = menu-bar inside current window (which needs the ImGuiWindowFlags_MenuBar flag!)
+;; - BeginMainMenuBar() = helper to create menu-bar-sized window at the top of the main viewport + call BeginMenuBar() into it.
+;; function demo.ShowExampleAppMainMenuBar()
+;;   if ImGui.BeginMainMenuBar(ctx) then
+;;     if ImGui.BeginMenu(ctx, 'File') then
+;;       demo.ShowExampleMenuFile()
+;;       ImGui.EndMenu(ctx)
+;;     end
+;;     if ImGui.BeginMenu(ctx, 'Edit') then
+;;       if ImGui.MenuItem(ctx, 'Undo', 'CTRL+Z') then end
+;;       if ImGui.MenuItem(ctx, 'Redo', 'CTRL+Y', false, false) then end ;; Disabled item
+;;       ImGui.Separator(ctx)
+;;       if ImGui.MenuItem(ctx, 'Cut', 'CTRL+X') then end
+;;       if ImGui.MenuItem(ctx, 'Copy', 'CTRL+C') then end
+;;       if ImGui.MenuItem(ctx, 'Paste', 'CTRL+V') then end
+;;       ImGui.EndMenu(ctx)
+;;     end
+;;     ImGui.EndMainMenuBar(ctx)
+;;   end
+;; end
+
+;; Note that shortcuts are currently provided for display only
+;; (future version will add explicit flags to BeginMenu() to request processing shortcuts)
 (fn demo.ShowExampleMenuFile []
   (var rv nil)
   (ImGui.MenuItem ctx "(demo menu)" nil false false)
   (when (ImGui.MenuItem ctx :New) nil)
   (when (ImGui.MenuItem ctx :Open :Ctrl+O) nil)
   (when (ImGui.BeginMenu ctx "Open Recent")
-    (ImGui.MenuItem ctx :fish_hat.c)
-    (ImGui.MenuItem ctx :fish_hat.inl)
-    (ImGui.MenuItem ctx :fish_hat.h)
-    (when (ImGui.BeginMenu ctx :More..) (ImGui.MenuItem ctx :Hello)
+    (doto ctx
+      (ImGui.MenuItem :fish_hat.c)
+      (ImGui.MenuItem :fish_hat.inl)
+      (ImGui.MenuItem :fish_hat.h))
+    (when (ImGui.BeginMenu ctx :More..)
+      (ImGui.MenuItem ctx :Hello)
       (ImGui.MenuItem ctx :Sailor)
-      (when (ImGui.BeginMenu ctx :Recurse..) (demo.ShowExampleMenuFile)
+      (when (ImGui.BeginMenu ctx :Recurse..)
+        (demo.ShowExampleMenuFile)
         (ImGui.EndMenu ctx))
       (ImGui.EndMenu ctx))
     (ImGui.EndMenu ctx))
   (when (ImGui.MenuItem ctx :Save :Ctrl+S) nil)
   (when (ImGui.MenuItem ctx "Save As..") nil)
+
   (ImGui.Separator ctx)
   (when (ImGui.BeginMenu ctx :Options)
-    (set (rv demo.menu.enabled)
-         (ImGui.MenuItem ctx :Enabled "" demo.menu.enabled))
+    (doimgui demo.menu.enabled (ImGui.MenuItem ctx :Enabled "" $))
     (when (ImGui.BeginChild ctx :child 0 60 true)
       (for [i 0 9] (ImGui.Text ctx (: "Scrolling Text %d" :format i)))
       (ImGui.EndChild ctx))
-    (set (rv demo.menu.f) (ImGui.SliderDouble ctx :Value demo.menu.f 0 1))
-    (set (rv demo.menu.f) (ImGui.InputDouble ctx :Input demo.menu.f 0.1))
-    (set (rv demo.menu.n)
-         (ImGui.Combo ctx :Combo demo.menu.n "Yes\000No\000Maybe\000"))
+    (doimgui demo.menu.f (ImGui.SliderDouble ctx :Value $ 0 1))
+    (doimgui demo.menu.f (ImGui.InputDouble ctx :Input $ 0.1))
+    (doimgui demo.menu.n (ImGui.Combo ctx :Combo $ "Yes\000No\000Maybe\000"))
     (ImGui.EndMenu ctx))
   (when (ImGui.BeginMenu ctx :Colors)
     (local sz (ImGui.GetTextLineHeight ctx))
@@ -5859,18 +5983,392 @@ Right-click to open edit options menu.")
       (ImGui.SameLine ctx)
       (ImGui.MenuItem ctx name))
     (ImGui.EndMenu ctx))
-  (when (ImGui.BeginMenu ctx :Options)
-    (set (rv demo.menu.b) (ImGui.Checkbox ctx :SomeOption demo.menu.b))
+
+  ;; Here we demonstrate appending again to the "Options" menu (which we already created above)
+  ;; Of course in this demo it is a little bit silly that this function calls BeginMenu("Options") twice.
+  ;; In a real code-base using it would make senses to use this feature from very different code locations.
+  (when (ImGui.BeginMenu ctx :Options) ;; <-- Append!
+    (doimgui demo.menu.b (ImGui.Checkbox ctx :SomeOption $))
     (ImGui.EndMenu ctx))
+
+  ;; Disabled
   (when (ImGui.BeginMenu ctx :Disabled false) (error "never called"))
   (when (ImGui.MenuItem ctx :Checked nil true) nil)
   (ImGui.Separator ctx)
   (when (ImGui.MenuItem ctx :Quit :Alt+F4) nil))
 
+;; //-----------------------------------------------------------------------------
+;; // [SECTION] Example App: Debug Console / ShowExampleAppConsole()
+;; //-----------------------------------------------------------------------------
+;;
+;; // Demonstrate creating a simple console window, with scrolling, filtering, completion and history.
+;; // For the console example, we are using a more C++ like approach of declaring a class to hold both data and functions.
+;; struct ExampleAppConsole
+;; {
+;;     char                  InputBuf[256];
+;;     ImVector<char*>       Items;
+;;     ImVector<const char*> Commands;
+;;     ImVector<char*>       History;
+;;     int                   HistoryPos;    // -1: new line, 0..History.Size-1 browsing history.
+;;     ImGuiTextFilter       Filter;
+;;     bool                  AutoScroll;
+;;     bool                  ScrollToBottom;
+;;
+;;     ExampleAppConsole()
+;;     {
+;;         ClearLog();
+;;         memset(InputBuf, 0, sizeof(InputBuf));
+;;         HistoryPos = -1;
+;;
+;;         // "CLASSIFY" is here to provide the test case where "C"+[tab] completes to "CL" and display multiple matches.
+;;         Commands.push_back("HELP");
+;;         Commands.push_back("HISTORY");
+;;         Commands.push_back("CLEAR");
+;;         Commands.push_back("CLASSIFY");
+;;         AutoScroll = true;
+;;         ScrollToBottom = false;
+;;         AddLog("Welcome to Dear ImGui!");
+;;     }
+;;     ~ExampleAppConsole()
+;;     {
+;;         ClearLog();
+;;         for (int i = 0; i < History.Size; i++)
+;;             free(History[i]);
+;;     }
+;;
+;;     // Portable helpers
+;;     static int   Stricmp(const char* s1, const char* s2)         { int d; while ((d = toupper(*s2) - toupper(*s1)) == 0 && *s1) { s1++; s2++; } return d; }
+;;     static int   Strnicmp(const char* s1, const char* s2, int n) { int d = 0; while (n > 0 && (d = toupper(*s2) - toupper(*s1)) == 0 && *s1) { s1++; s2++; n--; } return d; }
+;;     static char* Strdup(const char* s)                           { IM_ASSERT(s); size_t len = strlen(s) + 1; void* buf = malloc(len); IM_ASSERT(buf); return (char*)memcpy(buf, (const void*)s, len); }
+;;     static void  Strtrim(char* s)                                { char* str_end = s + strlen(s); while (str_end > s && str_end[-1] == ' ') str_end--; *str_end = 0; }
+;;
+;;     void    ClearLog()
+;;     {
+;;         for (int i = 0; i < Items.Size; i++)
+;;             free(Items[i]);
+;;         Items.clear();
+;;     }
+;;
+;;     void    AddLog(const char* fmt, ...) IM_FMTARGS(2)
+;;     {
+;;         // FIXME-OPT
+;;         char buf[1024];
+;;         va_list args;
+;;         va_start(args, fmt);
+;;         vsnprintf(buf, IM_ARRAYSIZE(buf), fmt, args);
+;;         buf[IM_ARRAYSIZE(buf)-1] = 0;
+;;         va_end(args);
+;;         Items.push_back(Strdup(buf));
+;;     }
+;;
+;;     void    Draw(const char* title, bool* p_open)
+;;     {
+;;         ImGui.SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);
+;;         if (!ImGui.Begin(title, p_open))
+;;             return;
+;;
+;;         // As a specific feature guaranteed by the library, after calling Begin() the last Item represent the title bar.
+;;         // So e.g. IsItemHovered() will return true when hovering the title bar.
+;;         // Here we create a context menu only available from the title bar.
+;;         if (ImGui.BeginPopupContextItem())
+;;         {
+;;             if (ImGui.MenuItem("Close Console"))
+;;                 *p_open = false;
+;;             ImGui.EndPopup();
+;;         }
+;;
+;;         ImGui.TextWrapped(
+;;             "This example implements a console with basic coloring, completion (TAB key) and history (Up/Down keys). A more elaborate "
+;;             "implementation may want to store entries along with extra data such as timestamp, emitter, etc.");
+;;         ImGui.TextWrapped("Enter 'HELP' for help.");
+;;
+;;         // TODO: display items starting from the bottom
+;;
+;;         if (ImGui.SmallButton("Add Debug Text"))  { AddLog("%d some text", Items.Size); AddLog("some more text"); AddLog("display very important message here!"); }
+;;         ImGui.SameLine();
+;;         if (ImGui.SmallButton("Add Debug Error")) { AddLog("[error] something went wrong"); }
+;;         ImGui.SameLine();
+;;         if (ImGui.SmallButton("Clear"))           { ClearLog(); }
+;;         ImGui.SameLine();
+;;         bool copy_to_clipboard = ImGui.SmallButton("Copy");
+;;         //static float t = 0.0f; if (ImGui.GetTime() - t > 0.02f) { t = ImGui.GetTime(); AddLog("Spam %f", t); }
+;;
+;;         ImGui.Separator();
+;;
+;;         // Options menu
+;;         if (ImGui.BeginPopup("Options"))
+;;         {
+;;             ImGui.Checkbox("Auto-scroll", &AutoScroll);
+;;             ImGui.EndPopup();
+;;         }
+;;
+;;         // Options, Filter
+;;         if (ImGui.Button("Options"))
+;;             ImGui.OpenPopup("Options");
+;;         ImGui.SameLine();
+;;         Filter.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
+;;         ImGui.Separator();
+;;
+;;         // Reserve enough left-over height for 1 separator + 1 input text
+;;         const float footer_height_to_reserve = ImGui.GetStyle().ItemSpacing.y + ImGui.GetFrameHeightWithSpacing();
+;;         if (ImGui.BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar))
+;;         {
+;;             if (ImGui.BeginPopupContextWindow())
+;;             {
+;;                 if (ImGui.Selectable("Clear")) ClearLog();
+;;                 ImGui.EndPopup();
+;;             }
+;;
+;;             // Display every line as a separate entry so we can change their color or add custom widgets.
+;;             // If you only want raw text you can use ImGui.TextUnformatted(log.begin(), log.end());
+;;             // NB- if you have thousands of entries this approach may be too inefficient and may require user-side clipping
+;;             // to only process visible items. The clipper will automatically measure the height of your first item and then
+;;             // "seek" to display only items in the visible area.
+;;             // To use the clipper we can replace your standard loop:
+;;             //      for (int i = 0; i < Items.Size; i++)
+;;             //   With:
+;;             //      ImGuiListClipper clipper;
+;;             //      clipper.Begin(Items.Size);
+;;             //      while (clipper.Step())
+;;             //         for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+;;             // - That your items are evenly spaced (same height)
+;;             // - That you have cheap random access to your elements (you can access them given their index,
+;;             //   without processing all the ones before)
+;;             // You cannot this code as-is if a filter is active because it breaks the 'cheap random-access' property.
+;;             // We would need random-access on the post-filtered list.
+;;             // A typical application wanting coarse clipping and filtering may want to pre-compute an array of indices
+;;             // or offsets of items that passed the filtering test, recomputing this array when user changes the filter,
+;;             // and appending newly elements as they are inserted. This is left as a task to the user until we can manage
+;;             // to improve this example code!
+;;             // If your items are of variable height:
+;;             // - Split them into same height items would be simpler and facilitate random-seeking into your list.
+;;             // - Consider using manual call to IsRectVisible() and skipping extraneous decoration from your items.
+;;             ImGui.PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
+;;             if (copy_to_clipboard)
+;;                 ImGui.LogToClipboard();
+;;             for (int i = 0; i < Items.Size; i++)
+;;             {
+;;                 const char* item = Items[i];
+;;                 if (!Filter.PassFilter(item))
+;;                     continue;
+;;
+;;                 // Normally you would store more information in your item than just a string.
+;;                 // (e.g. make Items[] an array of structure, store color/type etc.)
+;;                 ImVec4 color;
+;;                 bool has_color = false;
+;;                 if (strstr(item, "[error]"))          { color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); has_color = true; }
+;;                 else if (strncmp(item, "# ", 2) == 0) { color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f); has_color = true; }
+;;                 if (has_color)
+;;                     ImGui.PushStyleColor(ImGuiCol_Text, color);
+;;                 ImGui.TextUnformatted(item);
+;;                 if (has_color)
+;;                     ImGui.PopStyleColor();
+;;             }
+;;             if (copy_to_clipboard)
+;;                 ImGui.LogFinish();
+;;
+;;             // Keep up at the bottom of the scroll region if we were already at the bottom at the beginning of the frame.
+;;             // Using a scrollbar or mouse-wheel will take away from the bottom edge.
+;;             if (ScrollToBottom || (AutoScroll && ImGui.GetScrollY() >= ImGui.GetScrollMaxY()))
+;;                 ImGui.SetScrollHereY(1.0f);
+;;             ScrollToBottom = false;
+;;
+;;             ImGui.PopStyleVar();
+;;             ImGui.EndChild();
+;;         }
+;;         ImGui.Separator();
+;;
+;;         // Command-line
+;;         bool reclaim_focus = false;
+;;         ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory;
+;;         if (ImGui.InputText("Input", InputBuf, IM_ARRAYSIZE(InputBuf), input_text_flags, &TextEditCallbackStub, (void*)this))
+;;         {
+;;             char* s = InputBuf;
+;;             Strtrim(s);
+;;             if (s[0])
+;;                 ExecCommand(s);
+;;             strcpy(s, "");
+;;             reclaim_focus = true;
+;;         }
+;;
+;;         // Auto-focus on window apparition
+;;         ImGui.SetItemDefaultFocus();
+;;         if (reclaim_focus)
+;;             ImGui.SetKeyboardFocusHere(-1); // Auto focus previous widget
+;;
+;;         ImGui.End();
+;;     }
+;;
+;;     void    ExecCommand(const char* command_line)
+;;     {
+;;         AddLog("# %s\n", command_line);
+;;
+;;         // Insert into history. First find match and delete it so it can be pushed to the back.
+;;         // This isn't trying to be smart or optimal.
+;;         HistoryPos = -1;
+;;         for (int i = History.Size - 1; i >= 0; i--)
+;;             if (Stricmp(History[i], command_line) == 0)
+;;             {
+;;                 free(History[i]);
+;;                 History.erase(History.begin() + i);
+;;                 break;
+;;             }
+;;         History.push_back(Strdup(command_line));
+;;
+;;         // Process command
+;;         if (Stricmp(command_line, "CLEAR") == 0)
+;;         {
+;;             ClearLog();
+;;         }
+;;         else if (Stricmp(command_line, "HELP") == 0)
+;;         {
+;;             AddLog("Commands:");
+;;             for (int i = 0; i < Commands.Size; i++)
+;;                 AddLog("- %s", Commands[i]);
+;;         }
+;;         else if (Stricmp(command_line, "HISTORY") == 0)
+;;         {
+;;             int first = History.Size - 10;
+;;             for (int i = first > 0 ? first : 0; i < History.Size; i++)
+;;                 AddLog("%3d: %s\n", i, History[i]);
+;;         }
+;;         else
+;;         {
+;;             AddLog("Unknown command: '%s'\n", command_line);
+;;         }
+;;
+;;         // On command input, we scroll to bottom even if AutoScroll==false
+;;         ScrollToBottom = true;
+;;     }
+;;
+;;     // In C++11 you'd be better off using lambdas for this sort of forwarding callbacks
+;;     static int TextEditCallbackStub(ImGuiInputTextCallbackData* data)
+;;     {
+;;         ExampleAppConsole* console = (ExampleAppConsole*)data->UserData;
+;;         return console->TextEditCallback(data);
+;;     }
+;;
+;;     int     TextEditCallback(ImGuiInputTextCallbackData* data)
+;;     {
+;;         //AddLog("cursor: %d, selection: %d-%d", data->CursorPos, data->SelectionStart, data->SelectionEnd);
+;;         switch (data->EventFlag)
+;;         {
+;;         case ImGuiInputTextFlags_CallbackCompletion:
+;;             {
+;;                 // Example of TEXT COMPLETION
+;;
+;;                 // Locate beginning of current word
+;;                 const char* word_end = data->Buf + data->CursorPos;
+;;                 const char* word_start = word_end;
+;;                 while (word_start > data->Buf)
+;;                 {
+;;                     const char c = word_start[-1];
+;;                     if (c == ' ' || c == '\t' || c == ',' || c == ';')
+;;                         break;
+;;                     word_start--;
+;;                 }
+;;
+;;                 // Build a list of candidates
+;;                 ImVector<const char*> candidates;
+;;                 for (int i = 0; i < Commands.Size; i++)
+;;                     if (Strnicmp(Commands[i], word_start, (int)(word_end - word_start)) == 0)
+;;                         candidates.push_back(Commands[i]);
+;;
+;;                 if (candidates.Size == 0)
+;;                 {
+;;                     // No match
+;;                     AddLog("No match for \"%.*s\"!\n", (int)(word_end - word_start), word_start);
+;;                 }
+;;                 else if (candidates.Size == 1)
+;;                 {
+;;                     // Single match. Delete the beginning of the word and replace it entirely so we've got nice casing.
+;;                     data->DeleteChars((int)(word_start - data->Buf), (int)(word_end - word_start));
+;;                     data->InsertChars(data->CursorPos, candidates[0]);
+;;                     data->InsertChars(data->CursorPos, " ");
+;;                 }
+;;                 else
+;;                 {
+;;                     // Multiple matches. Complete as much as we can..
+;;                     // So inputing "C"+Tab will complete to "CL" then display "CLEAR" and "CLASSIFY" as matches.
+;;                     int match_len = (int)(word_end - word_start);
+;;                     for (;;)
+;;                     {
+;;                         int c = 0;
+;;                         bool all_candidates_matches = true;
+;;                         for (int i = 0; i < candidates.Size && all_candidates_matches; i++)
+;;                             if (i == 0)
+;;                                 c = toupper(candidates[i][match_len]);
+;;                             else if (c == 0 || c != toupper(candidates[i][match_len]))
+;;                                 all_candidates_matches = false;
+;;                         if (!all_candidates_matches)
+;;                             break;
+;;                         match_len++;
+;;                     }
+;;
+;;                     if (match_len > 0)
+;;                     {
+;;                         data->DeleteChars((int)(word_start - data->Buf), (int)(word_end - word_start));
+;;                         data->InsertChars(data->CursorPos, candidates[0], candidates[0] + match_len);
+;;                     }
+;;
+;;                     // List matches
+;;                     AddLog("Possible matches:\n");
+;;                     for (int i = 0; i < candidates.Size; i++)
+;;                         AddLog("- %s\n", candidates[i]);
+;;                 }
+;;
+;;                 break;
+;;             }
+;;         case ImGuiInputTextFlags_CallbackHistory:
+;;             {
+;;                 // Example of HISTORY
+;;                 const int prev_history_pos = HistoryPos;
+;;                 if (data->EventKey == ImGuiKey_UpArrow)
+;;                 {
+;;                     if (HistoryPos == -1)
+;;                         HistoryPos = History.Size - 1;
+;;                     else if (HistoryPos > 0)
+;;                         HistoryPos--;
+;;                 }
+;;                 else if (data->EventKey == ImGuiKey_DownArrow)
+;;                 {
+;;                     if (HistoryPos != -1)
+;;                         if (++HistoryPos >= History.Size)
+;;                             HistoryPos = -1;
+;;                 }
+;;
+;;                 // A better implementation would preserve the data on the current input line along with cursor position.
+;;                 if (prev_history_pos != HistoryPos)
+;;                 {
+;;                     const char* history_str = (HistoryPos >= 0) ? History[HistoryPos] : "";
+;;                     data->DeleteChars(0, data->BufTextLen);
+;;                     data->InsertChars(0, history_str);
+;;                 }
+;;             }
+;;         }
+;;         return 0;
+;;     }
+;; };
+;;
+;; static void ShowExampleAppConsole(bool* p_open)
+;; {
+;;     static ExampleAppConsole console;
+;;     console.Draw("Example: Console", p_open);
+;; }
+
+;;-----------------------------------------------------------------------------
+;; [SECTION] Example App: Debug Log / ShowExampleAppLog()
+;;-----------------------------------------------------------------------------
+
+;; Usage:
+;;   local my_log = ExampleAppLog:new(ctx)
+;;   my_log:add_log('Hello %d world\n', 123)
+;;   my_log:draw('title')
+
 (local Example-app-log {})
 
 (fn Example-app-log.new [self ctx]
-  (let [instance {:auto_scroll true
+  (let [instance {:auto_scroll true ;; Keep scrolling if already at the bottom.
                   : ctx
                   :filter {:inst nil :text ""}
                   :lines {}}]
@@ -5889,9 +6387,11 @@ Right-click to open edit options menu.")
     (when rv
       (when (not (ImGui.ValidatePtr self.filter.inst :ImGui_TextFilter*))
         (set self.filter.inst (ImGui.CreateTextFilter self.filter.text)))
+      ;; Options menu
       (when (ImGui.BeginPopup self.ctx :Options)
         (doimgui self.auto_scroll (ImGui.Checkbox self.ctx :Auto-scroll $))
         (ImGui.EndPopup self.ctx))
+      ;; Main window
       (when (ImGui.Button self.ctx :Options)
         (ImGui.OpenPopup self.ctx :Options))
       (ImGui.SameLine self.ctx)
@@ -5907,9 +6407,26 @@ Right-click to open edit options menu.")
         (when copy (ImGui.LogToClipboard self.ctx))
         (ImGui.PushStyleVar self.ctx (ImGui.StyleVar_ItemSpacing) 0 0)
         (if (ImGui.TextFilter_IsActive self.filter.inst)
+          ;; In this example we don't use the clipper when Filter is enabled.
+          ;; This is because we don't have a random access on the result on our filter.
+          ;; A real application processing logs with ten of thousands of entries may want to store the result of
+          ;; search/filter.. especially if the filtering function is not trivial (e.g. reg-exp).
           (each [line-no line (ipairs self.lines)]
             (when (ImGui.TextFilter_PassFilter self.filter.inst line)
               (ImGui.Text ctx line)))
+          ;; The simplest and easy way to display the entire buffer:
+          ;;   ImGui.Text(text)
+          ;; And it'll just work. Text() has specialization for large blob of text and will fast-forward
+          ;; to skip non-visible lines. Here we instead demonstrate using the clipper to only process lines that are
+          ;; within the visible area.
+          ;; If you have tens of thousands of items and their processing cost is non-negligible, coarse clipping them
+          ;; on your side is recommended. Using ImGuiListClipper requires
+          ;; - A) random access into your data
+          ;; - B) items all being the  same height,
+          ;; both of which we can handle since we an array pointing to the beginning of each line of text.
+          ;; When using the filter (in the block of code above) we don't have random access into the data to display
+          ;; anymore, which is why we don't use the clipper. Storing or skimming through the search result would make
+          ;; it possible (and would be recommended if you want to search through tens of thousands of entries).
           (let [clipper (ImGui.CreateListClipper self.ctx)]
             (ImGui.ListClipper_Begin clipper (length self.lines))
             (while (ImGui.ListClipper_Step clipper)
@@ -5919,6 +6436,8 @@ Right-click to open edit options menu.")
                 (ImGui.Text self.ctx (. self.lines (+ line-no 1)))))
             (ImGui.ListClipper_End clipper)))
         (ImGui.PopStyleVar self.ctx)
+        ;; Keep up at the bottom of the scroll region if we were already at the bottom at the beginning of the frame.
+        ;; Using a scrollbar or mouse-wheel will take away from the bottom edge.
         (when (and self.auto_scroll
                    (>= (ImGui.GetScrollY self.ctx) (ImGui.GetScrollMaxY self.ctx)))
           (ImGui.SetScrollHereY self.ctx 1))
@@ -5926,10 +6445,13 @@ Right-click to open edit options menu.")
       (ImGui.End self.ctx))
     p-open))
 
+;; Demonstrate creating a simple log window with basic filtering.
 (fn demo.ShowExampleAppLog []
-  (when (not app.log)
-    (set app.log (doto (Example-app-log:new ctx)
-                   (tset :counter 0))))
+  (set-when-not app.log (doto (Example-app-log:new ctx)
+                          (tset :counter 0)))
+  ;; For the demo: add a debug button _BEFORE_ the normal log window contents
+  ;; We take advantage of a rarely used feature: multiple calls to Begin()/End() are appending to the _same_ window.
+  ;; Most of the contents of the window will be added by the log.Draw() call.
   (ImGui.SetNextWindowSize ctx 500 400 (ImGui.Cond_FirstUseEver))
   (let [(rv open) (ImGui.Begin ctx "Example: Log" true)]
     (when rv
@@ -5946,11 +6468,13 @@ Right-click to open edit options menu.")
           (local category (. categories (+ (% app.log.counter (length categories))
                                            1)))
           (local word (. words (+ (% app.log.counter (length words)) 1)))
-          (app.log:add_log "[%05d] [%s] Hello, current time is %.1f, here's a word: '%s'
-          " (ImGui.GetFrameCount ctx) category
+          (app.log:add_log "[%05d] [%s] Hello, current time is %.1f, here's a word: '%s'\n" 
+                           (ImGui.GetFrameCount ctx)
+                           category
                            (ImGui.GetTime ctx) word)
           (set app.log.counter (+ app.log.counter 1))))
       (ImGui.End ctx)
+      ;; Actually call in the regular Log helper (which will Begin() into the same window as we just did)
       (app.log:draw "Example: Log"))
     open))
 
@@ -6497,38 +7021,36 @@ My title is the same as window 1, but my identifier is unique.")
         ;; N-gon
         (ImGui.DrawList_AddNgon draw-list (+ x (* sz 0.5)) (+ y (* sz 0.5))
                                 (* sz 0.5) col app.rendering.ngon_sides th)
-        (set x (+ (+ x sz) spacing))
+        (+= x (+ sz spacing))
         ;; Circle
         (ImGui.DrawList_AddCircle draw-list (+ x (* sz 0.5)) (+ y (* sz 0.5))
                                    (* sz 0.5) col circle-segments th)
-        (set x (+ (+ x sz) spacing))
+        (+= x (+ sz spacing))
         ;; Square
         (ImGui.DrawList_AddRect draw-list x y (+ x sz) (+ y sz) col 0
                                  (ImGui.DrawFlags_None) th)
-        (set x (+ (+ x sz) spacing))
+        (+= x (+ sz spacing))
         ;; Square with all rounded corners
-        (ImGui.DrawList_AddRect draw-list x y (+ x sz) (+ y sz) col rounding
-                                 (ImGui.DrawFlags_None) th)
-        (set x (+ (+ x sz) spacing))
+        (ImGui.DrawList_AddRect draw-list x y (+ x sz) (+ y sz) col rounding (ImGui.DrawFlags_None) th)
+        (+= x (+ sz spacing))
         ;; Square with two rounded corners
         (ImGui.DrawList_AddRect draw-list x y (+ x sz) (+ y sz) col rounding
                                  corners-tl-br th)
-        (set x (+ (+ x sz) spacing))
+        (+= x (+ sz spacing))
         ;; Triangle
 
-        (ImGui.DrawList_AddTriangle draw-list (+ x (* sz 0.5)) y (+ x sz)
-                                     (- (+ y sz) 0.5) x (- (+ y sz) 0.5) col th)
-        (set x (+ (+ x sz) spacing))
+        (ImGui.DrawList_AddTriangle draw-list (+ x (* sz 0.5)) y (+ x sz) (- (+ y sz) 0.5) x (- (+ y sz) 0.5) col th)
+        (+= x (+ sz spacing))
         ;; ImGui.DrawList_AddTriangle(draw_list, x+sz*0.2, y, x, y+sz-0.5, x+sz*0.4, y+sz-0.5, col, th);      x = x + sz*0.4 + spacing -- Thin triangle
         ;; Horizontal line (note: drawing a filled rectangle will be faster!)
         (ImGui.DrawList_AddLine draw-list x y (+ x sz) y col th)
-        (set x (+ (+ x sz) spacing))
+        (+= x (+ sz spacing))
         ;; Vertical line (note: drawing a filled rectangle will be faster!)
         (ImGui.DrawList_AddLine draw-list x y x (+ y sz) col th)
-        (set x (+ x spacing))
+        (+= x spacing)
         ;; Diagonal line
         (ImGui.DrawList_AddLine draw-list x y (+ x sz) (+ y sz) col th)
-        (set x (+ (+ x sz) spacing))
+        (+= x (+ sz spacing))
 
         ;; Quadratic Bezier Curve (3 control points)
         (local cp3 [[x (+ y (* sz 0.6))]
@@ -6549,46 +7071,43 @@ My title is the same as window 1, but my identifier is unique.")
                     [(+ x (* sz 1.3)) (+ y (* sz 0.3))]
                     [(- (+ x sz) (* sz 1.3)) (- (+ y sz) (* sz 0.3))]
                     [(+ x sz) (+ y sz)]])
-        (ImGui.DrawList_AddBezierCubic draw-list 
-                                       (. (. cp4 1) 1)
-                                       (. (. cp4 1) 2)
-                                       (. (. cp4 2) 1)
-                                       (. (. cp4 2) 2)
-                                       (. (. cp4 3) 1)
-                                       (. (. cp4 3) 2)
-                                       (. (. cp4 4) 1)
-                                       (. (. cp4 4) 2) col th curve-segments)
+        (ImGui.DrawList_AddBezierCubic
+          draw-list 
+          (. cp4 1 1) (. cp4 1 2) (. cp4 2 1) (. cp4 2 2) (. cp4 3 1) (. cp4 3 2) (. cp4 4 1) (. cp4 4 2)
+          col th curve-segments)
         (set x (+ (. p 1) 4))
-        (set y (+ (+ y sz) spacing)))
-      (ImGui.DrawList_AddNgonFilled draw-list (+ x (* sz 0.5))
-                                     (+ y (* sz 0.5)) (* sz 0.5) col
-                                     app.rendering.ngon_sides)
-      (set x (+ (+ x sz) spacing))
-      (ImGui.DrawList_AddCircleFilled draw-list (+ x (* sz 0.5))
-                                       (+ y (* sz 0.5)) (* sz 0.5) col
-                                       circle-segments)
-      (set x (+ (+ x sz) spacing))
+        (set y (+ y sz spacing)))
+      ;; N-gon
+      (ImGui.DrawList_AddNgonFilled draw-list (+ x (* sz 0.5)) (+ y (* sz 0.5)) (* sz 0.5) col app.rendering.ngon_sides)
+      (set x (+ x sz spacing))
+      ;; Circle
+      (ImGui.DrawList_AddCircleFilled draw-list (+ x (* sz 0.5)) (+ y (* sz 0.5)) (* sz 0.5) col circle-segments)
+      (set x (+ x sz spacing))
+      ;; Square
       (ImGui.DrawList_AddRectFilled draw-list x y (+ x sz) (+ y sz) col)
-      (set x (+ (+ x sz) spacing))
+      (set x (+ x sz spacing))
+      ;; Square with all rounded corners
       (ImGui.DrawList_AddRectFilled draw-list x y (+ x sz) (+ y sz) col 10)
-      (set x (+ (+ x sz) spacing))
-      (ImGui.DrawList_AddRectFilled draw-list x y (+ x sz) (+ y sz) col 10
-                                     corners-tl-br)
-      (set x (+ (+ x sz) spacing))
+      (set x (+ x sz spacing))
+      ;; Square with two rounded corners
+      (ImGui.DrawList_AddRectFilled draw-list x y (+ x sz) (+ y sz) col 10 corners-tl-br)
+      (set x (+ x sz spacing))
+      ;; Triangle
       (ImGui.DrawList_AddTriangleFilled draw-list (+ x (* sz 0.5)) y (+ x sz)
                                          (- (+ y sz) 0.5) x (- (+ y sz) 0.5) col)
-      (set x (+ (+ x sz) spacing))
+      ;; ImGui.DrawList_AddTriangleFilled(draw_list, x+sz*0.2, y, x, y+sz-0.5, x+sz*0.4, y+sz-0.5, col);          x = x + sz*0.4 + spacing -- Thin triangle
+      (set x (+ x sz spacing))
+      ;; Horizontal line (faster than AddLine, but only handle integer thickness)
       (ImGui.DrawList_AddRectFilled draw-list x y (+ x sz)
                                      (+ y app.rendering.thickness) col)
-      (set x (+ (+ x sz) spacing))
+      (set x (+ x sz spacing))
+      ;; Vertical line (faster than AddLine, but only handle integer thickness)
       (ImGui.DrawList_AddRectFilled draw-list x y
                                      (+ x app.rendering.thickness) (+ y sz) col)
       (set x (+ x (* spacing 2)))
       (ImGui.DrawList_AddRectFilled draw-list x y (+ x 1) (+ y 1) col)
       (set x (+ x sz))
-      (ImGui.DrawList_AddRectFilledMultiColor draw-list x y (+ x sz) (+ y sz)
-                                               255 4278190335 4294902015
-                                               16711935)
+      (ImGui.DrawList_AddRectFilledMultiColor draw-list x y (+ x sz) (+ y sz) 255 4278190335 4294902015 16711935)
       (ImGui.Dummy ctx (* (+ sz spacing) 10.2) (* (+ sz spacing) 3))
       (ImGui.PopItemWidth ctx)
       (ImGui.EndTabItem ctx))
