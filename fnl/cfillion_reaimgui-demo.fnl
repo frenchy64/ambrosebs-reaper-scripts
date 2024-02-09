@@ -2,7 +2,8 @@
 ;;
 ;;This file can be imported in other scripts to help during development:
 
-(import-macros {: doimgui : update-2nd-array : set-when-not : +=} :imgui-macros)
+(import-macros {: doimgui : update-2nd-array : set-when-not : +=
+                : set-> : inc} :imgui-macros)
 
 (comment
 (local demo
@@ -3725,7 +3726,7 @@ Implicitly disable ImGuiTableFlags_Resizable and enable ImGuiTableFlags_NoKeepCo
     (when (<= idx (length policies))
       (set preview-text (. policies idx :name))
       (when (> idx 1)
-        (set preview-text (preview-text:sub (+ (: :ImGuiTableFlags :len) 1)))))
+        (set-> preview-text (: sub (inc (: :ImGuiTableFlags :len))))))
     (when (ImGui.BeginCombo ctx "Sizing Policy" preview-text)
       (each [n policy (ipairs policies)]
         (when (ImGui.Selectable ctx policy.name (= idx n))
@@ -7064,7 +7065,7 @@ My title is the same as window 1, but my identifier is unique.")
                                            (. (. cp3 3) 1)
                                            (. (. cp3 3) 2) col th
                                            curve-segments)
-        (set x (+ x sz spacing))
+        (+= x (+ sz spacing))
 
         ;; Cubic Bezier Curve (4 control points)
         (local cp4 [[x y]
@@ -7076,37 +7077,37 @@ My title is the same as window 1, but my identifier is unique.")
           (. cp4 1 1) (. cp4 1 2) (. cp4 2 1) (. cp4 2 2) (. cp4 3 1) (. cp4 3 2) (. cp4 4 1) (. cp4 4 2)
           col th curve-segments)
         (set x (+ (. p 1) 4))
-        (set y (+ y sz spacing)))
+        (+= y (+ sz spacing)))
       ;; N-gon
       (ImGui.DrawList_AddNgonFilled draw-list (+ x (* sz 0.5)) (+ y (* sz 0.5)) (* sz 0.5) col app.rendering.ngon_sides)
-      (set x (+ x sz spacing))
+      (+= x (+ sz spacing))
       ;; Circle
       (ImGui.DrawList_AddCircleFilled draw-list (+ x (* sz 0.5)) (+ y (* sz 0.5)) (* sz 0.5) col circle-segments)
-      (set x (+ x sz spacing))
+      (+= x (+ sz spacing))
       ;; Square
       (ImGui.DrawList_AddRectFilled draw-list x y (+ x sz) (+ y sz) col)
-      (set x (+ x sz spacing))
+      (+= x (+ sz spacing))
       ;; Square with all rounded corners
       (ImGui.DrawList_AddRectFilled draw-list x y (+ x sz) (+ y sz) col 10)
-      (set x (+ x sz spacing))
+      (+= x (+ sz spacing))
       ;; Square with two rounded corners
       (ImGui.DrawList_AddRectFilled draw-list x y (+ x sz) (+ y sz) col 10 corners-tl-br)
-      (set x (+ x sz spacing))
+      (+= x (+ sz spacing))
       ;; Triangle
       (ImGui.DrawList_AddTriangleFilled draw-list (+ x (* sz 0.5)) y (+ x sz)
                                          (- (+ y sz) 0.5) x (- (+ y sz) 0.5) col)
       ;; ImGui.DrawList_AddTriangleFilled(draw_list, x+sz*0.2, y, x, y+sz-0.5, x+sz*0.4, y+sz-0.5, col);          x = x + sz*0.4 + spacing -- Thin triangle
-      (set x (+ x sz spacing))
+      (+= x (+ sz spacing))
       ;; Horizontal line (faster than AddLine, but only handle integer thickness)
       (ImGui.DrawList_AddRectFilled draw-list x y (+ x sz)
                                      (+ y app.rendering.thickness) col)
-      (set x (+ x sz spacing))
+      (+= x (+ sz spacing))
       ;; Vertical line (faster than AddLine, but only handle integer thickness)
       (ImGui.DrawList_AddRectFilled draw-list x y
                                      (+ x app.rendering.thickness) (+ y sz) col)
-      (set x (+ x (* spacing 2)))
+      (+= x (* spacing 2))
       (ImGui.DrawList_AddRectFilled draw-list x y (+ x 1) (+ y 1) col)
-      (set x (+ x sz))
+      (+= x sz)
       (ImGui.DrawList_AddRectFilledMultiColor draw-list x y (+ x sz) (+ y sz) 255 4278190335 4294902015 16711935)
       (ImGui.Dummy ctx (* (+ sz spacing) 10.2) (* (+ sz spacing) 3))
       (ImGui.PopItemWidth ctx)
@@ -7193,13 +7194,13 @@ Mouse Right: drag to scroll, click for context menu.")
           (ImGui.DrawList_AddLine draw-list (+ (. canvas-p0 1) x)
                                    (. canvas-p0 2) (+ (. canvas-p0 1) x)
                                    (. canvas-p1 2) 3368601640)
-          (set x (+ x GRID_STEP)))
+          (+= x GRID_STEP))
         (var y (math.fmod (. app.rendering.scrolling 2) GRID_STEP))
         (while (< y (. canvas-sz 2))
           (ImGui.DrawList_AddLine draw-list (. canvas-p0 1)
                                    (+ (. canvas-p0 2) y) (. canvas-p1 1)
                                    (+ (. canvas-p0 2) y) 3368601640)
-          (set y (+ y GRID_STEP))))
+          (+= y GRID_STEP)))
       (var n 1)
       (while (< n (length app.rendering.points))
         (ImGui.DrawList_AddLine draw-list

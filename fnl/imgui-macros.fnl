@@ -157,9 +157,26 @@
 (fn += [s f]
   `(set ,s (+ ,s ,f)))
 
+(fn set-> [s frm]
+  (let [arg (if
+              (sym? frm) (list frm s)
+              (and (list? frm)
+                   (< 0 (length frm))) (accumulate [acc []
+                                                    i frm (ipairs frm)]
+                                         (when (= i 2)
+                                           (table.insert acc s))
+                                         (table.insert acc frm))
+              (error "set-> must take symbol or list"))]
+    `(set ,s ,arg)))
+
+(fn inc [f]
+  `(+ 1 ,f))
+
 {
  : set-when-not
  : doimgui
  : update-2nd-array
  : +=
+ : set->
+ : inc
  }
