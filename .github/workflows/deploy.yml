@@ -30,8 +30,8 @@ jobs:
       uses: DeLaGuardo/setup-clojure@10.2
       with:
         bb: 1.2.174
-    - run: ./compile.clj
-    - run: git add .
+    #- run: ./compile.clj
+    #- run: git add .
     - name: Update index.xml
       run:  reapack-index --commit
     - name: Push changes
