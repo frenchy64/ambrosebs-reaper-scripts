@@ -1,28 +1,8 @@
 -- @description Select Note With MIDI Note Number 70
 -- @author Ambrose Bonnaire-Sergeant
 -- @version 1.0
-
---[[
-
-* ReaScript Name: ambrosebs_Select Notes With MIDI Note Number 70.lua
-* Based on ReaScript Name: BuyOne_Select only notes at pitch cursor.lua
-* Description: Meant to complement native MIDI Editor actions for use in custom actions
-* Instructions:
-* Author: Buy One
-* Author URL: https://forum.cockos.com/member.php?u=134058
-* Licence: WTFPL
-* Forum Thread:
-* Demo:
-* Version: 1.0
-* REAPER: at least v5.962
-* Extensions: SWS/S&M
-* Changelog:
-  + v1.0      Initial release
-
-* Notes: Works exclusively, other selected notes get deselected.
-
-]]
-
+-- @about
+--    Select Note With MIDI Note Number 70
 
 function Msg(param)
 reaper.ShowConsoleMsg(tostring(param).."\n")
