@@ -7,7 +7,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   reapack-index:
-    if: ${{ false }}  # disable for now
+    #if: ${{ false }}  # disable for now
     runs-on: ubuntu-latest
     steps:
     - name: Fetch repository
