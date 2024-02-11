@@ -1,3 +1,7 @@
+-- @description Select Note With MIDI Note Number 70
+-- @author Ambrose Bonnaire-Sergeant
+-- @version 1.0
+
 --[[
 
 * ReaScript Name: ambrosebs_Select Notes With MIDI Note Number 70.lua
