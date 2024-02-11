@@ -1,8 +1,7 @@
--- @noindex
-
 --[[
 
-* ReaScript Name: BuyOne_Select only notes at pitch cursor.lua
+* ReaScript Name: ambrosebs_Select Notes With MIDI Note Number 70.lua
+* Based on ReaScript Name: BuyOne_Select only notes at pitch cursor.lua
 * Description: Meant to complement native MIDI Editor actions for use in custom actions
 * Instructions:
 * Author: Buy One
