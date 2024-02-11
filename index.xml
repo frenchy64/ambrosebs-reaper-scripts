@@ -1,22 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="Ambrose Bonnaire-Sergeant's REAPER Scripts" commit="633a818819667994697f79558ab269377bc11da4">
-<category name="MIDI Editor"><reapack name="ambrosebs_Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone.lua" type="script" desc="Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone"><metadata><description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
+<index version="1" name="Ambrose Bonnaire-Sergeant's REAPER Scripts" commit="5d9f0b6e870745c4b5e5b4dde0322f49dda2db08">
+  <category name="MIDI Editor">
+    <reapack name="ambrosebs_Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone.lua" type="script" desc="Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
 \widowctrl\hyphauto
 
 {\pard \ql \f0 \sa180 \li0 \fi0 Intended to be assigned to the Down arrow in the MIDI Editor, this action simulates pressing Down in musical notation software such as Dorico by guessing how many bars the music is zoomed by. If in a different MIDI editor mode, decreases the pitch cursor, which goes "down" in that view.\par}
 }
-]]></description></metadata><version name="1.6" author="Ambrose Bonnaire-Sergeant" time="2023-03-09T22:35:47Z"><source main="midi_editor">https://github.com/frenchy64/ambrosebs-reaper-scripts/raw/f30a86273eb7e9a89abb304b8cf4ea3387fdb3df/MIDI%20Editor/ambrosebs_Go%20forward%204%20bars%20in%20Notation,%20otherwise%20decrease%20pitch%20cursor%20one%20semitone.lua</source></version></reapack><reapack name="ambrosebs_Inherit first accidentals.lua" type="script"><metadata><description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
+]]></description>
+      </metadata>
+      <version name="1.6" author="Ambrose Bonnaire-Sergeant" time="2023-03-09T22:35:47Z">
+        <source main="midi_editor">https://github.com/frenchy64/ambrosebs-reaper-scripts/raw/f30a86273eb7e9a89abb304b8cf4ea3387fdb3df/MIDI%20Editor/ambrosebs_Go%20forward%204%20bars%20in%20Notation,%20otherwise%20decrease%20pitch%20cursor%20one%20semitone.lua</source>
+      </version>
+    </reapack>
+    <reapack name="ambrosebs_Inherit first accidentals.lua" type="script">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
 \widowctrl\hyphauto
 
 {\pard \ql \f0 \sa180 \li0 \fi0 Ensure every note in a MIDI item shares the same accidentals (inherited from the first instance of that note).\par}
 }
-]]></description></metadata><version name="1.0" author="Ambrose Bonnaire-Sergeant" time="2023-03-09T22:35:47Z"><source main="midi_editor">https://github.com/frenchy64/ambrosebs-reaper-scripts/raw/f30a86273eb7e9a89abb304b8cf4ea3387fdb3df/MIDI%20Editor/ambrosebs_Inherit%20first%20accidentals.lua</source></version></reapack></category><metadata><description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
+]]></description>
+      </metadata>
+      <version name="1.0" author="Ambrose Bonnaire-Sergeant" time="2023-03-09T22:35:47Z">
+        <source main="midi_editor">https://github.com/frenchy64/ambrosebs-reaper-scripts/raw/f30a86273eb7e9a89abb304b8cf4ea3387fdb3df/MIDI%20Editor/ambrosebs_Inherit%20first%20accidentals.lua</source>
+      </version>
+    </reapack>
+  </category>
+  <metadata>
+    <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
 \widowctrl\hyphauto
 
-{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel0 \b \fs36 ReaPack Repository Template\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs36 ReaPack Repository Template\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 reapack-index looks for package files in subfolders. The folder tree represents the package categories shown in ReaPack.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 Each package file is expected to begin with a metadata header. See {\field{\*\fldinst{HYPERLINK "https://github.com/cfillion/reapack-index/wiki/Packaging-Documentation"}}{\fldrslt{\ul
 Packaging Documentation
@@ -27,4 +46,6 @@ https://github.com/frenchy64/ambrosebs-reaper-scripts/raw/main/index.xml
 }}}
 .\par}
 }
-]]></description></metadata></index>
+]]></description>
+  </metadata>
+</index>
