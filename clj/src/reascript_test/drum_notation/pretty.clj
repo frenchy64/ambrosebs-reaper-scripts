@@ -1,6 +1,5 @@
 (ns reascript-test.drum-notation.pretty
-  (:require [clojure.data :as data]
-            [reascript-test.drum-notation.rep :refer :all]
+  (:require [reascript-test.drum-notation.rep :refer :all]
             [clojure.string :as str]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
