@@ -1,6 +1,6 @@
 (require-macros :fennel-test)
-(local clj (require :cljlib))
-(import-macros cljm :cljlib)
+(local clj (require :io.gitlab.andreyorst.cljlib))
+(import-macros cljm (doto :io.gitlab.andreyorst.cljlib require))
 (local rep (require :midi-editor.drum-notation.rep))
 (local gp8 (require :midi-editor.drum-notation.guitar-pro8))
 (local sut (require :midi-editor.drum-notation.solve))

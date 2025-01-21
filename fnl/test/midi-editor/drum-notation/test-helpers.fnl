@@ -1,5 +1,5 @@
 (require-macros :fennel-test)
-(local clj (require :cljlib))
+(local clj (require :io.gitlab.andreyorst.cljlib))
 (local json (require :json))
 (local fennel (require :fennel))
 

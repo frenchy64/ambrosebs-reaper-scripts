@@ -1,4 +1,4 @@
-#!fennel
+#!/usr/bin/env fennel
 ;; -*- mode: fennel -*-
 ;; deps.fnl 1e1ad39480a37a598ce212cfa67f78394fe92303
 
