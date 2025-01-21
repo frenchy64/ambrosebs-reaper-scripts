@@ -20,8 +20,6 @@ jobs:
       run:  reapack-index --check
     - name: Install Lua
       uses: leafo/gh-actions-lua@v10
-      with:
-        luaVersion: "5.3"
     - name: Install clojure tools
       uses: DeLaGuardo/setup-clojure@master
       with:
