@@ -1,2 +1,2 @@
-cd clj && ./run-tests
-cd fnl && ./run-tests
+(cd clj && ./run-tests)
+(cd fnl && ./run-tests)
