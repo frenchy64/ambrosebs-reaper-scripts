@@ -1,2 +1,4 @@
 #!/bin/bash
-parallel -j 2 :::: parallel/list-of-test-commands.txt
+set -xe
+(cd clj && ./run-tests)
+(cd fnl && ./run-tests)
