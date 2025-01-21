@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Fetch repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Configure git
@@ -27,9 +27,9 @@ jobs:
     - name: Install reapack-index
       run:  gem install reapack-index
     - name: Install clojure tools
-      uses: DeLaGuardo/setup-clojure@10.2
+      uses: DeLaGuardo/setup-clojure@master
       with:
-        bb: 1.2.174
+        bb: latest
     #- run: ./compile.clj
     #- run: git add .
     - name: Update index.xml
