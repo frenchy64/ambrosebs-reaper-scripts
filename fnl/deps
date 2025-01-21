@@ -1,0 +1,633 @@
+#!fennel
+;; -*- mode: fennel -*-
+;; deps.fnl 1e1ad39480a37a598ce212cfa67f78394fe92303
+
+(local {: view &as fennel}
+  (require :fennel))
+
+(local {: concat : insert : sort : remove}
+  table)
+
+(local unpack
+  (or _G.unpack table.unpack))
+
+;;; State
+
+(local dependency-stack [])
+(local known-dependencies {})
+
+(fn lua-arg [n]
+  "Get the lua binary argument from the `arg` table."
+  (case (- (or n 1) 1)
+    (where n (. arg n)) (lua-arg n)
+    _ (. arg n)))
+
+(local runtime-flag
+  ;; Generate a flag, specifying the current runtime.
+  ;; When executed under shebang, Fennel eats the `--lua` argument and its
+  ;; value completely, so it's not available to the `deps` script.
+  (.. "--lua " (lua-arg)))
+
+(local options
+  {:deps-dir nil
+   :deps-file nil
+   :allow-conflicts? false
+   :print-path? false
+   :merge []
+   :lua-version nil})
+
+(local supported-paths
+  {:fennel ["--add-fennel-path" "FENNEL_PATH"]
+   :lua ["--add-package-path" "LUA_PATH"]
+   :clua ["--add-package-cpath" "LUA_CPATH"]
+   :macro ["--add-macro-path" "FENNEL_MACRO_PATH"]})
+
+;;; Helper functions
+
+(fn table? [x]
+  "Check if `x` is a table."
+  (= :table (type x)))
+
+(fn vector? [x]
+  "Check if `x` is a sequential table specifically."
+  (and (table? x)
+       (let [len (length x)
+             (next x* k) (pairs x)]
+         (if (not= nil (next x* (if (= len 0) k len)))
+             false
+             (> len 0)
+             true
+             nil))))
+
+(fn string? [x]
+  "Check if `x` is a string."
+  (= :string (type x)))
+
+(fn sha? [x]
+  "Check if `x` is a full 40 character Git SHA."
+  (and (string? x)
+       (= x (x:match "^[a-fA-F0-9]+$"))
+       (= 40 (length x))))
+
+(fn merge-deps [deps-a deps-b ...]
+  "Merge multiple deps tables into a single one.
+The merging rules are as follows:
+
+The dependencies under the `deps` key are appended into the first deps argument:
+
+```fennel
+(merge-deps {:deps [a]} {:deps [b]})
+;; => {:deps [a b]}
+(merge-deps {:deps [a b]} {:deps []} {:deps [c d]})
+;; => {:deps [a b c d]}
+```
+
+The paths under the `paths` key are appened for each path type
+separately.  Missing path types are created:
+
+```fennel
+(merge-deps {:paths {:fennel [a]}} {:paths {:fennel [b] :lua [c]}})
+;; => {:paths {:fennel [a b] :macro [] :lua [c] :clua []}}
+
+Other keys are not merged from the subsequent deps."
+  (let [{: deps : paths} (or deps-b {})]
+    (when (and deps (next deps))
+      (set deps-a.deps (or deps-a.deps []))
+      (icollect [_ dep (ipairs deps)
+                 :into deps-a.deps]
+        dep))
+    (when (and paths (next paths))
+      (each [path-type (pairs supported-paths)]
+        (set (. deps-a.paths path-type)
+          (or (?. deps-a :paths path-type) [])))
+      (each [path-type (pairs supported-paths)]
+        (icollect [_ path (ipairs (or (. paths path-type) []))
+                   :into (. deps-a :paths path-type)]
+          path))))
+  (case (select :# ...)
+    0 deps-a
+    _ (merge-deps deps-a ...)))
+
+(fn read-deps [deps-file]
+  "Read the `deps-file` in a sandbox.
+The `table` and `string` modules are provided for manipulation of the
+`deps.fnl` contents upon loading it."
+  (let [deps (fennel.dofile
+              deps-file
+              {:env {:table table
+                     :string string}})]
+    (when deps.paths
+      (assert (table? deps.paths) ""))
+    (when deps.deps
+      (assert (table? deps.deps) ""))
+    deps))
+
+(local path-separator
+  (package.config:sub 1 1))
+
+(fn path [...]
+  "Construct file path from arguments."
+  (concat (fcollect [i 1 (select :# ...)]
+            (tostring (select i ...)))
+          path-separator))
+
+(fn Error [format-string ...]
+  "An error wrapper to prevent stack trace from appearing in the message.
+Accepts a `format-string` and its arguments.  Stack traces are
+meaningless, as these are user-level errors, there's no need to link
+to the `deps` internal implementation."
+  (let [message (string.format format-string ...)]
+    (-> {: message}
+        (setmetatable
+         {:__tostring #message
+          :__fennelview #message}))))
+
+(fn run [program ...]
+  "Run a `program` and capture its output, exit code, success status, and
+optional error message."
+  (let [command (-> (fcollect [i 1 (select :# ...) :into [program]]
+                      (-?> (select i ...) view))
+                    (concat " ")
+                    (.. " 2>&1"))
+        proc (io.popen command)
+        out (proc:read :*a)
+        (ok? message code) (proc:close)]
+    {: command : ok? : out : message : code}))
+
+(fn log [...]
+  "Write arguments into the STDERR as a log message."
+  (for [i 1 (select :# ...)]
+    (io.stderr:write (tostring (select i ...))))
+  (io.stderr:write "\n"))
+
+(fn dump-log-and-die! [dependency-name-or-url data]
+  "Write a log to the temporary file, print a default error message, and kill the process.
+Logs the `dependency-name-or-url` and writes the `data` into a
+temporary file, logging its location."
+  (let [tmp (os.tmpname)] ; can't use io.tmpfile because file is deleted when program finishes
+    (with-open [tmp (io.open tmp :w)]
+      (tmp:write (view data)))
+    (log "can't process " (view dependency-name-or-url) ". Log: " tmp)
+    (os.exit 1)))
+
+(fn basedir [path]
+  "Return a base directory of the given `path`."
+  (assert (string? path) (Error "expected string path"))
+  (string.match path (.. "^(.+)" path-separator ".*$")))
+
+
+;;; Handling dependencies
+
+(local (workdir os-type)
+  ;; Current working direcoty of the project
+  (case path-separator
+    "/" (values (os.getenv "PWD") "linux")
+    "\\" (values (with-open [p (io.popen "cd")] (p:read)) "windows")
+    _ (error (Error "unknown OS type") 2)))
+
+(fn transient? [level]
+  "Check if the library is a transient dependency.
+`level` represents the recursion depth when processing Git
+repositories.  Level 1 is the root `deps.fnl` file, everything greater
+is a transient dependency provided by one of the dependencies in the
+root `deps.fnl`."
+  (> level 1))
+
+(fn push-dep [name version]
+  "Push a dependency with `name` and `version` to the `dependency-stack`
+in a format ready to be used by `remember-dependency` function."
+  (insert dependency-stack (.. "[" name ":" version "]")))
+
+(fn pop-dep []
+  "Removes the most recent element from `dependency-stack`."
+  (remove dependency-stack))
+
+(fn remember-dependency [name version level]
+  "Remembers the dependency `name` and `version` as well as if it is a
+transient dependency by checking `level`.  Stores a full path to the
+dependency in `known-dependencies` based on the current state of
+`dependency-stack`."
+  (set (. known-dependencies name)
+    (doto (or (. known-dependencies name) [])
+      (insert
+       {: version : name : level
+        :transient? (transient? level)
+        :path (when (next dependency-stack) (concat dependency-stack "->"))})
+      (sort
+       (fn [a b] (and (not a.transient?) b.transient?))))))
+
+(fn check-conflicts [name]
+  "Check for conflicts for a given `name`, unless the `options` table
+allows conflicts."
+  (or options.allow-conflicts?
+      (when (> (length (or (. known-dependencies name) [])) 1)
+        (let [[{: path : version} & rest] (. known-dependencies name)]
+          (each [_ {:version version* :path path*} (ipairs rest)]
+            (when (not= version* version)
+              (error (Error "%s conflicts with %s" path path*) 2)))))))
+
+(fn add-paths [deps-paths all-paths basedir level]
+  "Add paths specified in `deps-paths` to `all-paths`.
+The `basedir` is the location of the processed `deps.fnl` file.  The
+`level` is used for ordering paths by the recursive depth of transient
+dependencies."
+  (each [variable (pairs supported-paths)]
+    (set (. all-paths variable)
+      (or (. all-paths variable) {}))
+    (set (. all-paths variable level)
+      (or (. all-paths variable level) [])))
+  (each [variable paths (pairs deps-paths)]
+    (assert (. supported-paths variable)
+            (Error "unsupported path type: %s" (view variable)))
+    (assert (or (and (table? paths) (= (next paths) nil)) (vector? paths))
+            (Error "paths did not conform to spec: %s paths are not a sequential table: %s" (view variable) (view paths)))
+    (set (. all-paths variable level)
+      (icollect [_ p (ipairs paths)
+                 :into (. all-paths variable level)]
+        (path basedir p)))))
+
+(fn with-conflict-check [name version level fn1]
+  "This function does all of the necessary stuff to check a given
+dependency for a conflict and safely executes `fn1` in the environment
+where the dependency is known.
+
+Accepts dependency `name`, its `version`, and nest `level` followed by
+the function to call."
+  (push-dep name version)
+  (remember-dependency name version level)
+  (check-conflicts name)
+  (let [(ok? msg) (pcall fn1)]
+    (pop-dep)
+    (when (not ok?)
+      (log msg)
+      (error msg))))
+
+;;;; Luarocks
+
+(fn rock-path []
+  "Luarocks-specific root for dependencies."
+  (path options.deps-dir "rocks"))
+
+(fn luarocks-available? []
+  "A portable way to check if Luarocks is installed."
+  (. (run "luarocks --help") :ok?))
+
+(fn rock-installed? [rock version]
+  "Check if the specified `rock` of the given `version` is already
+installed."
+  (. (run "luarocks" "--lua-version" options.lua-version "--tree" (rock-path) "show" rock version) :ok?))
+
+(fn override-rock? [name transient-level]
+  "Determine if the library `name` should be overridden by Luarocks.
+
+If the `transient-level` of the checked library is closer to the root
+than all of the same libraries processed before that, the library
+should be overridden."
+  (case (. known-dependencies name)
+    remembered (accumulate [res false
+                            _ {: level} (ipairs remembered)
+                            :until res]
+                 (< transient-level level))
+    _ true))
+
+(fn process-rock [name {: version} level]
+  "Install a rock of the given `name` and `version`.
+If the rock is already installed, and the `version` is different, a
+conflict arises.  When conflicts are allowed, the library can be
+overridden by another library that is closer to the root deps.  This
+means the library would be downloaded multiple times, but it's
+Luarocks fault.  The `level` determines the transient depth of the
+library in the tree of dependencies."
+  (assert (luarocks-available?) (Error "luarocks package not found in this system"))
+  (assert version (Error "missing version tag for dependency: %s" (view name)))
+  (assert (string? version) (Error "version tag for dependency %s is not a string" (view name)))
+  (assert (not= "" version) (Error "version tag for dependency %s is an empty string" (view name)))
+  (with-conflict-check name version level
+    #(let [override? (and (rock-installed? name nil)
+                          (override-rock? name level))]
+       (when (or override? (not (rock-installed? name nil)))
+         (if override?
+             (log "overriding rock " name " with " version)
+             (log "processing rock: " name " " version))
+         (let [{: out : ok?}
+               (run "luarocks" "--lua-version" options.lua-version "--tree" (rock-path) "install" name version)]
+           (when (not ok?)
+             (dump-log-and-die! name out)))))))
+
+(fn luarocks-path [path-type]
+  "Obtain PATH information from Luarocks.
+The `path-type` is a string, either `lua` or `clua`."
+  (assert (luarocks-available?) (Error "luarocks package not found in this system"))
+  (let [flag (case path-type
+               :lua "--lr-path"
+               :clua "--lr-cpath"
+               _ (error (Error "unsupported path type: %s" (view path-type)) 2))]
+    (case (run "luarocks" "--lua-version" options.lua-version "--tree" (rock-path) "path" flag)
+      {:ok? true : out}
+      (icollect [path (out:gmatch "([^;\n]+)")] path)
+      {:message ?msg : code}
+      (error (Error (or ?msg (.. "error when obtaining path data from luarocks: " code))) 2))))
+
+
+;;;; Git
+
+(fn git-path []
+  "Git-specific root for dependencies."
+  (path options.deps-dir "git"))
+
+(fn file-exists? [filename]
+  "Check if `filename` exists on the filesystem."
+  (case (io.open filename :r)
+    f (do (f:close) true)
+    _ false))
+
+(fn parse-git-url [url]
+  "Parses a Git `url` string.
+Supports HTTP and SSH protocols.  Returns a table with `scheme`,
+`host`, `port`, `userinfo`, and `path` fields from the URL."
+  (let [scheme (assert (or (url:match "^([^:]+)://")
+                           (url:match "^([^@]+)@"))
+                       (Error "git dependency name didn't match URL pattern: %s" (view url)))
+        authority (or (url:match "//([^/]+)/?")
+                      (url:match "@([^:]+):?"))
+        userinfo (authority:match "([^@]+)@")
+        port (authority:match ":(%d+)")
+        host (authority:match (.. (if userinfo "@([^:?#]+)" "([^:?#]+)") (if port ":" "")))
+        path (or (url:match "//[^/]+(/[^?#]*)")
+                 (url:match "@[^:]+(:[^?#]*)"))]
+    {: scheme : host : port : userinfo : path}))
+
+(fn build-git-dep [name lib-path]
+  "Ask whether it is OK to build a dependency `name` and execute the
+script in the `lib-path` directory."
+  (let [deps-file (path lib-path "deps.fnl")
+        build-file (path lib-path "deps.fnl.build")]
+    (when (file-exists? deps-file)
+      (let [basedir (basedir deps-file)
+            {: build} (read-deps deps-file)]
+        (when (and build (not (file-exists? build-file)))
+          (log "depenency " (view name) " requires executing a build script:")
+          (log build)
+          (io.stderr:write "Proceed? [y/n]: ")
+          (io.flush)
+          (case (io.read 1)
+            :y (let [(success _ code)
+                     (case os-type
+                       :linux (os.execute (.. "(cd " basedir " && " build "&& touch deps.fnl.build)"))
+                       ;; TODO: test on windows
+                       :windows (os.execute (.. "pushd " basedir " && " build "&& echo.> deps.fnl.build && popd")))]
+                 (when (not success)
+                   (os.exit code)))
+            :n (os.exit 1)))))))
+
+(fn process-git [url {: sha : paths} level all-paths process-deps]
+  "Process a Git dependency by cloning the given `url`.
+The `sha` key specifies the checkout target.  If the repository
+contains its own `deps.fnl` file, process it recursively.  If the
+`paths` are present for this library, add those to `all-paths` at the
+given `level`.  Uses `process-deps` to recursively process any
+specified dependencies."
+  (assert sha (Error "missing a sha for git dependency: %s" (view url)))
+  (assert (string? sha) (Error "sha for git dependency is not a string: %s" (view url)))
+  (assert (not= "" sha) (Error "sha for git dependency is epmty"))
+  (assert (sha? sha) (Error "sha for git dependency %s did not conform to spec: %s" (view url) (view sha)))
+  (assert (string? url) (Error "url for the git dependency is not a string: %s" (view url)))
+  (let [{:path project-path} (parse-git-url url)
+        name (: (project-path:sub 2) :gsub "%.git$" "") ; remove the leading slash and `.git` suffix
+        lib-path (path (git-path) (name:gsub "/" path-separator) sha)]
+    (when paths
+      (add-paths paths all-paths lib-path level))
+    (with-conflict-check name sha level
+      #(do (when (not (file-exists? lib-path))
+             (log "processing git repo: " url)
+             (case (run "git clone" url lib-path)
+               {:ok? true} (run "git -C" lib-path "checkout" sha)
+               {: out} (dump-log-and-die! url out)))
+           (build-git-dep name lib-path)
+           (process-deps (path lib-path "deps.fnl") all-paths (+ level 1))))))
+
+
+;;; Main script
+
+(fn process-deps [deps-file all-paths ?level]
+  "Process the given `deps-file` specified by the `dep-file` argument which is a string path.
+Collect all path-related information into `all-paths`.
+
+This function loops over all dependencies under the `:deps` key and
+downloads each dependency based on its `type` key.  If the dependency
+is of a Git type, this function recurses incrementing the optional
+`?level`, starting at `1`."
+  (when (file-exists? deps-file)
+    (let [level (or ?level 1)
+          basedir (basedir deps-file)
+          {: deps : paths} (case ?level
+                             nil (merge-deps (read-deps deps-file) (unpack options.merge))
+                             _ (read-deps deps-file))]
+      (assert (or (= nil deps) (vector? deps))
+              (Error "%s file did not conform to spec: deps field is not a sequential table" deps-file))
+      (assert paths (Error "%s file did not conform to spec: missing paths field" deps-file))
+      (assert (table? paths) (Error "paths field in the deps file must be a table: %s" (view paths)))
+      (assert (not (vector? paths)) (Error "paths field in the deps file must be an associative table: %s" (view paths)))
+      (add-paths paths all-paths basedir level)
+      (each [_ dep (ipairs (or deps {}))]
+        (assert (vector? dep) (Error "%s file did not conform to spec: dependency %s is not a sequential table" deps-file (view dep)))
+        (case dep
+          ;; proper git dependency
+          (where [name {:type :git &as descr}] (string? name))
+          (process-git name descr level all-paths process-deps)
+          ;; proper luarocks dependency
+          (where [name {:type :rock &as descr}] (string? name))
+          (process-rock name descr level)
+          ;; type is present but is not of ones supported
+          (where [name {:type _}])
+          (error (Error "%s file did not conform to spec: unsupported dependency type" deps-file (view dep)) 2)
+          ;; name is not a string or not present
+          (where [_name] (not (string? _name)))
+          (error (Error "%s file did not conform to spec: dependency name is not a string: %s" deps-file (view dep)) 2)
+          ;; something else is wrong
+          _
+          (error (Error "%s file did not conform to spec: dependency %s does not conform to the spec" deps-file (view dep)) 2))))))
+
+(fn path->flag-env [path]
+  "Convert the `path` key into the command-line flag accepted by `fennel`."
+  (or (. supported-paths path)
+      (error (Error "unsupported path type: %s" (view path)) 2)))
+
+(fn flatten-paths [all-paths]
+  "Flattens nested paths.
+
+`all-paths` is a table where all of the paths that were gathered by
+the script from all of the `deps.fnl` files are stored in the order of
+their transient depth and grouped by the path type.
+
+
+In: `{:fennel [[:a] [:b :c] [:d]] :lua [[:a]]}`
+Out: `{:fennel [:a :b :c :d] :lua [:a]}`
+
+Additionally, deduplicates paths.
+
+In:  `{:fennel [[:a] [:b :c] [:d :a]] :lua [[:a]]}`
+Out: `{:fennel [:a :b :c :d] :lua [:a]}`"
+  (collect [path paths (pairs all-paths)]
+    path (let [memo {}]
+           (accumulate [res [] _ paths (ipairs paths)]
+             (icollect [_ p (ipairs paths) :into res]
+               (when (not (. memo p))
+                 (set (. memo p) true)
+                 p))))))
+
+(fn merge-paths [a-paths b-paths]
+  "Merge two path maps.
+
+In:
+`a-paths`: `{:fennel [:a :b] :lua [:c]}`,
+`b-paths`: `{:fennel [:d] :lua [:e] :clua [:f]}`
+
+Out:
+`{:fennel [:a :b :d] :lua [:c :e] :clua [:f]}`"
+  (if (and b-paths (next b-paths))
+      (accumulate [res a-paths
+                   variable paths (pairs b-paths)]
+        (doto res
+          (tset variable
+            (icollect [_ p (ipairs paths)
+                       :into (or (. res variable) [])]
+              p))))
+      a-paths))
+
+(fn build-paths []
+  "Recursively build PATH information from the root `deps.fnl`.
+Resolves and installs dependencies as needed."
+  (let [all-paths {}]
+    (case (pcall process-deps options.deps-file all-paths)
+      (false msg)
+      (do (log (tostring msg))
+          (os.exit 1))
+      _ (-> all-paths
+            flatten-paths
+            (merge-paths {:lua (luarocks-path :lua)
+                          :clua (luarocks-path :clua)})))))
+
+(fn generate-launcher-flags [paths]
+  "Generate appropriate launcher flags for `fennel` based on `paths`
+obtained from `build-paths`."
+  (concat
+   (icollect [path-type paths (pairs paths)]
+     (when (next paths)
+       (let [[flag] (path->flag-env path-type)]
+         (.. flag " " (view (concat paths ";") {:one-line? true})))))
+   " "))
+
+(fn generate-env-variables [paths]
+  "Generate appropriate environment variables for the shell based on
+`paths` obtained from `build-paths`."
+  (concat
+   (icollect [path-type paths (pairs paths)]
+     (when (next paths)
+       (let [[_ env] (path->flag-env path-type)
+             cmd (.. env "=" (view (concat paths ";") {:one-line? true}))]
+         (case os-type
+           "windows" (.. "set " cmd)
+           _ (.. "export " cmd)))))
+   "\n"))
+
+(fn help []
+  "Display a help message specific to the deps script."
+  (let [exec-name (: (. arg 0) :match (.. ".*" path-separator "(.-)$"))
+        help "Usage: %s [FLAGS] [FENNEL ARGS]
+
+Process dependencies, and run Fennel with the PATH constructed from a deps.fnl
+file.
+
+  --deps-file <path> : Path to a specific deps file.
+                       Default: deps.fnl
+  --deps-dir <path>  : Path to an alternative deps storage.
+                       Default: .deps
+  --merge <path>     : Merge the default deps-file with an additional deps
+                       file
+  --path             : Construct LUA_PATH, LUA_CPATH, FENNEL_PATH, and
+                       FENNEL_MACRO_PATH environment variables
+  --fennel-path      : Construct only the FENNEL_PATH and FENNEL_MACRO_PATH
+                       environment variables
+  --allow-conflicts  : allow multiple instances of a single library
+                       with different versions.  Honors versions
+                       specified closer to the root
+  --show             : Print resulting deps.fnl after processing all arguments
+  --lua-version      : Specify alternative Lua version for Luarocks commands.
+                       Version is deteected automatically, but can be overriden
+                       with this flag.  On some systems, the Luarocks package
+                       defaults to lua5.1 (or another version of Lua), which can
+                       cause errors when using a different Lua runtime version.
+  --help             : Display this text
+
+Run 'fennel --help' to see Fennel help."]
+    (io.stderr:write (string.format help exec-name) "\n")
+    (os.exit 0)))
+
+(fn show-deps []
+  (-> options.deps-file
+      read-deps
+      (merge-deps (unpack options.merge))
+      view
+      print)
+  (os.exit 0))
+
+(fn process-command-line-args []
+  "Process command-line arguments, and populate an options table for deps
+script."
+  (var i 1)
+  (while (. arg i)
+    (case (. arg i)
+      :--help (help)
+      :--deps-dir (do (set options.deps-dir (. arg (+ i 1)))
+                      (remove arg i)
+                      (remove arg i))
+      :--show (do (set options.show-deps true)
+                  (remove arg i))
+      :--deps-file (do (set options.deps-file (. arg (+ i 1)))
+                       (remove arg i)
+                       (remove arg i))
+      :--merge (do (insert options.merge (read-deps (. arg (+ i 1))))
+                   (remove arg i)
+                   (remove arg i))
+      :--path (do (set options.print-path? :full)
+                  (remove arg i))
+      :--fennel-path (do (set options.print-path? :fennel)
+                         (remove arg i))
+      :--allow-conflicts (do (set options.allow-conflicts? true)
+                             (remove arg i))
+      :--lua-version (do (set options.lua-version (. arg (+ i 1)))
+                         (remove arg i)
+                         (remove arg i))
+      _ (set i (+ i 1)))))
+
+(fn main []
+  "The main intry point.
+
+Populates the `options` by processes the command line arguments and,
+depending on the options table either shows help, paths, or passes the
+arguments unaffected by the `process-command-line-args` to the
+`fennel` executable."
+  (doto options
+    ;; defaults
+    (tset :deps-dir (path workdir ".deps"))
+    (tset :deps-file (path workdir "deps.fnl"))
+    (tset :lua-version (: _G._VERSION :match "^Lua *(.+)")))
+
+  (process-command-line-args)
+
+  (assert options.lua-version (Error "couldn't detect Lua runtime version automatically: use the --lua-version flag"))
+  (assert (tonumber options.lua-version) (Error "lua version is not a number: %s" (view options.lua-version)))
+
+  (let [paths (build-paths)]
+    (case options
+      {:show-deps true} (show-deps)
+      {:print-path? :full} (print (generate-env-variables paths))
+      {:print-path? :fennel} (print (generate-env-variables {:fennel paths.fennel :macro paths.macro}))
+      _ (let [deps-flags (generate-launcher-flags paths)
+              fennel-args (concat arg " ")
+              command (.. "fennel " runtime-flag " " deps-flags " " fennel-args)
+              (_ _ code) (os.execute command)]
+          (os.exit code)))))
+
+(main)

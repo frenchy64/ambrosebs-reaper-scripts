@@ -38,7 +38,7 @@
         lua-dir (get fnl-dir->reapack-dir fnl-dir)
         _ (assert lua-dir fnl-dir)
         lua (str "../" lua-dir "/ambrosebs_" (fnl-description fnl) ".lua")]
-    (tasks/shell {:out lua} "./fennel --require-as-include --compile" fnl)
+    (p/shell {:out lua} "./fennel deps --require-as-include --compile" fnl)
     (spit lua
           (str/join "\n"
                     [(fnl-header-as-lua fnl)
