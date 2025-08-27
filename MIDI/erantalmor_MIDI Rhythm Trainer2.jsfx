@@ -1374,7 +1374,7 @@ function drawTrainingGraph(graph_left, graph_top, graph_width, graph_height) loc
 
 function drawLanes(y) local(lane)
 (
-  lane=0;
+  lane=1;
   while(lane<num_lanes)
   (
     drawGrid(lane, xmargin, y, width, grid_height-grid_margin);
@@ -1401,8 +1401,7 @@ total_grid_height -= total_grid_height % num_lanes;
 grid_margin = 6;
 grid_height = total_grid_height / num_lanes;
 drawGrid(0, xmargin, header_margin, width, grid_height-grid_margin);
-y = header_margin + grid_height;
-y = drawLanes(y);
+y = drawLanes(header_margin + grid_height);
 
 drawTrainingGraphTitle(xmargin, y);
 y+=20;
