@@ -1372,6 +1372,18 @@ function drawTrainingGraph(graph_left, graph_top, graph_width, graph_height) loc
   drawFrame(xmargin-1, graph_top-1, width+2, graph_height+2);
 );
 
+function drawLanes(y) local(lane)
+(
+  lane=0;
+  while(lane<num_lanes)
+  (
+    drawGrid(lane, xmargin, y, width, grid_height-grid_margin);
+    y+=grid_height;
+    lane+=1;
+  );
+  y;
+);
+
 xmargin = 4;
 header_margin = 20;
 footer_margin = 4;
@@ -1390,13 +1402,7 @@ grid_margin = 6;
 grid_height = total_grid_height / num_lanes;
 drawGrid(0, xmargin, header_margin, width, grid_height-grid_margin);
 y = header_margin + grid_height;
-num_lanes > 1 ? (drawGrid(1, xmargin, y, width, grid_height-grid_margin); y+=grid_height);
-num_lanes > 2 ? (drawGrid(2, xmargin, y, width, grid_height-grid_margin); y+=grid_height);
-num_lanes > 3 ? (drawGrid(3, xmargin, y, width, grid_height-grid_margin); y+=grid_height);
-num_lanes > 4 ? (drawGrid(4, xmargin, y, width, grid_height-grid_margin); y+=grid_height);
-num_lanes > 5 ? (drawGrid(5, xmargin, y, width, grid_height-grid_margin); y+=grid_height);
-num_lanes > 6 ? (drawGrid(6, xmargin, y, width, grid_height-grid_margin); y+=grid_height);
-num_lanes > 7 ? (drawGrid(7, xmargin, y, width, grid_height-grid_margin); y+=grid_height);
+y = drawLanes(y);
 
 drawTrainingGraphTitle(xmargin, y);
 y+=20;
