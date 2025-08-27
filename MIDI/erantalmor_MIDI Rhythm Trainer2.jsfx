@@ -2,6 +2,7 @@ desc: MIDI Rhythm Trainer 2
 author: Eran Talmor
 version: 1.22
 changelog:
+  * Add "2x pattern" for doubling the current beats and divisions of lanes
   * Added support for min/max velocity
   * Added support for 8 lanes
   * Added margins on the left and right of the grid to improve the cyclic presentation of the data around the edges
@@ -211,6 +212,7 @@ control_button_in_min_velocity = 13;
 control_button_in_max_velocity = 14;
 
 control_button_training_clear = 15;
+control_button_double_pattern = 16;
 
 hist_idx = 0;
 max_hist = 200;
@@ -335,10 +337,15 @@ function isPlaying()
   play_state == 1 || play_state == 5;
 );
 
+function getBeats()
+(
+  slider1;
+);
+
 // Relative time to the beats
 function getRelTime(sample_offset) local(p)
 (
-  p = (beat_position + (sample_offset * (tempo / 60) / srate))/beats;
+  p = (beat_position + (sample_offset * (tempo / 60) / srate))/getBeats();
   p - floor(p);
 );
 
@@ -534,7 +541,7 @@ function getGrid(lane, divs, i) local(r)
 // Return ratio of green window per division. 1.0 == entire pattern.
 function getErrorRange()
 (
-  error_bound * error_bound_scale * tempo / 60000 / beats;
+  error_bound * error_bound_scale * tempo / 60000 / getBeats();
 );
 
 function getEarly(lane, divs, i)
@@ -585,15 +592,46 @@ function controlId(lane, control)
   (lane + 1)*1000 + control;
 );
 
+// double beats and divisions of all lanes.
+// essentially extends the current pattern to be twice as long.
+// TODO double mask
+function doubleDuration() local(lane, ok, newBeats)
+(
+  // check that doubling durations stays within bounds before doubling
+  newBeats = getBeats()*2;
+  (newBeats <= 32 &&
+    (ok = 1;
+     lane = 0;
+     while(ok && lane < max_lanes)
+     (
+       getDivs(lane)*2 > 32 ? ok = 0;
+       lane += 1; 
+     );
+     ok;
+    );
+  ) ?
+  (slider(1) = newBeats;
+   lane = 0;
+   while(lane < max_lanes)
+   (
+     setDivs(lane, getDivs(lane)*2);
+     lane += 1; 
+   )
+  );
+);
+
+// compensation converted to number of samples
+function getRelLatencyCompensation()
+(
+  tempo*slider5/(1000*60*getBeats());
+);
+
 @slider
 
-beats = slider1;
 num_lanes = slider2+1;
+max_lanes = 8;
 error_bound = slider3/error_bound_scale;
 auto_shrink = slider4;
-// compensation converted to number of samples
-latency_compensation = slider5*srate/1000;
-rel_latency_compensation = tempo*slider5/(1000*60*beats);
 updateMaxDivs();
 resetPlay();
 
@@ -615,7 +653,7 @@ function playGrid(lane) local(sp_per_beat, sp_now, divs, sp_grid, channel, i, pr
 
   while (v_play_timers[lane] < 0) (
     v_play_indices[lane] += 1;
-    sp_grid = floor(0.001 + 1 * getGrid(lane, divs, v_play_indices[lane]) * sp_per_beat * beats);
+    sp_grid = floor(0.001 + 1 * getGrid(lane, divs, v_play_indices[lane]) * sp_per_beat * getBeats());
     v_play_timers[lane] = sp_grid - sp_now;
   );
 
@@ -636,7 +674,7 @@ function decayHistogram(lane) local(i, decay_rate, round, prev_round, prev_pos)
 (
   decay_rate = 0.95;
   
-  round = floor(beat_position / beats);
+  round = floor(beat_position / getBeats());
   (v_rounds[lane] != round) || (beat_position < v_beat_pos[lane]) ? (
     i = 0;
     while (i<histogram_buckets) (
@@ -751,7 +789,7 @@ while (midirecv(offset,msg1,msg2,msg3)) ( // REAPER 4.59+ syntax w while()
        midisend(offset, msg1, msg2, msg3)
      : (
        reltime = getRelTime(offset);
-       hit = isHit(modOne(reltime + rel_latency_compensation), lane);
+       hit = isHit(modOne(reltime + getRelLatencyCompensation()), lane);
        hit == 0 ? midisend(offset,msg1,note,msg3);
        decayHistogram(lane);
        recordHistory(reltime, hit, lane, note);
@@ -1108,7 +1146,7 @@ function drawHistogram(lane, l, t, w, h, from, to, start_alpha, end_alpha) local
   prev_max_value = v_histogram_max_value[lane];
   while(i < to) (
     x = l+i;
-    value = v_histogram_tmp[2*floor(modOne(-rel_latency_compensation + i/w)*histogram_buckets)];
+    value = v_histogram_tmp[2*floor(modOne(-getRelLatencyCompensation() + i/w)*histogram_buckets)];
     max_value = max(value, max_value);
     normalized = value / (prev_max_value ? prev_max_value : 1); 
     y = max(t, t+h*(1-normalized/2));
@@ -1131,7 +1169,7 @@ function drawGradientMargins(l, t, w, h, w_margin) local(grad_alpha, black_margi
   gfx_gradrect(l + w - w_margin+1, t, w_margin - black_margin, h, 0, 0, 0, 0, 0, 0, 0, grad_alpha, 0, 0, 0, 0);
 );
 
-function drawGrid(lane, l,t,w,h) local(beat_mark_ratio, i, x,y, age, birth, hit,now,low,grid,high,i,divs, toolbar_height, focus_control)
+function drawGrid(lane, l,t,w,h) local(beat_mark_ratio, i, x,y, age, birth, hit,now,low,grid,high,i,divs, toolbar_height, focus_control,beats)
 (  
   focus_control = 0;
   toolbar_height = 20;
@@ -1214,6 +1252,7 @@ function drawGrid(lane, l,t,w,h) local(beat_mark_ratio, i, x,y, age, birth, hit,
   i=0;
   beat_mark_ratio = 0.20;
   gfx_a = 1;
+  beats = getBeats();
   loop(beats+1,
     grid = l_pattern + i*w_pattern/beats;
     
@@ -1249,7 +1288,7 @@ function drawGrid(lane, l,t,w,h) local(beat_mark_ratio, i, x,y, age, birth, hit,
         age = min(max_age, now - birth);
         (hit == 0) ? rgb(0,1,0) : 
           (hit == 1) ? rgb(1,0,0) : rgb(0,0,1);
-        x = w_pattern * modOne(v_history_rel_time[i] + rel_latency_compensation);
+        x = w_pattern * modOne(v_history_rel_time[i] + getRelLatencyCompensation());
         y = age*20;
         gfx_a = 1 - sqrt(y/h);
         y < h ? (
@@ -1393,6 +1432,9 @@ gfx_y = 1;
 rgb(1,1,1);
 gfx_setfont(1, "Arial", 15);
 gfx_printf("Rhythm Grid:");
+
+drawButton(0, control_button_double_pattern, 0, 16, "2x pattern", 0) && isLButtonRelease() ?
+  doubleDuration();
 
 width = gfx_w-xmargin*2;
 total_grid_height = max(200, (gfx_h - header_margin - footer_margin) * 0.7);
