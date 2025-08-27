@@ -2,6 +2,7 @@ desc: MIDI Rhythm Trainer 2
 author: Eran Talmor
 version: 1.22
 changelog:
+  * Increase width of Click: ON/OFF button to prevent resizing.
   * Added "{/,x}2 pattern" buttons for {halving,doubling} the current beats and divisions of lanes
   * TODO Added support for min/max velocity
   * Added support for 8 lanes
@@ -1092,7 +1093,7 @@ function drawToolBar(lane, l, t, w, h) local(release, f0, f1, f2, f3, f4, f5, f6
     f1 = drawButton(lane, control_button_div_up, button_width, h, "+", 0);
     
     drawText(0, h, "Click:");
-    f5 = drawButton(lane, control_button_click, button_width*1.5, h, getClick(lane)? "ON" : "OFF", getClick(lane));
+    f5 = drawButton(lane, control_button_click, button_width*2, h, getClick(lane)? "ON" : "OFF", getClick(lane));
     f6 = drawButton(lane, control_button_click_note, button_width*1.5, h, noteName(click_note), 
                     (listen_note_control == control_button_click_note_id));
     f4 = drawButton(lane, control_button_vel_down, button_width, h,  "V-", 0);
