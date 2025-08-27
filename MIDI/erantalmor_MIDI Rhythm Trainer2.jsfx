@@ -2,8 +2,8 @@ desc: MIDI Rhythm Trainer 2
 author: Eran Talmor
 version: 1.22
 changelog:
-  * Add "2x pattern" for doubling the current beats and divisions of lanes
-  * Added support for min/max velocity
+  * Added "{/,x}2 pattern" buttons for {halving,doubling} the current beats and divisions of lanes
+  * TODO Added support for min/max velocity
   * Added support for 8 lanes
   * Added margins on the left and right of the grid to improve the cyclic presentation of the data around the edges
       (event, histograms, grid lines).
@@ -212,7 +212,8 @@ control_button_in_min_velocity = 13;
 control_button_in_max_velocity = 14;
 
 control_button_training_clear = 15;
-control_button_double_pattern = 16;
+control_button_halve_pattern = 16;
+control_button_double_pattern = 17;
 
 hist_idx = 0;
 max_hist = 200;
@@ -592,19 +593,21 @@ function controlId(lane, control)
   (lane + 1)*1000 + control;
 );
 
-// double beats and divisions of all lanes.
-// essentially extends the current pattern to be twice as long.
+// halve beats and divisions of all lanes, if divisible.
+// essentially truncates the current pattern to be just the first half.
 // TODO double mask
-function doubleDuration() local(lane, ok, newBeats)
+function halveDuration() local(lane, ok, newBeats, newDivs)
 (
   // check that doubling durations stays within bounds before doubling
-  newBeats = getBeats()*2;
-  (newBeats <= 32 &&
+  newBeats = getBeats()/2;
+  (newBeats >= 1 &&
+   newBeats == floor(newBeats) &&
     (ok = 1;
      lane = 0;
-     while(ok && lane < max_lanes)
+     while(ok && lane < lanes_limit)
      (
-       getDivs(lane)*2 > 32 ? ok = 0;
+       newDivs = getDivs(lane)/2;
+       newDivs < 1 || newDivs != floor(newDivs) ? ok = 0;
        lane += 1; 
      );
      ok;
@@ -612,7 +615,35 @@ function doubleDuration() local(lane, ok, newBeats)
   ) ?
   (slider(1) = newBeats;
    lane = 0;
-   while(lane < max_lanes)
+   while(lane < lanes_limit)
+   (
+     setDivs(lane, getDivs(lane)/2);
+     lane += 1; 
+   )
+  );
+);
+
+// double beats and divisions of all lanes.
+// essentially extends the current pattern to be twice as long.
+// TODO double mask
+function doubleDuration() local(lane, ok, newBeats)
+(
+  // check that doubling durations stays within bounds before doubling
+  newBeats = getBeats()*2;
+  (newBeats <= beats_limit &&
+    (ok = 1;
+     lane = 0;
+     while(ok && lane < lanes_limit)
+     (
+       getDivs(lane)*2 > divs_limit ? ok = 0;
+       lane += 1; 
+     );
+     ok;
+    );
+  ) ?
+  (slider(1) = newBeats;
+   lane = 0;
+   while(lane < lanes_limit)
    (
      setDivs(lane, getDivs(lane)*2);
      lane += 1; 
@@ -629,7 +660,9 @@ function getRelLatencyCompensation()
 @slider
 
 num_lanes = slider2+1;
-max_lanes = 8;
+lanes_limit = 8; // manually set in slider2
+beats_limit = 32; // manually set in slider1
+divs_limit = 32; // manually set in slider13, slider26, ...
 error_bound = slider3/error_bound_scale;
 auto_shrink = slider4;
 updateMaxDivs();
@@ -1433,7 +1466,9 @@ rgb(1,1,1);
 gfx_setfont(1, "Arial", 15);
 gfx_printf("Rhythm Grid:");
 
-drawButton(0, control_button_double_pattern, 0, 16, "2x pattern", 0) && isLButtonRelease() ?
+drawButton(0, control_button_halve_pattern, 0, 16, "/2 pattern", 0) && isLButtonRelease() ?
+  halveDuration();
+drawButton(0, control_button_double_pattern, 0, 16, "x2 pattern", 0) && isLButtonRelease() ?
   doubleDuration();
 
 width = gfx_w-xmargin*2;
