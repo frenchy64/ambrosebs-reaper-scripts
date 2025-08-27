@@ -1,5 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="Ambrose Bonnaire-Sergeant's REAPER Scripts" commit="895e68e508686f3c3d7183d9fea4de183a7dc094">
+<index version="1" name="Ambrose Bonnaire-Sergeant's REAPER Scripts" commit="208e696406d23bdd3a4f7fc62955a69c6db2ca05">
+  <category name="MIDI">
+    <reapack name="erantalmor_MIDI Rhythm Trainer2.jsfx" type="effect" desc="MIDI Rhythm Trainer 2">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel0 \b \fs36 MIDI Rhythm Trainer\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 A tool for improving your sense of rhythm.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Key features:\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Define a rhythmic pattern, and play along to hit the pattern. Only accurate notes will be heard!\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Get visual and audio feedback on your performance:\par}
+{\pard \ql \f0 \sa0 \li720 \fi-360 \endash \tx360\tab Controllable target accuracy ("error bound")\par}
+{\pard \ql \f0 \sa0 \li720 \fi-360 \endash \tx360\tab Only accurate notes are heard\par}
+{\pard \ql \f0 \sa0 \li720 \fi-360 \endash \tx360\tab Colors for early/late notes\par}
+{\pard \ql \f0 \sa0 \li720 \fi-360 \endash \tx360\tab "Probability Density" curves shows where you are usually hitting over time.\sa180\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Error bound: control the level of accuracy you wish to achieve.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Auto error bound shrink: let the tool challenge you as you improve.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Support complex polyrhythms, e.g: 4 beat pattern, divided to 5 in the right hand, 7 in the left hand.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Set up complex splits - up to 4 "lanes", receiving separate key ranges and input channels.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Set "click' sounds for each lane (like a metronome).\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab "Swing" and "Phase" parameters.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab See you progress on a "10 minute training graph"\sa180\par}
+}
+]]></description>
+        <link rel="website" href="https://youtu.be/cifj6eh_LF0">Youtube tutorial</link>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=250891">Forum Thread</link>
+        <link rel="screenshot" href="https://forum.cockos.com/attachment.php?attachmentid=53575&amp;d=1691777240">Midi Rhythm Trainer 1.22</link>
+      </metadata>
+      <version name="1.22" author="Eran Talmor" time="2025-08-27T06:19:55Z">
+        <changelog><![CDATA[* Added support for min/max velocity
+* Added support for 8 lanes
+* Added margins on the left and right of the grid to improve the cyclic presentation of the data around the edges
+    (event, histograms, grid lines).
+* Improved beat visibility by adding a beat ruler with alternating colors, and making the beat lines more pronounced.
+* Now the phase can be dragged negatively, up to -360 degress. This is useful with working with the "copied" 1st grid line 
+    at the right margin.
+* Mellowed down error rate update to be less jumpy.
+* Minor color updates.]]></changelog>
+        <source>https://github.com/frenchy64/ambrosebs-reaper-scripts/raw/208e696406d23bdd3a4f7fc62955a69c6db2ca05/MIDI/erantalmor_MIDI%20Rhythm%20Trainer2.jsfx</source>
+      </version>
+    </reapack>
+  </category>
   <category name="MIDI Editor">
     <reapack name="ambrosebs_Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone.lua" type="script" desc="Go forward 4 bars in Notation, otherwise decrease pitch cursor one semitone">
       <metadata>
