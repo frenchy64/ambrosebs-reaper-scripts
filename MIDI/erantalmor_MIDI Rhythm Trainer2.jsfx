@@ -2,6 +2,7 @@ desc: MIDI Rhythm Trainer 2
 author: Eran Talmor
 version: 1.22
 changelog:
+  * BREAKING: Reserve 30 sliders per lane (breaks presets).
   * Increase width of Click: ON/OFF button to prevent resizing.
   * Added "{/,x}2 pattern" buttons for {halving,doubling} the current beats and divisions of lanes
   * TODO Added support for min/max velocity
@@ -62,125 +63,125 @@ slider4:0<0,1,1{Off,On}>Auto Shrink Error Bound
 slider5:0<-200,200>Latency Compensation (ms)
 
 // Hidden sliders per lane
-slider13:8<1,32,1>-Divisions1
-slider14:0<-0.91666, 0.91666,0.01>-Swing1
-slider15:0<0,1,0.01>-Phase1
-slider16:0<0,1,1>-Click1
-slider17:60<0,127,1>-ClickNote1
-slider18:1<1,16,1>-ClickChannel1
-slider19:60<0,127,1>-ClickVel1
-slider20:-1<-2147483648,2147483647,1>-Mask1
-slider21:0<1,16,1>-InputChannel1
-slider22:0<0,127,1>-InputMinNote1
-slider23:127<0,127,1>-InputMaxNote1
-slider24:0<0,127,1>-InputMinVelocity1
-slider25:127<0,127,1>-InputMaxVelocity1
+slider16:8<1,32,1>-Divisions1
+slider17:0<-0.91666, 0.91666,0.01>-Swing1
+slider18:0<0,1,0.01>-Phase1
+slider19:0<0,1,1>-Click1
+slider20:60<0,127,1>-ClickNote1
+slider21:1<1,16,1>-ClickChannel1
+slider22:60<0,127,1>-ClickVel1
+slider23:-1<-2147483648,2147483647,1>-Mask1
+slider24:0<1,16,1>-InputChannel1
+slider25:0<0,127,1>-InputMinNote1
+slider26:127<0,127,1>-InputMaxNote1
+slider27:0<0,127,1>-InputMinVelocity1
+slider28:127<0,127,1>-InputMaxVelocity1
 
-slider26:8<1,32,1>-Divisions2
-slider27:0<-0.91666, 0.91666,0.01>-Swing2
-slider28:0<0,1,0.01>-Phase2
-slider29:0<0,1,1>-Click2
-slider30:62<0,127,1>-ClickNote2
-slider31:1<1,16,1>-ClickChannel2
-slider32:60<0,127,1>-ClickVel2
-slider33:-1<-2147483648,2147483647,1>-Mask2
-slider34:0<0,16,1>-InputChannel2
-slider35:0<0,127,1>-InputMinNote2
-slider36:127<0,127,1>-InputMaxNote2
-slider37:0<0,127,1>-InputMinVelocity2
-slider38:127<0,127,1>-InputMaxVelocity2
+slider46:8<1,32,1>-Divisions2
+slider47:0<-0.91666, 0.91666,0.01>-Swing2
+slider48:0<0,1,0.01>-Phase2
+slider49:0<0,1,1>-Click2
+slider50:62<0,127,1>-ClickNote2
+slider51:1<1,16,1>-ClickChannel2
+slider52:60<0,127,1>-ClickVel2
+slider53:-1<-2147483648,2147483647,1>-Mask2
+slider54:0<0,16,1>-InputChannel2
+slider55:0<0,127,1>-InputMinNote2
+slider56:127<0,127,1>-InputMaxNote2
+slider57:0<0,127,1>-InputMinVelocity2
+slider58:127<0,127,1>-InputMaxVelocity2
 
-slider39:8<1,32,1>-Divisions3
-slider40:0<-0.91666, 0.91666,0.01>-Swing3
-slider41:0<0,1,0.01>-Phase3
-slider42:0<0,1,1>-Click3
-slider43:64<0,127,1>-ClickNote3
-slider44:1<1,16,1>-ClickChannel3
-slider45:60<0,127,1>-ClickVel3
-slider46:-1<-2147483648,2147483647,1>-Mask3
-slider47:0<0,16,1>-InputChannel3
-slider48:0<0,127,1>-InputMinNote3
-slider49:127<0,127,1>-InputMaxNote3
-slider50:0<0,127,1>-InputMinVelocity3
-slider51:127<0,127,1>-InputMaxVelocity3
+slider76:8<1,32,1>-Divisions3
+slider77:0<-0.91666, 0.91666,0.01>-Swing3
+slider78:0<0,1,0.01>-Phase3
+slider79:0<0,1,1>-Click3
+slider80:64<0,127,1>-ClickNote3
+slider81:1<1,16,1>-ClickChannel3
+slider82:60<0,127,1>-ClickVel3
+slider83:-1<-2147483648,2147483647,1>-Mask3
+slider84:0<0,16,1>-InputChannel3
+slider85:0<0,127,1>-InputMinNote3
+slider86:127<0,127,1>-InputMaxNote3
+slider87:0<0,127,1>-InputMinVelocity3
+slider88:127<0,127,1>-InputMaxVelocity3
 
-slider52:8<1,32,1>-Divisions4
-slider53:0<-0.91666, 0.91666,0.01>-Swing4
-slider54:0<0,1,0.01>-Phase4
-slider55:0<0,1,1>-Click4
-slider56:65<0,127,1>-ClickNote4
-slider57:1<1,16,1>-ClickChannel4
-slider58:60<0,127,1>-ClickVel4
-slider59:-1<-2147483648,2147483647,1>-Mask4
-slider60:0<0,16,1>-InputChannel4
-slider61:0<0,127,1>-InputMinNote4
-slider62:127<0,127,1>-InputMaxNote4
-slider63:0<0,127,1>-InputMinVelocity4
-slider64:127<0,127,1>-InputMaxVelocity4
+slider106:8<1,32,1>-Divisions4
+slider107:0<-0.91666, 0.91666,0.01>-Swing4
+slider108:0<0,1,0.01>-Phase4
+slider109:0<0,1,1>-Click4
+slider110:65<0,127,1>-ClickNote4
+slider111:1<1,16,1>-ClickChannel4
+slider112:60<0,127,1>-ClickVel4
+slider113:-1<-2147483648,2147483647,1>-Mask4
+slider114:0<0,16,1>-InputChannel4
+slider115:0<0,127,1>-InputMinNote4
+slider116:127<0,127,1>-InputMaxNote4
+slider117:0<0,127,1>-InputMinVelocity4
+slider118:127<0,127,1>-InputMaxVelocity4
 
-slider65:8<1,32,1>-Divisions5
-slider66:0<-0.91666, 0.91666,0.01>-Swing5
-slider67:0<0,1,0.01>-Phase5
-slider68:0<0,1,1>-Click5
-slider69:65<0,127,1>-ClickNote5
-slider70:1<1,16,1>-ClickChannel5
-slider71:60<0,127,1>-ClickVel5
-slider72:-1<-2147483648,2147483647,1>-Mask5
-slider73:0<0,16,1>-InputChannel5
-slider74:0<0,127,1>-InputMinNote5
-slider75:127<0,127,1>-InputMaxNote5
-slider76:0<0,127,1>-InputMinVelocity5
-slider77:127<0,127,1>-InputMaxVelocity5
+slider136:8<1,32,1>-Divisions5
+slider137:0<-0.91666, 0.91666,0.01>-Swing5
+slider138:0<0,1,0.01>-Phase5
+slider139:0<0,1,1>-Click5
+slider140:65<0,127,1>-ClickNote5
+slider141:1<1,16,1>-ClickChannel5
+slider142:60<0,127,1>-ClickVel5
+slider143:-1<-2147483648,2147483647,1>-Mask5
+slider144:0<0,16,1>-InputChannel5
+slider145:0<0,127,1>-InputMinNote5
+slider146:127<0,127,1>-InputMaxNote5
+slider147:0<0,127,1>-InputMinVelocity5
+slider148:127<0,127,1>-InputMaxVelocity5
 
-slider78:8<1,32,1>-Divisions6
-slider79:0<-0.91666, 0.91666,0.01>-Swing6
-slider80:0<0,1,0.01>-Phase6
-slider81:0<0,1,1>-Click6
-slider82:65<0,127,1>-ClickNote6
-slider83:1<1,16,1>-ClickChannel6
-slider84:60<0,127,1>-ClickVel6
-slider85:-1<-2147483648,2147483647,1>-Mask6
-slider86:0<0,16,1>-InputChannel6
-slider87:0<0,127,1>-InputMinNote6
-slider88:127<0,127,1>-InputMaxNote6
-slider89:0<0,127,1>-InputMinVelocity6
-slider90:127<0,127,1>-InputMaxVelocity6
+slider166:8<1,32,1>-Divisions6
+slider167:0<-0.91666, 0.91666,0.01>-Swing6
+slider168:0<0,1,0.01>-Phase6
+slider169:0<0,1,1>-Click6
+slider170:65<0,127,1>-ClickNote6
+slider171:1<1,16,1>-ClickChannel6
+slider172:60<0,127,1>-ClickVel6
+slider173:-1<-2147483648,2147483647,1>-Mask6
+slider174:0<0,16,1>-InputChannel6
+slider175:0<0,127,1>-InputMinNote6
+slider176:127<0,127,1>-InputMaxNote6
+slider177:0<0,127,1>-InputMinVelocity6
+slider178:127<0,127,1>-InputMaxVelocity6
 
-slider91:8<1,32,1>-Divisions7
-slider92:0<-0.91666, 0.91666,0.01>-Swing7
-slider93:0<0,1,0.01>-Phase7
-slider94:0<0,1,1>-Click7
-slider95:65<0,127,1>-ClickNote7
-slider96:1<1,16,1>-ClickChannel7
-slider97:60<0,127,1>-ClickVel7
-slider98:-1<-2147483648,2147483647,1>-Mask7
-slider99:0<0,16,1>-InputChannel7
-slider100:0<0,127,1>-InputMinNote7
-slider101:127<0,127,1>-InputMaxNote7
-slider102:0<0,127,1>-InputMinVelocity7
-slider103:127<0,127,1>-InputMaxVelocity7
+slider196:8<1,32,1>-Divisions7
+slider197:0<-0.91666, 0.91666,0.01>-Swing7
+slider198:0<0,1,0.01>-Phase7
+slider199:0<0,1,1>-Click7
+slider200:65<0,127,1>-ClickNote7
+slider201:1<1,16,1>-ClickChannel7
+slider202:60<0,127,1>-ClickVel7
+slider203:-1<-2147483648,2147483647,1>-Mask7
+slider204:0<0,16,1>-InputChannel7
+slider205:0<0,127,1>-InputMinNote7
+slider206:127<0,127,1>-InputMaxNote7
+slider207:0<0,127,1>-InputMinVelocity7
+slider208:127<0,127,1>-InputMaxVelocity7
 
-slider104:8<1,32,1>-Divisions8
-slider105:0<-0.91666, 0.91666,0.01>-Swing8
-slider106:0<0,1,0.01>-Phase8
-slider107:0<0,1,1>-Click8
-slider108:65<0,127,1>-ClickNote8
-slider109:1<1,16,1>-ClickChannel8
-slider110:60<0,127,1>-ClickVel8
-slider111:-1<-2147483648,2147483647,1>-Mask8
-slider112:0<0,16,1>-InputChannel8
-slider113:0<0,127,1>-InputMinNote8
-slider114:127<0,127,1>-InputMaxNote8
-slider115:0<0,127,1>-InputMinVelocity8
-slider116:127<0,127,1>-InputMaxVelocity8
+slider226:8<1,32,1>-Divisions8
+slider227:0<-0.91666, 0.91666,0.01>-Swing8
+slider228:0<0,1,0.01>-Phase8
+slider229:0<0,1,1>-Click8
+slider230:65<0,127,1>-ClickNote8
+slider231:1<1,16,1>-ClickChannel8
+slider232:60<0,127,1>-ClickVel8
+slider233:-1<-2147483648,2147483647,1>-Mask8
+slider234:0<0,16,1>-InputChannel8
+slider235:0<0,127,1>-InputMinNote8
+slider236:127<0,127,1>-InputMaxNote8
+slider237:0<0,127,1>-InputMinVelocity8
+slider238:127<0,127,1>-InputMaxVelocity8
 
 @init
 note_on = $x90;
 
 error_bound_scale = 250;
 
-sliders_per_lane = 13;
-first_lane_slider = 13;
+sliders_per_lane = 30;
+first_lane_slider = 16;
 slider_offset_divs = 0;
 slider_offset_swing = 1;
 slider_offset_phase = 2;
