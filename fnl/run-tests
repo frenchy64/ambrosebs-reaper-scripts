@@ -1,6 +1,0 @@
-#!/bin/bash
-set -e
-cd ../common
-./gen-test-cases.clj
-cd -
-PATH=.:$PATH deps --merge dev-deps.fnl tasks/run-tests

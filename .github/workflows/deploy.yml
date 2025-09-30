@@ -7,7 +7,6 @@ concurrency:
   cancel-in-progress: true
 jobs:
   reapack-index:
-    #if: ${{ false }}  # disable for now
     runs-on: ubuntu-latest
     steps:
     - name: Fetch repository
@@ -23,15 +22,9 @@ jobs:
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: '3.0'
+        ruby-version: '3.2'
     - name: Install reapack-index
       run:  gem install reapack-index
-    - name: Install clojure tools
-      uses: DeLaGuardo/setup-clojure@master
-      with:
-        bb: latest
-    #- run: ./compile.clj
-    #- run: git add .
     - name: Update index.xml
       run:  reapack-index --commit
     - name: Push changes

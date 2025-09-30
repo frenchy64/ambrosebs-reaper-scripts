@@ -1,4 +1,0 @@
-#!/bin/bash
-set -xe
-(cd clj && ./run-tests)
-(cd fnl && ./run-tests)
