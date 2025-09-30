@@ -1,9 +1,0 @@
-[submodule "fnl/cljlib"]
-	path = fnl/cljlib
-	url = https://gitlab.com/andreyorst/fennel-cljlib
-[submodule "fnl/fennel-test"]
-	path = fnl/fennel-test
-	url = git@github.com:frenchy64/fennel-test.git
-[submodule "fnl/json-lua"]
-	path = fnl/json-lua
-	url = https://github.com/rxi/json.lua.git
