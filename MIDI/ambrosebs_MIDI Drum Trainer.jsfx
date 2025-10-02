@@ -1,25 +1,17 @@
-desc: MIDI Rhythm Trainer 2
-author: Eran Talmor
-version: 1.22
+desc: MIDI Drum Trainer
+author: Ambrose Bonnaire-Sergeant
+version: 1.0
 changelog:
-  * BREAKING: Reserve 30 sliders per lane (breaks presets).
+  * Reserve 30 sliders per lane.
   * Increase width of Click: ON/OFF button to prevent resizing.
   * Added "{/,x}2 pattern" buttons for {halving,doubling} the current beats and divisions of lanes
   * TODO Added support for min/max velocity
   * Added support for 8 lanes
-  * Added margins on the left and right of the grid to improve the cyclic presentation of the data around the edges
-      (event, histograms, grid lines).
-  * Improved beat visibility by adding a beat ruler with alternating colors, and making the beat lines more pronounced.
-  * Now the phase can be dragged negatively, up to -360 degress. This is useful with working with the "copied" 1st grid line 
-      at the right margin.
-  * Mellowed down error rate update to be less jumpy.
-  * Minor color updates.
-link:
-  Youtube tutorial https://youtu.be/cifj6eh_LF0
-  Forum Thread https://forum.cockos.com/showthread.php?t=250891
-screenshot: Midi Rhythm Trainer 1.22 https://forum.cockos.com/attachment.php?attachmentid=53575&d=1691777240
 about:
-  # MIDI Rhythm Trainer
+  # MIDI Drum Trainer
+
+  Based on MIDI Rhythm Trainer by Eran Talmor.
+
 
   A tool for improving your sense of rhythm.
 
@@ -37,12 +29,13 @@ about:
   * Set up complex splits - up to 4 "lanes",  receiving separate key ranges and input channels.
   * Set "click' sounds for each lane (like a metronome).
   * "Swing" and "Phase" parameters.
-  * See you progress on a "10 minute training graph"
+  * See your progress on a "10 minute training graph"
 
 
 
 
 /*******************************************************************************
+*  Copyright 2025, Ambrose Bonnaire-Sergeant                                   *
 *  Copyright 2023, Eran Talmor                                                 *
 *  This program is free software: you can redistribute it and/or modify        *
 *  it under the terms of the GNU General Public License as published by        *
