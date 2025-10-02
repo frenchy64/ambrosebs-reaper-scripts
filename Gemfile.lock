@@ -1,0 +1,55 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    addressable (2.8.7)
+      public_suffix (>= 2.0.2, < 7.0)
+    colorize (0.8.1)
+    gitable (0.4.0)
+      addressable (~> 2.2, >= 2.2.7)
+    metaheader (2.0.1)
+    nokogiri (1.18.10-aarch64-linux-gnu)
+      racc (~> 1.4)
+    nokogiri (1.18.10-aarch64-linux-musl)
+      racc (~> 1.4)
+    nokogiri (1.18.10-arm-linux-gnu)
+      racc (~> 1.4)
+    nokogiri (1.18.10-arm-linux-musl)
+      racc (~> 1.4)
+    nokogiri (1.18.10-arm64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.18.10-x86_64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.18.10-x86_64-linux-gnu)
+      racc (~> 1.4)
+    nokogiri (1.18.10-x86_64-linux-musl)
+      racc (~> 1.4)
+    pandoc-ruby (2.1.4)
+    public_suffix (6.0.2)
+    racc (1.8.1)
+    reapack-index (1.2.6)
+      addressable (~> 2.4)
+      colorize (~> 0.7)
+      gitable (~> 0.3)
+      metaheader (~> 2.0)
+      nokogiri (~> 1.7)
+      pandoc-ruby (= 2.1.4)
+      rugged (~> 1.0)
+      stable_sort (~> 1.1)
+    rugged (1.9.0)
+    stable_sort (1.1.0)
+
+PLATFORMS
+  aarch64-linux-gnu
+  aarch64-linux-musl
+  arm-linux-gnu
+  arm-linux-musl
+  arm64-darwin
+  x86_64-darwin
+  x86_64-linux-gnu
+  x86_64-linux-musl
+
+DEPENDENCIES
+  reapack-index
+
+BUNDLED WITH
+   2.7.2
