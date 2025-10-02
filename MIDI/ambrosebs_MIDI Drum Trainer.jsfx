@@ -473,6 +473,16 @@ function setGridMask(lane, idx, value)
   : setSlider(lane, slider_offset_mask, getSlider(lane, slider_offset_mask) & (-1 ~ 1<<idx), -2147483648, 2147483647, 0);
 );
 
+function getMask(lane)
+(
+  getSlider(lane, slider_offset_mask);
+);
+
+function setMask(lane, value)
+(
+  setSlider(lane, slider_offset_mask, value, -2147483648, 2147483647, 0);
+);
+
 function getInputChannel(lane)
 (
   getSlider(lane, slider_offset_in_channel);
@@ -641,7 +651,7 @@ function doubleDuration() local(lane, ok, newBeats, oldDivs, oldMask, newMask, i
    while(lane < lanes_limit)
    (
      oldDivs = getDivs(lane);
-     oldMask = getSlider(lane, slider_offset_mask);
+     oldMask = getMask(lane);
      // Copy first half of mask to second half
      newMask = oldMask;
      i = 0;
@@ -651,7 +661,7 @@ function doubleDuration() local(lane, ok, newBeats, oldDivs, oldMask, newMask, i
        i += 1;
      );
      setDivs(lane, oldDivs*2);
-     setSlider(lane, slider_offset_mask, newMask, -2147483648, 2147483647, 0);
+     setMask(lane, newMask);
      lane += 1; 
    )
   );
