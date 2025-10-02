@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="Ambrose Bonnaire-Sergeant's REAPER Scripts" commit="208e696406d23bdd3a4f7fc62955a69c6db2ca05">
+<index version="1" commit="09065d86f8359cf18895bb0fbb04189e6f108946">
   <category name="MIDI">
     <reapack name="erantalmor_MIDI Rhythm Trainer2.jsfx" type="effect" desc="MIDI Rhythm Trainer 2">
       <metadata>
