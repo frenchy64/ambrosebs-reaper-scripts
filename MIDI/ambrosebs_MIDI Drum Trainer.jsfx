@@ -1148,10 +1148,11 @@ function toggleListen(control)
   listen_note_control = listen_note_control == control ? 0 : control;
 );
 
-function drawToolBar(lane, l, t, w, h) local(release, f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f_move_up, f_move_down, button_width, button_left, button_top, click_note, can_move_up, can_move_down)
+function drawToolBar(lane, l, t, w, h) local(release, rrelease, f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f_move_up, f_move_down, button_width, button_left, button_top, click_note, can_move_up, can_move_down, any_disabled, all_enabled, i, new_click_state)
 (
   gfx_setfont(1, "Arial", 14);
   release = isLButtonRelease();
+  rrelease = isRButtonRelease();
   mouse_wheel_dir = mouse_wheel / 120;
   expand_toolbar ? (
     rgb(0,0,0);
@@ -1215,6 +1216,26 @@ function drawToolBar(lane, l, t, w, h) local(release, f0, f1, f2, f3, f4, f5, f6
     release && f3 ? setClickVel(lane, floor(getClickVel(lane)/4)*4+4); 
     release && f4 ? setClickVel(lane, floor(getClickVel(lane)/4)*4-4);
     release && f5 ? setClick(lane, !getClick(lane));
+    
+    // Right-click on Click button: enable/disable all active lanes
+    rrelease && f5 ? (
+      // Check if any active lane has click disabled
+      any_disabled = 0;
+      i = 0;
+      while(i < num_lanes) (
+        getClick(i) == 0 ? any_disabled = 1;
+        i += 1;
+      );
+      
+      // If any active lane has click disabled, enable all; otherwise disable all
+      new_click_state = any_disabled ? 1 : 0;
+      i = 0;
+      while(i < num_lanes) (
+        setClick(i, new_click_state);
+        i += 1;
+      );
+    );
+    
     release && f6 ? toggleListen(control_button_click_note_id);
     release && f7 ? setInputChannel(lane, getInputChannel(lane)+1);
     release && f8 ? setInputChannel(lane, getInputChannel(lane)-1);
