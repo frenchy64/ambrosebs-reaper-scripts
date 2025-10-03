@@ -50,7 +50,6 @@ about:
 *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the                *
 *  GNU General Public License (http://www.gnu.org/licenses/)for more details.  *
 *******************************************************************************/
-// edited from reaper
 
 slider1:4<1,32,1>Beats
 slider2:0<0,7,1{1,2,3,4,5,6,7,8}>Lanes
@@ -893,7 +892,7 @@ isPlaying() ? (
   getClick(7) && (num_lanes>7) ? playGrid(7);
 );
 
-while (midirecv(offset,msg1,msg2,msg3)) ( // REAPER 4.59+ syntax w while()
+while (midirecv(offset,msg1,msg2,msg3)) (
    noteStatus = msg1 & 0xF0;
    channel = msg1 & 0x0F;
    velocity = msg3;
