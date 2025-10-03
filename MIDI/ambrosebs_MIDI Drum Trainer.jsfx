@@ -568,7 +568,7 @@ function moveLane(oldLane, newLane) local(direction, currentLane, laneSlider, ol
   (oldLane != newLane && activeLane(oldLane) && activeLane(newLane)) ? (
     direction = (newLane > oldLane) ? 1 : -1;
     currentLane = oldLane;
-    
+
     // Iteratively swap the lane with adjacent lane (in direction of newLane) until reaching newLane
     while (currentLane != newLane) (
       laneSlider = 0;
@@ -580,7 +580,7 @@ function moveLane(oldLane, newLane) local(direction, currentLane, laneSlider, ol
       );
       currentLane += direction;
     );
-    
+
     // Reset play after moving lanes
     resetPlay();
   );
@@ -1171,18 +1171,18 @@ function drawToolBar(lane, l, t, w, h) local(release, f0, f1, f2, f3, f4, f5, f6
     control_button_click_note_id = controlId(lane, control_button_click_note);
     control_button_in_max_note_id = controlId(lane, control_button_in_max_note);
     control_button_in_min_note_id = controlId(lane, control_button_in_min_note);
-    
+
     // Check if lane can be moved up or down
     can_move_up = activeLane(lane - 1);
     can_move_down = activeLane(lane + 1);
-        
+
     button_width = h;
-    
+
     // Add move lane buttons before divisions
     can_move_up ? 
       (f_move_up = drawButton(lane, control_button_move_lane_up, button_width, h, "↑", 0))
     : (f_move_up = drawDisabledButton(lane, control_button_move_lane_up, button_width, h, "↑"));
-    
+
     can_move_down ?
       (f_move_down = drawButton(lane, control_button_move_lane_down, button_width, h, "↓", 0))
     : (f_move_down = drawDisabledButton(lane, control_button_move_lane_down, button_width, h, "↓"));
