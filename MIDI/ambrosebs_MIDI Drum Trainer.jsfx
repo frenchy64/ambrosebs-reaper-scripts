@@ -453,6 +453,25 @@ function setClickChannel(lane, value) local(idx)
   setSlider(lane, slider_offset_click_channel, value, 1, 16, 1);
 );
 
+// if any active lane has click disabled:
+// - enable click on all lanes;
+// - otherwise disable on all lanes.
+function toggleClickAllLanes() local(i, new_click_state)
+(
+  new_click_state = 0;
+  i = 0;
+  while(i < num_lanes && !new_click_state) (
+    getClick(i) == 0 ? new_click_state = 1;
+    i += 1;
+  );
+  
+  i = 0;
+  while(i < lanes_limit) (
+    setClick(i, new_click_state);
+    i += 1;
+  );
+);
+
 function getMask(lane)
 (
   getSlider(lane, slider_offset_mask);
@@ -1148,10 +1167,11 @@ function toggleListen(control)
   listen_note_control = listen_note_control == control ? 0 : control;
 );
 
-function drawToolBar(lane, l, t, w, h) local(release, f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f_move_up, f_move_down, button_width, button_left, button_top, click_note, can_move_up, can_move_down)
+function drawToolBar(lane, l, t, w, h) local(release, rrelease, f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f_move_up, f_move_down, button_width, button_left, button_top, click_note, can_move_up, can_move_down)
 (
   gfx_setfont(1, "Arial", 14);
   release = isLButtonRelease();
+  rrelease = isRButtonRelease();
   mouse_wheel_dir = mouse_wheel / 120;
   expand_toolbar ? (
     rgb(0,0,0);
@@ -1215,6 +1235,10 @@ function drawToolBar(lane, l, t, w, h) local(release, f0, f1, f2, f3, f4, f5, f6
     release && f3 ? setClickVel(lane, floor(getClickVel(lane)/4)*4+4); 
     release && f4 ? setClickVel(lane, floor(getClickVel(lane)/4)*4-4);
     release && f5 ? setClick(lane, !getClick(lane));
+    
+    // Right-click on Click button: enable/disable all active lanes
+    rrelease && f5 ? toggleClickAllLanes();
+    
     release && f6 ? toggleListen(control_button_click_note_id);
     release && f7 ? setInputChannel(lane, getInputChannel(lane)+1);
     release && f8 ? setInputChannel(lane, getInputChannel(lane)-1);
@@ -1227,7 +1251,7 @@ function drawToolBar(lane, l, t, w, h) local(release, f0, f1, f2, f3, f4, f5, f6
         
     f1 || f2 ? sprintf(#value_edit, "Divisions: %d", getDivs(lane));
     f3 || f4 ? sprintf(#value_edit, "Click Velocity: %d", getClickVel(lane));
-    f5 ? sprintf(#value_edit, "Click: %s", getClick(lane) ? "On" : "Off");
+    f5 ? sprintf(#value_edit, "Click: %s (%s)", getClick(lane) ? "On" : "Off", "Right click to toggle all");
     f_move_up ? sprintf(#value_edit, "Move lane up");
     f_move_down ? sprintf(#value_edit, "Move lane down");
     (listen_note_control == control_button_click_note_id) ? sprintf(#value_edit, "Click Note: LISTENING") 
