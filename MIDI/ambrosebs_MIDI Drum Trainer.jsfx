@@ -1525,8 +1525,8 @@ function drawTrainingGraphTitle(left, top) local(error_bound_percent)
   gfx_printf(")");
   
   gfx_x += 20;
-  drawButton(0, control_button_training_clear, 0, 16, "clear", 0) && isLButtonRelease() ?
-    clearTrainingGraph();
+  drawButton(0, control_button_training_clear, 0, 16, "Clear", 0) ?
+    (isLButtonRelease() ? clearTrainingGraph();)
 );
 
 function drawTrainingGraph(graph_left, graph_top, graph_width, graph_height) local(i, graph_x_ratio, pr)
@@ -1598,10 +1598,10 @@ gfx_setfont(1, "Arial", 15);
 gfx_printf("Rhythm Grid:");
 
 drawButton(0, control_button_halve_pattern, 0, 16, "/2 pattern", 0) ?
-  (sprintf(#value_edit, "Truncate pattern to the first half using half as many beats.");
+  (sprintf(#value_edit, "Truncate pattern to the first half using half as many beats");
    isLButtonRelease() ? halveDuration(););
 drawButton(0, control_button_double_pattern, 0, 16, "x2 pattern", 0) ?
-  (sprintf(#value_edit, "Duplicate the current pattern using twice as many beats.");
+  (sprintf(#value_edit, "Duplicate the current pattern using twice as many beats");
    isLButtonRelease() ? doubleDuration(););
 
 width = gfx_w-xmargin*2;
