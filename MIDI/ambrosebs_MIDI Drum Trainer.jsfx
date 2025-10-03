@@ -27,7 +27,7 @@ about:
   * Auto error bound shrink: let the tool challenge you as you improve.
   * Support complex polyrhythms, e.g: 4 beat pattern, divided to 5 in the right hand, 7 in the left hand.
   * Set up complex splits - up to 4 "lanes",  receiving separate key ranges and input channels.
-  * Set "click' sounds for each lane (like a metronome).
+  * Set "click" sounds for each lane (like a metronome).
   * "Swing" and "Phase" parameters.
   * See your progress on a "10 minute training graph"
 
