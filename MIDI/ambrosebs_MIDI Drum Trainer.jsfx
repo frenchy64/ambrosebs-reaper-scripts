@@ -657,7 +657,9 @@ function doubleDuration() local(lane, ok, newBeats, oldDivs, oldMask, newMask, i
      i = 0;
      while(i < oldDivs)
      (
-       (oldMask & (1<<i)) ? (newMask = newMask | (1<<(i+oldDivs)));
+       (oldMask & (1<<i)) ? 
+         (newMask = newMask | (1<<(i+oldDivs)))
+       : (newMask = newMask & ~(1<<(i+oldDivs)));
        i += 1;
      );
      setDivs(lane, oldDivs*2);
