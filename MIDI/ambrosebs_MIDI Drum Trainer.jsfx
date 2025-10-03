@@ -453,18 +453,19 @@ function setClickChannel(lane, value) local(idx)
   setSlider(lane, slider_offset_click_channel, value, 1, 16, 1);
 );
 
-function toggleClickAllLanes() local(any_disabled, i, new_click_state)
+// if any active lane has click disabled:
+// - enable click on all lanes;
+// - otherwise disable on all lanes.
+function toggleClickAllLanes() local(any_active_lane_disabled, i, new_click_state)
 (
-  // Check if any active lane has click disabled
-  any_disabled = 0;
+  any_active_lane_disabled = 0;
   i = 0;
-  while(i < num_lanes) (
-    getClick(i) == 0 ? any_disabled = 1;
+  while(i < num_lanes && !any_active_lane_disabled) (
+    getClick(i) == 0 ? any_active_lane_disabled = 1;
     i += 1;
   );
   
-  // If any active lane has click disabled, enable all; otherwise disable all
-  new_click_state = any_disabled ? 1 : 0;
+  new_click_state = any_active_lane_disabled ? 1 : 0;
   i = 0;
   while(i < lanes_limit) (
     setClick(i, new_click_state);
