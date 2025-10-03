@@ -211,6 +211,8 @@ control_button_in_max_velocity = 14;
 control_button_training_clear = 15;
 control_button_halve_pattern = 16;
 control_button_double_pattern = 17;
+control_button_move_lane_up = 18;
+control_button_move_lane_down = 19;
 
 hist_idx = 0;
 max_hist = 200;
@@ -1123,12 +1125,29 @@ function drawButton(lane, id, w, h, str, state) local(strw, strh, focus, button_
   focus;
 );
 
+// Draw a disabled button (grayed out, no interaction)
+function drawDisabledButton(lane, id, w, h, str) local(strw, strh, l, t)
+(
+  l = gfx_x;
+  t = gfx_y;
+  gfx_measurestr(str, strw, strh);
+  w=max(w,strw+8);
+  rgb(0.15, 0.15, 0.15);
+  gfx_rect(l+1,t+1,w-2,h-2);
+  gfx_a = 1;  
+  rgb(0.4, 0.4, 0.4); // Gray text
+  printCenter(l+w/2, t+h/2, str);
+  gfx_x = l+w;
+  gfx_y = t;
+  0; // Return 0 (no focus)
+);
+
 function toggleListen(control)
 (
   listen_note_control = listen_note_control == control ? 0 : control;
 );
 
-function drawToolBar(lane, l, t, w, h) local(release, f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, button_width, button_left, button_top, click_note)
+function drawToolBar(lane, l, t, w, h) local(release, f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f_move_up, f_move_down, button_width, button_left, button_top, click_note, can_move_up, can_move_down)
 (
   gfx_setfont(1, "Arial", 14);
   release = isLButtonRelease();
@@ -1152,8 +1171,22 @@ function drawToolBar(lane, l, t, w, h) local(release, f0, f1, f2, f3, f4, f5, f6
     control_button_click_note_id = controlId(lane, control_button_click_note);
     control_button_in_max_note_id = controlId(lane, control_button_in_max_note);
     control_button_in_min_note_id = controlId(lane, control_button_in_min_note);
+    
+    // Check if lane can be moved up or down
+    can_move_up = activeLane(lane - 1);
+    can_move_down = activeLane(lane + 1);
         
     button_width = h;
+    
+    // Add move lane buttons before divisions
+    can_move_up ? 
+      (f_move_up = drawButton(lane, control_button_move_lane_up, button_width, h, "↑", 0))
+    : (f_move_up = drawDisabledButton(lane, control_button_move_lane_up, button_width, h, "↑"));
+    
+    can_move_down ?
+      (f_move_down = drawButton(lane, control_button_move_lane_down, button_width, h, "↓", 0))
+    : (f_move_down = drawDisabledButton(lane, control_button_move_lane_down, button_width, h, "↓"));
+    
     drawText(0, h, "Divisions:");
     f2 = drawButton(lane, control_button_div_down, button_width, h, "-", 0);
     f1 = drawButton(lane, control_button_div_up, button_width, h, "+", 0);
@@ -1188,10 +1221,14 @@ function drawToolBar(lane, l, t, w, h) local(release, f0, f1, f2, f3, f4, f5, f6
     release && f10 ? toggleListen(control_button_in_min_note_id);
     release && f11 ? setClickChannel(lane, getClickChannel(lane)-1);
     release && f12 ? setClickChannel(lane, getClickChannel(lane)+1);
+    release && f_move_up && can_move_up ? moveLane(lane, lane - 1);
+    release && f_move_down && can_move_down ? moveLane(lane, lane + 1);
         
     f1 || f2 ? sprintf(#value_edit, "Divisions: %d", getDivs(lane));
     f3 || f4 ? sprintf(#value_edit, "Click Velocity: %d", getClickVel(lane));
     f5 ? sprintf(#value_edit, "Click: %s", getClick(lane) ? "On" : "Off");
+    f_move_up ? sprintf(#value_edit, "Move lane up");
+    f_move_down ? sprintf(#value_edit, "Move lane down");
     (listen_note_control == control_button_click_note_id) ? sprintf(#value_edit, "Click Note: LISTENING") 
     : f6 ? sprintf(#value_edit, "Click Note: %s (%d)", noteName(click_note), click_note);
     in_chan = getInputChannel(lane);
