@@ -1230,7 +1230,7 @@ function drawToolBar(lane, l, t, w, h) local(release, rrelease, f0, f1, f2, f3, 
       // If any active lane has click disabled, enable all; otherwise disable all
       new_click_state = any_disabled ? 1 : 0;
       i = 0;
-      while(i < num_lanes) (
+      while(i < lanes_limit) (
         setClick(i, new_click_state);
         i += 1;
       );
