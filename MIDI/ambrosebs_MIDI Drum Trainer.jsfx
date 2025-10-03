@@ -2,6 +2,7 @@ desc: MIDI Drum Trainer
 author: Ambrose Bonnaire-Sergeant
 version: 1.0
 changelog:
+  * Add buttons to move lane up/down.
   * Reserve 30 sliders per lane.
   * Increase width of Click: ON/OFF button to prevent resizing.
   * Added "{/,x}2 pattern" buttons for {halving,doubling} the current beats and divisions of lanes
