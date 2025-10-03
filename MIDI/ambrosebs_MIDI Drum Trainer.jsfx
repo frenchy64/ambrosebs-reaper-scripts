@@ -608,8 +608,7 @@ function controlId(lane, control)
 
 // halve beats and divisions of all lanes, if divisible.
 // essentially truncates the current pattern to be just the first half.
-// TODO double mask
-function halveDuration() local(lane, ok, newBeats, newDivs)
+function halveDuration() local(lane, ok, newBeats, newDivs, oldDivs, oldMask, newMask, i)
 (
   // check that doubling durations stays within bounds before doubling
   newBeats = getBeats()/2;
@@ -630,7 +629,18 @@ function halveDuration() local(lane, ok, newBeats, newDivs)
    lane = 0;
    while(lane < lanes_limit)
    (
-     setDivs(lane, getDivs(lane)/2);
+     oldDivs = getDivs(lane);
+     oldMask = getMask(lane);
+     // Keep only first half of mask
+     newMask = 0;
+     i = 0;
+     while(i < oldDivs/2)
+     (
+       newMask = bitSet(newMask, i, oldMask & (1<<i));
+       i += 1;
+     );
+     setDivs(lane, oldDivs/2);
+     setMask(lane, newMask);
      lane += 1; 
    )
   );
