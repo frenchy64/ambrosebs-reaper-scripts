@@ -449,6 +449,16 @@ function setClickChannel(lane, value) local(idx)
   setSlider(lane, slider_offset_click_channel, value, 1, 16, 1);
 );
 
+function getMask(lane)
+(
+  getSlider(lane, slider_offset_mask);
+);
+
+function setMask(lane, value)
+(
+  setSlider(lane, slider_offset_mask, value, -2147483648, 2147483647, 0);
+);
+
 function isGridEnabled(lane, idx) local(d,idx,mask)
 (
   d = getDivs(lane);
@@ -471,16 +481,6 @@ function setGridMask(lane, idx, value)
   value ?
     setMask(lane, getMask(lane) | (1<<idx))
   : setMask(lane, getMask(lane) & (-1 ~ 1<<idx));
-);
-
-function getMask(lane)
-(
-  getSlider(lane, slider_offset_mask);
-);
-
-function setMask(lane, value)
-(
-  setSlider(lane, slider_offset_mask, value, -2147483648, 2147483647, 0);
 );
 
 function getInputChannel(lane)
