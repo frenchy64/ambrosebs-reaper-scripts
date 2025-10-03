@@ -459,6 +459,13 @@ function setMask(lane, value)
   setSlider(lane, slider_offset_mask, value, -2147483648, 2147483647, 0);
 );
 
+function bitSet(mask, bit, onOrOff)
+(
+  onOrOff ?
+    (mask | (1<<bit))
+  : (mask & (-1 ~ (1<<bit)));
+);
+
 function isGridEnabled(lane, idx) local(d,idx,mask)
 (
   d = getDivs(lane);
@@ -657,9 +664,7 @@ function doubleDuration() local(lane, ok, newBeats, oldDivs, oldMask, newMask, i
      i = 0;
      while(i < oldDivs)
      (
-       (oldMask & (1<<i)) ? 
-         (newMask = newMask | (1<<(i+oldDivs)))
-       : (newMask = newMask & ~(1<<(i+oldDivs)));
+       newMask = bitSet(newMask, i+oldDivs, oldMask & (1<<i));
        i += 1;
      );
      setDivs(lane, oldDivs*2);
