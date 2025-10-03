@@ -1,0 +1,100 @@
+moveLane Function Documentation
+================================
+
+Function Signature:
+-------------------
+moveLane(oldPos, newPos)
+
+Description:
+------------
+Moves a lane from oldPos to newPos, shifting other lanes to fill holes and 
+preserving the order of shifted lanes.
+
+Parameters:
+-----------
+- oldPos: The current position of the lane to move (0-based index, 0 to lanes_limit-1)
+- newPos: The target position for the lane (0-based index, 0 to lanes_limit-1)
+
+Local Variables Used:
+---------------------
+- tmp: Temporary storage for swapping slider values
+- direction: Direction of movement (1 for down/right, -1 for up/left)
+- currentPos: Current position during the swap iteration
+- i: Loop counter for iterating through sliders per lane
+- oldIdx: Slider index being swapped from
+- newIdx: Slider index being swapped to
+
+Behavior:
+---------
+The function validates inputs and only proceeds if:
+- oldPos != newPos
+- Both positions are >= 0
+- Both positions are < lanes_limit
+
+The function works by:
+1. Determining direction (moving to higher or lower position)
+2. Iteratively swapping sliders with adjacent lane until reaching target
+3. Only swapping sliders_used_per_lane (13) sliders, not all allocated sliders
+4. Updating UI via slider_automate for each swap
+5. Calling resetPlay() after completion
+
+Examples:
+---------
+
+Example 1: Moving lane 0 to position 2
+Before: [Lane0] [Lane1] [Lane2] [Lane3]
+After:  [Lane1] [Lane2] [Lane0] [Lane3]
+
+Process:
+- Swap Lane0 with Lane1 → [Lane1] [Lane0] [Lane2] [Lane3]
+- Swap Lane0 with Lane2 → [Lane1] [Lane2] [Lane0] [Lane3]
+
+Example 2: Moving lane 3 to position 1
+Before: [Lane0] [Lane1] [Lane2] [Lane3]
+After:  [Lane0] [Lane3] [Lane1] [Lane2]
+
+Process:
+- Swap Lane3 with Lane2 → [Lane0] [Lane1] [Lane3] [Lane2]
+- Swap Lane3 with Lane1 → [Lane0] [Lane3] [Lane1] [Lane2]
+
+Example 3: Moving lane 2 to position 2 (no-op)
+Before: [Lane0] [Lane1] [Lane2] [Lane3]
+After:  [Lane0] [Lane1] [Lane2] [Lane3]
+(No changes made)
+
+Example 4: Invalid inputs (ignored)
+moveLane(-1, 2)    → No action (oldPos < 0)
+moveLane(2, 10)    → No action (newPos >= lanes_limit)
+moveLane(8, 2)     → No action (oldPos >= lanes_limit)
+
+Global Variables Used:
+----------------------
+- lanes_limit: Maximum number of lanes (8)
+- sliders_used_per_lane: Number of sliders to swap per lane (13)
+  * This should be updated when adding more sliders per lane
+  * Currently covers indices 0-12 (slider_offset_divs through slider_offset_in_max_velocity)
+
+Slider Configuration Per Lane:
+-------------------------------
+Each lane has 13 used sliders (out of 30 allocated):
+0. slider_offset_divs - Divisions
+1. slider_offset_swing - Swing
+2. slider_offset_phase - Phase
+3. slider_offset_click - Click enabled/disabled
+4. slider_offset_click_note - Click note
+5. slider_offset_click_channel - Click channel
+6. slider_offset_click_vel - Click velocity
+7. slider_offset_mask - Grid mask
+8. slider_offset_in_channel - Input channel
+9. slider_offset_in_min_note - Input minimum note
+10. slider_offset_in_max_note - Input maximum note
+11. slider_offset_in_min_velocity - Input minimum velocity
+12. slider_offset_in_max_velocity - Input maximum velocity
+
+Usage in UI (Future Implementation):
+-------------------------------------
+To add up/down buttons for each lane:
+1. Add button controls in the drawToolBar function
+2. Call moveLane(lane, lane-1) for "up" button (move to lower index)
+3. Call moveLane(lane, lane+1) for "down" button (move to higher index)
+4. Ensure buttons are disabled/hidden when at boundary positions
