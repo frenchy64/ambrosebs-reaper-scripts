@@ -1072,7 +1072,7 @@ function dragPhase(lane,focus_control,divs, l,t,w,h) local(dx, ph, orig_value, o
   
   (active_control == ctrl_id || focus_control == ctrl_id) ? (
     ph = getPhase(lane);
-    sprintf(#value_edit, "Phase: %0.2f (%0.0f\xB0)", ph, ph*360);
+    sprintf(#value_edit, "Phase: %0.2f (%0.0f\xB0), left-drag to change, right-click to toggle grid", ph, ph*360);
   );  
 );
 
@@ -1097,7 +1097,7 @@ function dragSwing(lane,focus_control,divs, l,t,w,h) local(dx, sw, orig_value, o
 
   (active_control == ctrl_id || focus_control == ctrl_id) ? (
     sw = getSwing(lane);
-    sprintf(#value_edit, "Swing: %0.2f (%0.0f\xB0)", sw, sw*360);  );
+    sprintf(#value_edit, "Swing: %0.2f (%0.0f\xB0), left-drag to change, right-click to toggle grid", sw, sw*360);  );
 );
 
 function emptyRect(l,t,w,h)
@@ -1189,6 +1189,7 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
   gfx_y = t;
   f_expand_toolbar = drawButton(lane, control_button_expand, h, h, expand_toolbar ? "<<" : ">>", 0);
   release && f_expand_toolbar ? expand_toolbar = !expand_toolbar;
+  f_expand_toolbar ? sprintf(#value_edit, "Toggle toolbar");
   
   
   expand_toolbar ? (
@@ -1199,20 +1200,15 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
     control_button_in_max_note_id = controlId(lane, control_button_in_max_note);
     control_button_in_min_note_id = controlId(lane, control_button_in_min_note);
 
-    // Check if lane can be moved up or down
     can_move_up = activeLane(lane - 1);
     can_move_down = activeLane(lane + 1);
 
     button_width = h;
 
-    // Add move lane buttons before divisions
-    can_move_up ? 
-      (f_move_up = drawButton(lane, control_button_move_lane_up, button_width, h, "↑", 0))
-    : (f_move_up = drawDisabledButton(lane, control_button_move_lane_up, button_width, h, "↑"));
-
-    can_move_down ?
-      (f_move_down = drawButton(lane, control_button_move_lane_down, button_width, h, "↓", 0))
-    : (f_move_down = drawDisabledButton(lane, control_button_move_lane_down, button_width, h, "↓"));
+    f_move_up = can_move_up ? drawButton(lane, control_button_move_lane_up, button_width, h, "↑", 0)
+                            : drawDisabledButton(lane, control_button_move_lane_up, button_width, h, "↑");
+    f_move_down = can_move_down ? drawButton(lane, control_button_move_lane_down, button_width, h, "↓", 0)
+                                : drawDisabledButton(lane, control_button_move_lane_down, button_width, h, "↓");
     
     drawText(0, h, "Divisions:");
     f_div_down = drawButton(lane, control_button_div_down, button_width, h, "-", 0);
@@ -1601,10 +1597,12 @@ rgb(1,1,1);
 gfx_setfont(1, "Arial", 15);
 gfx_printf("Rhythm Grid:");
 
-drawButton(0, control_button_halve_pattern, 0, 16, "/2 pattern", 0) && isLButtonRelease() ?
-  halveDuration();
-drawButton(0, control_button_double_pattern, 0, 16, "x2 pattern", 0) && isLButtonRelease() ?
-  doubleDuration();
+drawButton(0, control_button_halve_pattern, 0, 16, "/2 pattern", 0) ?
+  (sprintf(#value_edit, "Truncate pattern to the first half using half as many beats.");
+   isLButtonRelease() ? halveDuration(););
+drawButton(0, control_button_double_pattern, 0, 16, "x2 pattern", 0) ?
+  (sprintf(#value_edit, "Duplicate the current pattern using twice as many beats.");
+   isLButtonRelease() ? doubleDuration(););
 
 width = gfx_w-xmargin*2;
 total_grid_height = max(200, (gfx_h - header_margin - footer_margin) * 0.7);
