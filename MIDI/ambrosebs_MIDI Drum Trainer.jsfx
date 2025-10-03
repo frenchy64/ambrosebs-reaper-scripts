@@ -631,7 +631,7 @@ function halveDuration() local(lane, ok, newBeats, newDivs)
 
 // double beats and divisions of all lanes.
 // essentially extends the current pattern to be twice as long.
-function doubleDuration() local(lane, ok, newBeats, oldDivs, oldMask, newMask, i)
+function doubleDuration() local(lane, ok, newBeats, oldDivs, i)
 (
   // check that doubling durations stays within bounds before doubling
   newBeats = getBeats()*2;
@@ -651,17 +651,14 @@ function doubleDuration() local(lane, ok, newBeats, oldDivs, oldMask, newMask, i
    while(lane < lanes_limit)
    (
      oldDivs = getDivs(lane);
-     oldMask = getMask(lane);
+     setDivs(lane, oldDivs*2);
      // Copy first half of mask to second half
-     newMask = oldMask;
      i = 0;
      while(i < oldDivs)
      (
-       (oldMask & (1<<i)) ? (newMask = newMask | (1<<(i+oldDivs)));
+       setGridMask(lane, i+oldDivs, getGridMask(lane, i));
        i += 1;
      );
-     setDivs(lane, oldDivs*2);
-     setMask(lane, newMask);
      lane += 1; 
    )
   );
