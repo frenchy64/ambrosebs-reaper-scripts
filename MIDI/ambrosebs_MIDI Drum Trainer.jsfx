@@ -449,11 +449,28 @@ function setClickChannel(lane, value) local(idx)
   setSlider(lane, slider_offset_click_channel, value, 1, 16, 1);
 );
 
+function getMask(lane)
+(
+  getSlider(lane, slider_offset_mask);
+);
+
+function setMask(lane, value)
+(
+  setSlider(lane, slider_offset_mask, value, -2147483648, 2147483647, 0);
+);
+
+function bitSet(mask, bit, onOrOff)
+(
+  onOrOff ?
+    (mask | (1<<bit))
+  : (mask & (-1 ~ (1<<bit)));
+);
+
 function isGridEnabled(lane, idx) local(d,idx,mask)
 (
   d = getDivs(lane);
   idx = (idx + d) % d;
-  mask = getSlider(lane, slider_offset_mask);
+  mask = getMask(lane);
   mask & (1<<idx);
 );
 
@@ -461,7 +478,7 @@ function getGridMask(lane, idx)
 (
   d = getDivs(lane);
   idx = (idx + d) % d;
-  1 & (getSlider(lane, slider_offset_mask) >> idx);
+  1 & (getMask(lane) >> idx);
 );
 
 function setGridMask(lane, idx, value)
@@ -469,8 +486,8 @@ function setGridMask(lane, idx, value)
   d = getDivs(lane);
   idx = (idx + d) % d;
   value ?
-    setSlider(lane, slider_offset_mask, getSlider(lane, slider_offset_mask) | (1<<idx), -2147483648, 2147483647, 0)
-  : setSlider(lane, slider_offset_mask, getSlider(lane, slider_offset_mask) & (-1 ~ 1<<idx), -2147483648, 2147483647, 0);
+    setMask(lane, getMask(lane) | (1<<idx))
+  : setMask(lane, getMask(lane) & (-1 ~ 1<<idx));
 );
 
 function getInputChannel(lane)
@@ -621,8 +638,7 @@ function halveDuration() local(lane, ok, newBeats, newDivs)
 
 // double beats and divisions of all lanes.
 // essentially extends the current pattern to be twice as long.
-// TODO double mask
-function doubleDuration() local(lane, ok, newBeats)
+function doubleDuration() local(lane, ok, newBeats, oldDivs, oldMask, newMask, i)
 (
   // check that doubling durations stays within bounds before doubling
   newBeats = getBeats()*2;
@@ -641,7 +657,18 @@ function doubleDuration() local(lane, ok, newBeats)
    lane = 0;
    while(lane < lanes_limit)
    (
-     setDivs(lane, getDivs(lane)*2);
+     oldDivs = getDivs(lane);
+     oldMask = getMask(lane);
+     // Copy first half of mask to second half
+     newMask = oldMask;
+     i = 0;
+     while(i < oldDivs)
+     (
+       newMask = bitSet(newMask, i+oldDivs, oldMask & (1<<i));
+       i += 1;
+     );
+     setDivs(lane, oldDivs*2);
+     setMask(lane, newMask);
      lane += 1; 
    )
   );
