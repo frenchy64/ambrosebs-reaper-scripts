@@ -176,8 +176,6 @@ error_bound_scale = 250;
 
 sliders_per_lane = 30;
 first_lane_slider = 16;
-// Update this when adding more sliders per lane (currently highest is slider_offset_in_max_velocity = 12)
-sliders_used_per_lane = 13;
 slider_offset_divs = 0;
 slider_offset_swing = 1;
 slider_offset_phase = 2;
@@ -190,7 +188,8 @@ slider_offset_in_channel = 8;
 slider_offset_in_min_note = 9;
 slider_offset_in_max_note = 10;
 slider_offset_in_min_velocity = 11;
-slider_offset_in_max_velocity = 12;
+slider_offset_in_max_velocity = 12; // Update sliders_used_per_lane when adding more sliders per lane
+sliders_used_per_lane = 13;
 
 control_phase = 1;
 control_swing = 2;
@@ -542,33 +541,42 @@ function setInputMaxVelocity(lane, value) local(idx)
   setSlider(lane, slider_offset_in_max_velocity, value, 0, 127, 0);
 );
 
-// Move a lane from oldPos to newPos, shifting other lanes to fill holes
-// and preserving the order of shifted lanes.
-function moveLane(oldPos, newPos) local(tmp, direction, currentPos, i, oldIdx, newIdx)
+// Check if a lane is active (within bounds of visible lanes)
+function activeLane(lane)
 (
-  (oldPos != newPos && oldPos >= 0 && newPos >= 0 && oldPos < lanes_limit && newPos < lanes_limit) ? (
-    direction = (newPos > oldPos) ? 1 : -1;
-    currentPos = oldPos;
+  lane >= 0 && lane < num_lanes;
+);
+
+// Swap two slider values and automate both
+function swapSliders(idx1, idx2) local(tmp)
+(
+  tmp = slider(idx1);
+  slider(idx1) = slider(idx2);
+  slider(idx2) = tmp;
+  slider_automate(2 ^ idx1);
+  slider_automate(2 ^ idx2);
+);
+
+// Move a lane from oldLane to newLane, shifting other lanes to fill holes
+// and preserving the order of shifted lanes.
+// Algorithm: if moving down (to higher index), swap with next lane repeatedly until reaching target.
+// If moving up (to lower index), swap with previous lane repeatedly until reaching target.
+function moveLane(oldLane, newLane) local(direction, currentLane, laneSlider, oldIdx, newIdx)
+(
+  (oldLane != newLane && activeLane(oldLane) && activeLane(newLane)) ? (
+    direction = (newLane > oldLane) ? 1 : -1;
+    currentLane = oldLane;
     
-    // Swap each slider one position at a time until we reach newPos
-    while (currentPos != newPos) (
-      i = 0;
-      while (i < sliders_used_per_lane) (
-        oldIdx = getSliderIdx(currentPos, i);
-        newIdx = getSliderIdx(currentPos + direction, i);
-        
-        // Swap slider values
-        tmp = slider(oldIdx);
-        slider(oldIdx) = slider(newIdx);
-        slider(newIdx) = tmp;
-        
-        // Automate both sliders to update UI
-        slider_automate(2 ^ oldIdx);
-        slider_automate(2 ^ newIdx);
-        
-        i += 1;
+    // Iteratively swap the lane with adjacent lane (in direction of newLane) until reaching newLane
+    while (currentLane != newLane) (
+      laneSlider = 0;
+      while (laneSlider < sliders_used_per_lane) (
+        oldIdx = getSliderIdx(currentLane, laneSlider);
+        newIdx = getSliderIdx(currentLane + direction, laneSlider);
+        swapSliders(oldIdx, newIdx);
+        laneSlider += 1;
       );
-      currentPos += direction;
+      currentLane += direction;
     );
     
     // Reset play after moving lanes
