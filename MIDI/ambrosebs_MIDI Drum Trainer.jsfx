@@ -176,6 +176,8 @@ error_bound_scale = 250;
 
 sliders_per_lane = 30;
 first_lane_slider = 16;
+// Update this when adding more sliders per lane (currently highest is slider_offset_in_max_velocity = 12)
+sliders_used_per_lane = 13;
 slider_offset_divs = 0;
 slider_offset_swing = 1;
 slider_offset_phase = 2;
@@ -538,6 +540,40 @@ function getInputMaxVelocity(lane)
 function setInputMaxVelocity(lane, value) local(idx)
 (
   setSlider(lane, slider_offset_in_max_velocity, value, 0, 127, 0);
+);
+
+// Move a lane from oldPos to newPos, shifting other lanes to fill holes
+// and preserving the order of shifted lanes.
+function moveLane(oldPos, newPos) local(tmp, direction, currentPos, i, oldIdx, newIdx)
+(
+  (oldPos != newPos && oldPos >= 0 && newPos >= 0 && oldPos < lanes_limit && newPos < lanes_limit) ? (
+    direction = (newPos > oldPos) ? 1 : -1;
+    currentPos = oldPos;
+    
+    // Swap each slider one position at a time until we reach newPos
+    while (currentPos != newPos) (
+      i = 0;
+      while (i < sliders_used_per_lane) (
+        oldIdx = getSliderIdx(currentPos, i);
+        newIdx = getSliderIdx(currentPos + direction, i);
+        
+        // Swap slider values
+        tmp = slider(oldIdx);
+        slider(oldIdx) = slider(newIdx);
+        slider(newIdx) = tmp;
+        
+        // Automate both sliders to update UI
+        slider_automate(2 ^ oldIdx);
+        slider_automate(2 ^ newIdx);
+        
+        i += 1;
+      );
+      currentPos += direction;
+    );
+    
+    // Reset play after moving lanes
+    resetPlay();
+  );
 );
 
 //
