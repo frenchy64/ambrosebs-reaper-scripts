@@ -453,7 +453,7 @@ function isGridEnabled(lane, idx) local(d,idx,mask)
 (
   d = getDivs(lane);
   idx = (idx + d) % d;
-  mask = getSlider(lane, slider_offset_mask);
+  mask = getMask(lane);
   mask & (1<<idx);
 );
 
@@ -461,7 +461,7 @@ function getGridMask(lane, idx)
 (
   d = getDivs(lane);
   idx = (idx + d) % d;
-  1 & (getSlider(lane, slider_offset_mask) >> idx);
+  1 & (getMask(lane) >> idx);
 );
 
 function setGridMask(lane, idx, value)
@@ -469,8 +469,8 @@ function setGridMask(lane, idx, value)
   d = getDivs(lane);
   idx = (idx + d) % d;
   value ?
-    setSlider(lane, slider_offset_mask, getSlider(lane, slider_offset_mask) | (1<<idx), -2147483648, 2147483647, 0)
-  : setSlider(lane, slider_offset_mask, getSlider(lane, slider_offset_mask) & (-1 ~ 1<<idx), -2147483648, 2147483647, 0);
+    setMask(lane, getMask(lane) | (1<<idx))
+  : setMask(lane, getMask(lane) & (-1 ~ 1<<idx));
 );
 
 function getMask(lane)
