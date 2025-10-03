@@ -2,6 +2,8 @@ desc: MIDI Drum Trainer
 author: Ambrose Bonnaire-Sergeant
 version: 1.0
 changelog:
+  * Right click to toggle "Click" for all lanes
+    * If any active lane is disabled, enables all lanes, otherwise disables all lanes.
   * Add buttons to move lane up/down.
   * Reserve 30 sliders per lane.
   * Increase width of Click: ON/OFF button to prevent resizing.
