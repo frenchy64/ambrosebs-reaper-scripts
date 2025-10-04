@@ -949,6 +949,11 @@ isPlaying() ? (
   getClick(7) && (num_lanes>7) ? playGrid(7);
 );
 
+//TODO handle MIDI CC messages. A MIDI CC message matches a lane
+// if channel == getCCChannel(lane) and msg2 == getSliderIdx(lane, slider_offset_cc_controller).
+// Create helpers for getting/setting slider_offset_cc_controller.
+// If a lane matches, then record its value (msg3) in the slider getSlider(lane, slider_offset_cc_value).
+// Create helpers for getters/setters for slider_offset_cc_value also.
 while (midirecv(offset,msg1,msg2,msg3)) (
    noteStatus = msg1 & 0xF0;
    channel = msg1 & 0x0F;
