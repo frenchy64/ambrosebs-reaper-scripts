@@ -1058,7 +1058,11 @@ while (midirecv(offset,msg1,msg2,msg3)) (
    // Move the above variables like velocity to their correct branches.
    
    // Handle MIDI CC messages
-   // TODO visual representation to the GUI. If the bounds are 60-127, then add horizontal
+   // TODO implement visual representations of:
+   // 1. whether a lane is tracking a MIDI CC controller, and (if tracking):
+   // 2. current MIDI CC value bounds,
+   // 3. current value of the MIDI CC controller.
+   // If the bounds are 60-127, then add horizontal
    // yellow lines on each green grid rectangle representing the min/max at
    // the middle/top respectively (since the range is 0-127, 60 is around the middle).
    // If a valid "note on" event happens for a lane that also has a CC bound and the current
