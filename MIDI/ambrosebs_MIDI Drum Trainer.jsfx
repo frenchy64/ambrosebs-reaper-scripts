@@ -73,7 +73,8 @@ slider26:127<0,127,1>-InputMaxNote1
 slider27:0<0,127,1>-InputMinVelocity1
 slider28:127<0,127,1>-InputMaxVelocity1
 slider29:0<1,16,1>-CCInputChannel1
-slider30:-1<-1,127,1>-CCValue1
+slider30:-1<-1,127,1>-CCController1
+slider31:-1<-1,127,1>-CCValue1
 
 slider46:8<1,32,1>-Divisions2
 slider47:0<-0.91666, 0.91666,0.01>-Swing2
@@ -89,7 +90,9 @@ slider56:127<0,127,1>-InputMaxNote2
 slider57:0<0,127,1>-InputMinVelocity2
 slider58:127<0,127,1>-InputMaxVelocity2
 slider59:0<1,16,1>-CCInputChannel2
-slider60:-1<-1,127,1>-CCValue2
+slider60:0<1,16,1>-CCInputChannel2
+slider60:-1<-1,127,1>-CCController2
+slider61:-1<-1,127,1>-CCValue2
 
 slider76:8<1,32,1>-Divisions3
 slider77:0<-0.91666, 0.91666,0.01>-Swing3
@@ -105,7 +108,8 @@ slider86:127<0,127,1>-InputMaxNote3
 slider87:0<0,127,1>-InputMinVelocity3
 slider88:127<0,127,1>-InputMaxVelocity3
 slider89:0<1,16,1>-CCInputChannel3
-slider90:-1<-1,127,1>-CCValue3
+slider90:-1<-1,127,1>-CCController3
+slider91:-1<-1,127,1>-CCValue3
 
 slider106:8<1,32,1>-Divisions4
 slider107:0<-0.91666, 0.91666,0.01>-Swing4
@@ -121,7 +125,8 @@ slider116:127<0,127,1>-InputMaxNote4
 slider117:0<0,127,1>-InputMinVelocity4
 slider118:127<0,127,1>-InputMaxVelocity4
 slider119:0<1,16,1>-CCInputChannel4
-slider120:-1<-1,127,1>-CCValue4
+slider120:-1<-1,127,1>-CCController4
+slider121:-1<-1,127,1>-CCValue4
 
 slider136:8<1,32,1>-Divisions5
 slider137:0<-0.91666, 0.91666,0.01>-Swing5
@@ -136,6 +141,9 @@ slider145:0<0,127,1>-InputMinNote5
 slider146:127<0,127,1>-InputMaxNote5
 slider147:0<0,127,1>-InputMinVelocity5
 slider148:127<0,127,1>-InputMaxVelocity5
+slider150:0<1,16,1>-CCInputChannel5
+slider151:-1<-1,127,1>-CCController5
+slider152:-1<-1,127,1>-CCValue5
 
 slider166:8<1,32,1>-Divisions6
 slider167:0<-0.91666, 0.91666,0.01>-Swing6
@@ -151,7 +159,8 @@ slider176:127<0,127,1>-InputMaxNote6
 slider177:0<0,127,1>-InputMinVelocity6
 slider178:127<0,127,1>-InputMaxVelocity6
 slider179:0<1,16,1>-CCInputChannel6
-slider180:-1<-1,127,1>-CCValue6
+slider180:-1<-1,127,1>-CCController5
+slider181:-1<-1,127,1>-CCValue6
 
 slider196:8<1,32,1>-Divisions7
 slider197:0<-0.91666, 0.91666,0.01>-Swing7
@@ -167,6 +176,7 @@ slider206:127<0,127,1>-InputMaxNote7
 slider207:0<0,127,1>-InputMinVelocity7
 slider208:127<0,127,1>-InputMaxVelocity7
 slider209:0<1,16,1>-CCInputChannel7
+slider210:-1<-1,127,1>-CCController7
 slider210:-1<-1,127,1>-CCValue7
 
 slider226:8<1,32,1>-Divisions8
@@ -183,6 +193,7 @@ slider236:127<0,127,1>-InputMaxNote8
 slider237:0<0,127,1>-InputMinVelocity8
 slider238:127<0,127,1>-InputMaxVelocity8
 slider239:0<1,16,1>-CCInputChannel8
+slider240:-1<-1,127,1>-CCController8
 slider240:-1<-1,127,1>-CCValue8
 
 @init
@@ -206,9 +217,10 @@ slider_offset_in_max_note = 10;
 slider_offset_in_min_velocity = 11;
 slider_offset_in_max_velocity = 12;
 slider_offset_cc_channel = 13;
-slider_offset_cc_value = 14;
+slider_offset_cc_controller = 14;
+slider_offset_cc_value = 15;
 // Update sliders_used_per_lane when adding more sliders per lane
-sliders_used_per_lane = 15;
+sliders_used_per_lane = 16;
 
 control_phase = 1;
 control_swing = 2;
