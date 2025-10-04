@@ -1048,8 +1048,6 @@ function isLButtonRelease()
 
 function isRButtonPress()
 (
-  rr +=
-  (2 & mouse_cap) & (2 ~ prev_mouse_cap);
   (2 & mouse_cap) & (2 ~ prev_mouse_cap);
 );
 
@@ -1259,21 +1257,23 @@ function drawButton(lane, id, w, h, str, state) local(strw, strh, focus, button_
   focus;
 );
 
-// Draw a disabled button (grayed out, no interaction)
-function drawDisabledButton(lane, id, w, h, str) local(strw, strh, l, t)
+// Draw a disabled button (grayed out, no interaction) if disabled is 1, otherwise a "stateless" button.
+function drawDisableableButton(lane, id, w, h, str, disabled) local(strw, strh, l, t)
 (
-  l = gfx_x;
-  t = gfx_y;
-  gfx_measurestr(str, strw, strh);
-  w=max(w,strw+8);
-  rgb(0.15, 0.15, 0.15);
-  gfx_rect(l+1,t+1,w-2,h-2);
-  gfx_a = 1;  
-  rgb(0.4, 0.4, 0.4); // Gray text
-  printCenter(l+w/2, t+h/2, str);
-  gfx_x = l+w;
-  gfx_y = t;
-  0; // Return 0 (no focus)
+  !disabled ? drawButton(lane, id, w, h, str, 0) 
+  : (l = gfx_x;
+     t = gfx_y;
+     gfx_measurestr(str, strw, strh);
+     w=max(w,strw+8);
+     rgb(0.15, 0.15, 0.15);
+     gfx_rect(l+1,t+1,w-2,h-2);
+     gfx_a = 1;  
+     rgb(0.4, 0.4, 0.4); // Gray text
+     printCenter(l+w/2, t+h/2, str);
+     gfx_x = l+w;
+     gfx_y = t;
+     // no focus
+     0;);
 );
 
 function toggleListen(control)
@@ -1281,17 +1281,32 @@ function toggleListen(control)
   listen_note_control = listen_note_control == control ? 0 : control;
 );
 
+function noteButtonToolTip(control, tip, focus, note)
+(
+  (listen_note_control == control) ? sprintf(#value_edit, "%s: LISTENING", tip)
+  : focus                          ? sprintf(#value_edit, "%s: %s (%d)", tip, noteName(note), note); 
+);
+
+// chan is 0-16, where 0 represents all channels.
+function inputChannelButtonToolTip(chan, tip, focus)
+(
+    focus ? (
+      chan ? sprintf(#value_edit, "%s: %d", tip, chan)
+           : sprintf(#value_edit, "%s: ALL", tip);
+    )
+);
+
 function drawToolBar(lane, l, t, w, h)
-local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up, f_click_vel_down, f_toggle_click,
-      f_click_note, f_in_channel_up, f_in_channel_down, f_in_max_note, f_in_min_note,
-      f_click_channel_down, f_click_channel_up, f_move_up, f_move_down, f_delete_lane
-      button_width, click_note, can_move_up, can_move_down, can_delete_lane, f_cc_channel_up, f_cc_channel_down, in_chan, cc_chan,
+local(left_button_release, right_button_release, focus_expand_toolbar, focus_div_up, focus_div_down, focus_div, focus_click_vel_up, focus_click_vel_down, focus_click_vel,
+      focus_toggle_click, focus_click_note, focus_in_channel_up, focus_in_channel_down, focus_in_channel, focus_in_max_note, focus_in_min_note,
+      focus_click_channel_down, focus_click_channel_up, focus_click_channel, focus_move_lane_up, focus_move_lane_down, focus_delete_lane
+      button_width, click_note, can_move_lane_up, can_move_lane_down, can_delete_lane, focus_cc_channel_up, focus_cc_channel_down,
       min_note, max_note, control_button_click_note_id, control_button_in_max_note_id, control_button_in_min_note_id,
-      cc_controller, f_cc_controller, control_button_cc_controller_id)
+      cc_controller, focus_cc_controller, control_button_cc_controller_id)
 (
   gfx_setfont(1, "Arial", 14);
-  release = isLButtonRelease();
-  rrelease = isRButtonRelease();
+  left_button_release = isLButtonRelease();
+  right_button_release = isRButtonRelease();
   mouse_wheel_dir = mouse_wheel / 120;
   expand_toolbar ? (
     rgb(0,0,0);
@@ -1301,10 +1316,9 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
   ) : gfx_a = 0.6;
   gfx_x = l+1;
   gfx_y = t;
-  f_expand_toolbar = drawButton(lane, control_button_expand, h, h, expand_toolbar ? "<<" : ">>", 0);
-  release && f_expand_toolbar ? expand_toolbar = !expand_toolbar;
-  f_expand_toolbar ? sprintf(#value_edit, "Toggle toolbar");
-  
+  focus_expand_toolbar = drawButton(lane, control_button_expand, h, h, expand_toolbar ? "<<" : ">>", 0);
+  left_button_release && focus_expand_toolbar ? expand_toolbar = !expand_toolbar;
+  focus_expand_toolbar ? sprintf(#value_edit, "Toggle toolbar");
   
   expand_toolbar ? (
     click_note    = getClickNote(lane);
@@ -1316,101 +1330,116 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
     control_button_in_min_note_id   = controlId(lane, control_button_in_min_note);
     control_button_cc_controller_id = controlId(lane, control_button_cc_controller);
 
-    can_move_up     = activeLane(lane - 1);
-    can_move_down   = activeLane(lane + 1);
-    can_delete_lane = num_lanes > 1;
+    can_move_lane_up   = activeLane(lane-1);
+    can_move_lane_down = activeLane(lane+1);
+    can_delete_lane    = num_lanes > 1;
 
     button_width = h;
 
-    f_move_up     = can_move_up   ? drawButton(lane, control_button_move_lane_up, button_width, h, "↑", 0)
-                                  : drawDisabledButton(lane, control_button_move_lane_up, button_width, h, "↑");
-    f_move_down   = can_move_down ? drawButton(lane, control_button_move_lane_down, button_width, h, "↓", 0)
-                                  : drawDisabledButton(lane, control_button_move_lane_down, button_width, h, "↓");
-    f_delete_lane = can_move_down ? drawButton(lane, control_button_delete_lane, button_width, h, "x", 0)
-                                  : drawDisabledButton(lane, control_button_delete_lane, button_width, h, "x");
+    focus_move_lane_up   = drawDisableableButton(lane, control_button_move_lane_up,   button_width, h, "↑", !can_move_lane_up);
+    focus_move_lane_down = drawDisableableButton(lane, control_button_move_lane_down, button_width, h, "↓", !can_move_lane_down);
+    focus_delete_lane    = drawDisableableButton(lane, control_button_delete_lane,    button_width, h, "x", !can_delete_lane);
     
+    // Draw divisions buttons
     drawText(0, h, "Divisions:");
-    f_div_down = drawButton(lane, control_button_div_down, button_width, h, "-", 0);
-    f_div_up = drawButton(lane, control_button_div_up, button_width, h, "+", 0);
+    focus_div_down = drawButton(lane, control_button_div_down, button_width, h, "-", 0);
+    focus_div_up   = drawButton(lane, control_button_div_up,   button_width, h, "+", 0);
+    focus_div      = focus_div_down || focus_div_up;
     
+    // Draw click buttons
     drawText(0, h, "Click:");
-    f_toggle_click       = drawButton(lane, control_button_click,              button_width*2,   h, getClick(lane)? "ON" : "OFF", getClick(lane));
-    f_click_note         = drawButton(lane, control_button_click_note,         button_width*1.5, h, noteName(click_note),         (listen_note_control == control_button_click_note_id));
-    f_click_vel_down     = drawButton(lane, control_button_click_vel_down,     button_width,     h, "V-",                         0);
-    f_click_vel_up       = drawButton(lane, control_button_click_vel_up,       button_width,     h, "V+",                         0);
-    f_click_channel_down = drawButton(lane, control_button_click_channel_down, button_width,     h, "CH-",                        0);
-    f_click_channel_up   = drawButton(lane, control_button_click_channel_up,   button_width,     h, "CH+",                        0);
+    focus_toggle_click       = drawButton(lane, control_button_click,              button_width*2,   h, getClick(lane)? "ON" : "OFF", getClick(lane));
+    focus_click_note         = drawButton(lane, control_button_click_note,         button_width*1.5, h, noteName(click_note),         listen_note_control == control_button_click_note_id);
+
+    focus_click_vel_down     = drawButton(lane, control_button_click_vel_down,     button_width,     h, "V-",                         0);
+    focus_click_vel_up       = drawButton(lane, control_button_click_vel_up,       button_width,     h, "V+",                         0);
+    focus_click_vel          = focus_click_vel_down || focus_click_vel_up;
+
+    focus_click_channel_down = drawButton(lane, control_button_click_channel_down, button_width,     h, "CH-",                        0);
+    focus_click_channel_up   = drawButton(lane, control_button_click_channel_up,   button_width,     h, "CH+",                        0);
+    focus_click_channel      = focus_click_channel_down || focus_click_channel_up;
     
+    // Draw input filter buttons
     drawText(0, h, "Input Filter:");    
-    f_in_min_note = drawButton(lane, control_button_in_min_note, button_width*1.5, h, noteName(min_note), (listen_note_control == control_button_in_min_note_id));
+    focus_in_min_note = drawButton(lane, control_button_in_min_note, button_width*1.5, h, noteName(min_note), listen_note_control == control_button_in_min_note_id);
     drawText(0, h, "->");
-    f_in_max_note = drawButton(lane, control_button_in_max_note, button_width*1.5, h, noteName(max_note), (listen_note_control == control_button_in_max_note_id));                 
-    f_in_channel_down = drawButton(lane, control_button_in_channel_down, button_width, h, "CH-", 0);
-    f_in_channel_up   = drawButton(lane, control_button_in_channel_up,   button_width, h, "CH+", 0);
+    focus_in_max_note = drawButton(lane, control_button_in_max_note, button_width*1.5, h, noteName(max_note), listen_note_control == control_button_in_max_note_id);                 
 
-    f_cc_channel_down = drawButton(lane, control_button_cc_channel_down, button_width, h, "CC CH-", 0);
-    f_cc_channel_up   = drawButton(lane, control_button_cc_channel_up,   button_width, h, "CC CH+", 0);
+    focus_in_channel_down = drawButton(lane, control_button_in_channel_down, button_width, h, "CH-", 0);
+    focus_in_channel_up   = drawButton(lane, control_button_in_channel_up,   button_width, h, "CH+", 0);
+    focus_in_channel      = focus_in_channel_down || focus_in_channel_up;
 
-    f_cc_controller = drawButton(lane, control_button_cc_controller, button_width*1.5, h, cc_controller, (listen_note_control == control_button_cc_controller_id));
+    // Draw MIDI CC filter buttons
+    focus_cc_channel_down = drawButton(lane, control_button_cc_channel_down, button_width, h, "CC CH-", 0);
+    focus_cc_channel_up   = drawButton(lane, control_button_cc_channel_up,   button_width, h, "CC CH+", 0);
+    focus_cc_channel      = focus_cc_channel_down || focus_cc_channel_up;
 
-    release && f_div_up         ? setDivs(lane, getDivs(lane)+1); 
-    release && f_div_down       ? setDivs(lane, getDivs(lane)-1); 
-    release && f_click_vel_up   ? setClickVel(lane, floor(getClickVel(lane)/4)*4+4); 
-    release && f_click_vel_down ? setClickVel(lane, floor(getClickVel(lane)/4)*4-4);
-    release && f_toggle_click   ? setClick(lane, !getClick(lane));
-    
-    // Right-click on Click button: enable/disable all active lanes
-    rrelease && f_toggle_click ? toggleClickAllLanes();
-    
-    release && f_click_note ? toggleListen(control_button_click_note_id);
-    release && f_in_channel_up ? setInputChannel(lane, getInputChannel(lane)+1);
-    release && f_in_channel_down ? setInputChannel(lane, getInputChannel(lane)-1);
-    release && f_cc_channel_up ? setCCChannel(lane, getCCChannel(lane)+1);
-    release && f_cc_channel_down ? setCCChannel(lane, getCCChannel(lane)-1);
-    release && f_in_max_note ? toggleListen(control_button_in_max_note_id);
-    release && f_in_min_note ? toggleListen(control_button_in_min_note_id);
-    release && f_cc_controller ? toggleListen(control_button_cc_controller_id);
-    release && f_click_channel_down ? setClickChannel(lane, getClickChannel(lane)-1);
-    release && f_click_channel_up ? setClickChannel(lane, getClickChannel(lane)+1);
-    release && f_move_up && can_move_up ? moveLane(lane, lane - 1);
-    release && f_move_down && can_move_down ? moveLane(lane, lane + 1);
-    release && f_delete_lane && can_delete_lane ? deleteLane(lane);
+    focus_cc_controller = drawButton(lane, control_button_cc_controller, button_width*1.5, h, cc_controller, listen_note_control == control_button_cc_controller_id);
 
-    f_div_up || f_div_down ? sprintf(#value_edit, "Divisions: %d", getDivs(lane));
-    f_click_vel_up || f_click_vel_down ? sprintf(#value_edit, "Click Velocity: %d", getClickVel(lane));
-    f_toggle_click ? sprintf(#value_edit, "Click: %s (%s)", getClick(lane) ? "On" : "Off", "Right click to toggle all");
-    f_move_up ? sprintf(#value_edit, "Move lane up");
-    f_move_down ? sprintf(#value_edit, "Move lane down");
-    f_delete_lane ? sprintf(#value_edit, "Delete lane");
-    (listen_note_control == control_button_click_note_id) ? sprintf(#value_edit, "Click Note: LISTENING") 
-    : f_click_note ? sprintf(#value_edit, "Click Note: %s (%d)", noteName(click_note), click_note);
-    in_chan = getInputChannel(lane);
-    f_in_channel_up || f_in_channel_down ? (
-      in_chan ? sprintf(#value_edit, "Input Channel: %d", in_chan)
-              : sprintf(#value_edit, "Input Channel: ALL");
+    // Perform left-click side effects on buttons
+    left_button_release ? (
+      focus_cc_channel_down      ? setCCChannel(lane, getCCChannel(lane)-1)
+      : focus_cc_channel_up      ? setCCChannel(lane, getCCChannel(lane)+1)
+      : focus_cc_controller      ? toggleListen(control_button_cc_controller_id)
+      : focus_click_channel_down ? setClickChannel(lane, getClickChannel(lane)-1)
+      : focus_click_channel_up   ? setClickChannel(lane, getClickChannel(lane)+1)
+      : focus_click_note         ? toggleListen(control_button_click_note_id)
+      : focus_click_vel_down     ? setClickVel(lane, floor(getClickVel(lane)/4)*4-4)
+      : focus_click_vel_up       ? setClickVel(lane, floor(getClickVel(lane)/4)*4+4)
+      : focus_delete_lane        ? deleteLane(lane)
+      : focus_div_down           ? setDivs(lane, getDivs(lane)-1)
+      : focus_div_up             ? setDivs(lane, getDivs(lane)+1)
+      : focus_in_channel_down    ? setInputChannel(lane, getInputChannel(lane)-1)
+      : focus_in_channel_up      ? setInputChannel(lane, getInputChannel(lane)+1)
+      : focus_in_max_note        ? toggleListen(control_button_in_max_note_id)
+      : focus_in_min_note        ? toggleListen(control_button_in_min_note_id)
+      : focus_move_lane_down     ? moveLane(lane, lane+1)
+      : focus_move_lane_up       ? moveLane(lane, lane-1)
+      : focus_toggle_click       ? setClick(lane, !getClick(lane))
     );
-    cc_chan = getCCChannel(lane);
-    f_cc_channel_up || f_cc_channel_down ? (
-      cc_chan ? sprintf(#value_edit, "Input CC Channel: %d", cc_chan)
-              : sprintf(#value_edit, "Input CC Channel: ALL");
-    );
-    f_click_channel_down || f_click_channel_up ? sprintf(#value_edit, "Click Channel: %d", getClickChannel(lane));
     
-    (listen_note_control == control_button_in_max_note_id) ? sprintf(#value_edit, "Input Max Note: LISTENING") 
-    : f_in_max_note ? sprintf(#value_edit, "Input Max Note: %s (%d)", noteName(max_note), max_note);
-    (listen_note_control == control_button_in_min_note_id) ? sprintf(#value_edit, "Input Min Note: LISTENING") 
-    : f_in_min_note ? sprintf(#value_edit, "Input Min Note: %s (%d)", noteName(min_note), min_note); 
-    mouse_wheel_dir ? (
-      f_toggle_click ? setClick(lane, mouse_wheel_dir)
-      : (f_div_up || f_div_down) ? setDivs(lane, getDivs(lane)+mouse_wheel_dir)
-      : (f_click_vel_up || f_click_vel_down) ? setClickVel(lane, getClickVel(lane)+mouse_wheel_dir)
-      : f_click_note && (listen_note_control != control_button_click_note_id) ? setClickNote(lane, click_note+mouse_wheel_dir)
-      : (f_in_channel_up || f_in_channel_down) ? setInputChannel(lane, getInputChannel(lane)+mouse_wheel_dir)
-      : (f_cc_channel_up || f_cc_channel_down) ? setCCChannel(lane, getCCChannel(lane)+mouse_wheel_dir)
-      : f_in_max_note && (listen_note_control != control_button_in_max_note_id) ? setInputMaxNote(lane, max_note+mouse_wheel_dir)
-      : f_in_min_note && (listen_note_control != control_button_in_min_note_id) ? setInputMinNote(lane, min_note+mouse_wheel_dir)
-      : (f_click_channel_down || f_click_channel_up) ? setClickChannel(lane, getClickChannel(lane)+mouse_wheel_dir)
+    // Perform right-click side effects on buttons
+    right_button_release ? (
+      focus_toggle_click ? toggleClickAllLanes()
     );
+
+    // Perform mouse-wheel side effects on buttons
+    mouse_wheel_dir && !listen_note_control ? (
+      focus_cc_channel      ? setCCChannel(lane, getCCChannel(lane)+mouse_wheel_dir)
+      : focus_click_channel ? setClickChannel(lane, getClickChannel(lane)+mouse_wheel_dir)
+      : focus_click_vel     ? setClickVel(lane, getClickVel(lane)+mouse_wheel_dir)
+      : focus_div           ? setDivs(lane, getDivs(lane)+mouse_wheel_dir)
+      : focus_in_channel    ? setInputChannel(lane, getInputChannel(lane)+mouse_wheel_dir)
+      : focus_toggle_click  ? setClick(lane, mouse_wheel_dir)
+      : focus_click_note    ? setClickNote(lane, click_note+mouse_wheel_dir)
+      : focus_in_max_note   ? setInputMaxNote(lane, max_note+mouse_wheel_dir)
+      : focus_in_min_note   ? setInputMinNote(lane, min_note+mouse_wheel_dir);
+
+      // Disable mouse-wheel for note-listening buttons when learning
+      !listen_note_control ? (
+        focus_click_note    ? setClickNote(lane, click_note+mouse_wheel_dir)
+        : focus_in_max_note ? setInputMaxNote(lane, max_note+mouse_wheel_dir)
+        : focus_in_min_note ? setInputMinNote(lane, min_note+mouse_wheel_dir)
+      );
+    );
+    
+    // Static tooltips
+    focus_click_vel        ? sprintf(#value_edit, "Click Velocity: %d", getClickVel(lane))
+    : focus_delete_lane    ? sprintf(#value_edit, "Delete lane")
+    : focus_div            ? sprintf(#value_edit, "Divisions: %d", getDivs(lane))
+    : focus_move_lane_down ? sprintf(#value_edit, "Move lane down")
+    : focus_move_lane_up   ? sprintf(#value_edit, "Move lane up")
+    : focus_toggle_click   ? sprintf(#value_edit, "Click: %s (%s)", getClick(lane) ? "On" : "Off", "Right click to toggle all")
+    : focus_click_channel  ? sprintf(#value_edit, "Click Channel: %d", getClickChannel(lane));
+
+    // Input channel tooltips
+    inputChannelButtonToolTip(getInputChannel(lane), "Input Channel",    focus_in_channel);
+    inputChannelButtonToolTip(getCCChannel(lane),    "Input CC Channel", focus_cc_channel);
+    
+    // Note-listening tooltips
+    noteButtonToolTip(control_button_click_note_id,  "Click Note",     focus_click_note,  click_note);
+    noteButtonToolTip(control_button_in_max_note_id, "Input Max Note", focus_in_max_note, max_note);
+    noteButtonToolTip(control_button_in_min_note_id, "Input Min Note", focus_in_min_note, min_note);
   )
 );
 
