@@ -982,6 +982,7 @@ function getLaneOfCC(controller, channel) local(i, result, cc_chan, cc_ctrl)
 );
 
 isPlaying() ? (
+  // TODO refactor into a loop bound by num_lanes.
   getClick(0) ? playGrid(0);
   getClick(1) && (num_lanes>1) ? playGrid(1);
   getClick(2) && (num_lanes>2) ? playGrid(2);
