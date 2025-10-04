@@ -584,6 +584,8 @@ function setCCController(lane, value)
   setSlider(lane, slider_offset_cc_controller, value, -1, 127, -1);
 );
 
+// Returns the latest known value for the lane's controller.
+// If getCCController(lane) is -1, returns garbage as the lane is not listening to any controller.
 function getCCValue(lane)
 (
   getSlider(lane, slider_offset_cc_value);
@@ -929,7 +931,7 @@ function recordMidiMonitor(lane)
 
 function listeningFor(lane, control)
 (
-  listen_note_control == controlId(i, control);
+  listen_note_control == controlId(lane, control);
 );
 
 function learnNote(note) local(i) 
@@ -946,7 +948,16 @@ function learnNote(note) local(i)
 
     i += 1; 
   );
-  listen_note_control = 0;
+);
+
+function learnController(controller) local(i) 
+(
+  i = 0;
+  while (listen_note_control && i < num_lanes)
+  (
+    listeningFor(i, control_button_cc_controller) ? (setCCController(i, controller); listen_note_control = 0);
+    i += 1; 
+  );
 );
 
 function getLaneOfNote(note, channel, velocity) local(i, result, in_chan)
@@ -1009,9 +1020,13 @@ while (midirecv(offset,msg1,msg2,msg3)) (
    // Handle MIDI CC messages
    is_cc ? (
      controller = msg2;
+     listen_note_control ? (
+       learnController(controller);
+     );
+
      cc_value = msg3;
      cc_lane = getLaneOfCC(controller, channel);
-     cc_lane >= 0 ? setCCValue(cc_lane, cc_value);
+     cc_lane != -1 ? setCCValue(cc_lane, cc_value);
    );
    
    // Handle MIDI Note On messages
