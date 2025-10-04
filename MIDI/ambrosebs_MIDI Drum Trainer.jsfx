@@ -581,7 +581,7 @@ function getCCController(lane)
 
 function setCCController(lane, value)
 (
-  setSlider(lane, slider_offset_cc_controller, value, -1, 127, 0);
+  setSlider(lane, slider_offset_cc_controller, value, -1, 127, -1);
 );
 
 function getCCValue(lane)
