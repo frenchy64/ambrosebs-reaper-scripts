@@ -198,6 +198,7 @@ slider240:-1<-1,127,1>-CCValue8
 
 @init
 note_on = $x90;
+control_change = $xB0;
 
 error_bound_scale = 250;
 
@@ -571,6 +572,26 @@ function setCCChannel(lane, value)
   setSlider(lane, slider_offset_cc_channel, value, 0, 16, 0);
 );
 
+function getCCController(lane)
+(
+  getSlider(lane, slider_offset_cc_controller);
+);
+
+function setCCController(lane, value)
+(
+  setSlider(lane, slider_offset_cc_controller, value, -1, 127, 0);
+);
+
+function getCCValue(lane)
+(
+  getSlider(lane, slider_offset_cc_value);
+);
+
+function setCCValue(lane, value)
+(
+  setSlider(lane, slider_offset_cc_value, value, -1, 127, 0);
+);
+
 function getInputMinNote(lane)
 (
   getSlider(lane, slider_offset_in_min_note);
@@ -938,6 +959,21 @@ function getLaneOfNote(note, channel, velocity) local(i, result, in_chan)
   result; 
 );
 
+function getLaneOfCC(controller, channel) local(i, result, cc_chan, cc_ctrl)
+(
+  result = -1;
+  i = 0;
+  while (i < num_lanes && (result == -1)) (
+    cc_chan = getCCChannel(i);
+    cc_ctrl = getCCController(i);
+    ((cc_chan == 0) || (cc_chan == channel + 1)) &&
+    (cc_ctrl == controller) ?
+      result = i;
+    i += 1;
+  );
+  result; 
+);
+
 isPlaying() ? (
   getClick(0) ? playGrid(0);
   getClick(1) && (num_lanes>1) ? playGrid(1);
@@ -949,16 +985,23 @@ isPlaying() ? (
   getClick(7) && (num_lanes>7) ? playGrid(7);
 );
 
-//TODO handle MIDI CC messages. A MIDI CC message matches a lane
-// if channel == getCCChannel(lane) and msg2 == getSliderIdx(lane, slider_offset_cc_controller).
-// Create helpers for getting/setting slider_offset_cc_controller.
-// If a lane matches, then record its value (msg3) in the slider getSlider(lane, slider_offset_cc_value).
-// Create helpers for getters/setters for slider_offset_cc_value also.
+// MIDI CC handling: A MIDI CC message matches a lane
+// if channel == getCCChannel(lane) and msg2 (controller) == getCCController(lane).
+// When a lane matches, the CC value (msg3) is recorded in setCCValue(lane, value).
 while (midirecv(offset,msg1,msg2,msg3)) (
    noteStatus = msg1 & 0xF0;
    channel = msg1 & 0x0F;
    velocity = msg3;
    is_note_on = noteStatus==note_on && msg3!=0;
+   is_cc = noteStatus==control_change;
+   
+   // Handle MIDI CC messages
+   is_cc ? (
+     controller = msg2;
+     cc_value = msg3;
+     cc_lane = getLaneOfCC(controller, channel);
+     cc_lane >= 0 ? setCCValue(cc_lane, cc_value);
+   );
    
    is_note_on ? ( 
      note = msg2;
