@@ -75,6 +75,8 @@ slider28:127<0,127,1>-InputMaxVelocity1
 slider29:0<0,16,1>-CCInputChannel1
 slider30:-1<-1,127,1>-CCController1
 slider31:-1<-1,127,1>-CCValue1
+slider32:0<0,127,1>-CCMinValue1
+slider33:127<0,127,1>-CCMaxValue1
 
 slider46:8<1,32,1>-Divisions2
 slider47:0<-0.91666, 0.91666,0.01>-Swing2
@@ -92,6 +94,8 @@ slider58:127<0,127,1>-InputMaxVelocity2
 slider59:0<0,16,1>-CCInputChannel2
 slider60:-1<-1,127,1>-CCController2
 slider61:-1<-1,127,1>-CCValue2
+slider62:0<0,127,1>-CCMinValue2
+slider63:127<0,127,1>-CCMaxValue2
 
 slider76:8<1,32,1>-Divisions3
 slider77:0<-0.91666, 0.91666,0.01>-Swing3
@@ -109,6 +113,8 @@ slider88:127<0,127,1>-InputMaxVelocity3
 slider89:0<0,16,1>-CCInputChannel3
 slider90:-1<-1,127,1>-CCController3
 slider91:-1<-1,127,1>-CCValue3
+slider92:0<0,127,1>-CCMinValue3
+slider93:127<0,127,1>-CCMaxValue3
 
 slider106:8<1,32,1>-Divisions4
 slider107:0<-0.91666, 0.91666,0.01>-Swing4
@@ -126,6 +132,8 @@ slider118:127<0,127,1>-InputMaxVelocity4
 slider119:0<0,16,1>-CCInputChannel4
 slider120:-1<-1,127,1>-CCController4
 slider121:-1<-1,127,1>-CCValue4
+slider122:0<0,127,1>-CCMinValue4
+slider123:127<0,127,1>-CCMaxValue4
 
 slider136:8<1,32,1>-Divisions5
 slider137:0<-0.91666, 0.91666,0.01>-Swing5
@@ -143,6 +151,8 @@ slider148:127<0,127,1>-InputMaxVelocity5
 slider150:0<0,16,1>-CCInputChannel5
 slider151:-1<-1,127,1>-CCController5
 slider152:-1<-1,127,1>-CCValue5
+slider153:0<0,127,1>-CCMinValue5
+slider154:127<0,127,1>-CCMaxValue5
 
 slider166:8<1,32,1>-Divisions6
 slider167:0<-0.91666, 0.91666,0.01>-Swing6
@@ -160,6 +170,8 @@ slider178:127<0,127,1>-InputMaxVelocity6
 slider179:0<0,16,1>-CCInputChannel6
 slider180:-1<-1,127,1>-CCController5
 slider181:-1<-1,127,1>-CCValue6
+slider182:0<0,127,1>-CCMinValue6
+slider183:127<0,127,1>-CCMaxValue6
 
 slider196:8<1,32,1>-Divisions7
 slider197:0<-0.91666, 0.91666,0.01>-Swing7
@@ -176,7 +188,9 @@ slider207:0<0,127,1>-InputMinVelocity7
 slider208:127<0,127,1>-InputMaxVelocity7
 slider209:0<0,16,1>-CCInputChannel7
 slider210:-1<-1,127,1>-CCController7
-slider210:-1<-1,127,1>-CCValue7
+slider211:-1<-1,127,1>-CCValue7
+slider212:0<0,127,1>-CCMinValue7
+slider213:127<0,127,1>-CCMaxValue7
 
 slider226:8<1,32,1>-Divisions8
 slider227:0<-0.91666, 0.91666,0.01>-Swing8
@@ -193,7 +207,9 @@ slider237:0<0,127,1>-InputMinVelocity8
 slider238:127<0,127,1>-InputMaxVelocity8
 slider239:0<0,16,1>-CCInputChannel8
 slider240:-1<-1,127,1>-CCController8
-slider240:-1<-1,127,1>-CCValue8
+slider241:-1<-1,127,1>-CCValue8
+slider242:0<0,127,1>-CCMinValue8
+slider243:127<0,127,1>-CCMaxValue8
 
 @init
 note_on = $x90;
@@ -219,8 +235,10 @@ slider_offset_in_max_velocity = 12;
 slider_offset_cc_channel = 13;
 slider_offset_cc_controller = 14;
 slider_offset_cc_value = 15;
+slider_offset_cc_min_value = 16;
+slider_offset_cc_max_value = 17;
 // Update sliders_used_per_lane when adding more sliders per lane
-sliders_used_per_lane = 16;
+sliders_used_per_lane = 18;
 
 control_phase = 1;
 control_swing = 2;
@@ -247,6 +265,8 @@ control_button_delete_lane = 22;
 control_button_cc_channel_up = 23;
 control_button_cc_channel_down = 24;
 control_button_cc_controller = 25;
+control_button_cc_min_value = 26;
+control_button_cc_max_value = 27;
 // allowed up to 999 of these control_* variables until we need to update controlId().
 
 hist_idx = 0;
@@ -581,7 +601,7 @@ function getCCController(lane)
 
 function setCCController(lane, value)
 (
-  setSlider(lane, slider_offset_cc_controller, value, -1, 127, -1);
+  setSlider(lane, slider_offset_cc_controller, value, -1, 127, 0);
 );
 
 // Returns the latest known value for the lane's controller.
@@ -593,7 +613,27 @@ function getCCValue(lane)
 
 function setCCValue(lane, value)
 (
-  setSlider(lane, slider_offset_cc_value, value, -1, 127, -1);
+  setSlider(lane, slider_offset_cc_value, value, -1, 127, 0);
+);
+
+function getCCMinValue(lane)
+(
+  getSlider(lane, slider_offset_cc_min_value);
+);
+
+function setCCMinValue(lane, value)
+(
+  setSlider(lane, slider_offset_cc_min_value, value, 0, 127, 0);
+);
+
+function getCCMaxValue(lane)
+(
+  getSlider(lane, slider_offset_cc_max_value);
+);
+
+function setCCMaxValue(lane, value)
+(
+  setSlider(lane, slider_offset_cc_max_value, value, 0, 127, 0);
 );
 
 function getInputMinNote(lane)
@@ -1018,8 +1058,11 @@ while (midirecv(offset,msg1,msg2,msg3)) (
    // Move the above variables like velocity to their correct branches.
    
    // Handle MIDI CC messages
-   // TODO add sliders for min/max CC value per lane, then add visual
-   // representation to the GUI. If the bounds are 60-127, then add horizontal
+   // TODO implement visual representations of:
+   // 1. whether a lane is tracking a MIDI CC controller, and (if tracking):
+   // 2. current MIDI CC value bounds,
+   // 3. current value of the MIDI CC controller.
+   // If the bounds are 60-127, then add horizontal
    // yellow lines on each green grid rectangle representing the min/max at
    // the middle/top respectively (since the range is 0-127, 60 is around the middle).
    // If a valid "note on" event happens for a lane that also has a CC bound and the current
@@ -1336,7 +1379,8 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
       focus_click_channel_down, focus_click_channel_up, focus_click_channel, focus_move_lane_up, focus_move_lane_down, focus_delete_lane
       button_width, click_note, can_move_lane_up, can_move_lane_down, can_delete_lane, focus_cc_channel_up, focus_cc_channel_down,
       min_note, max_note, control_button_click_note_id, control_button_in_max_note_id, control_button_in_min_note_id,
-      cc_controller, focus_cc_controller, control_button_cc_controller_id, cc_controller_label)
+      cc_controller, focus_cc_controller, control_button_cc_controller_id, cc_controller_label,
+      cc_min_value, cc_max_value, focus_cc_min_value, focus_cc_max_value)
 (
   gfx_setfont(1, "Arial", 14);
   left_button_release = isLButtonRelease();
@@ -1359,6 +1403,8 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     min_note      = getInputMinNote(lane);
     max_note      = getInputMaxNote(lane);
     cc_controller = getCCController(lane);
+    cc_min_value  = getCCMinValue(lane);
+    cc_max_value  = getCCMaxValue(lane);
     control_button_click_note_id    = controlId(lane, control_button_click_note);
     control_button_in_max_note_id   = controlId(lane, control_button_in_max_note);
     control_button_in_min_note_id   = controlId(lane, control_button_in_min_note);
@@ -1412,11 +1458,17 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
                         : sprintf(cc_controller_label, "no CC");
     focus_cc_controller = drawButton(lane, control_button_cc_controller, button_width*1.5, h, cc_controller_label, listen_note_control == control_button_cc_controller_id);
 
+    focus_cc_min_value = drawButton(lane, control_button_cc_min_value, button_width*1.5, h, sprintf(#, "%d", cc_min_value), 0);
+    drawText(0, h, "->");
+    focus_cc_max_value = drawButton(lane, control_button_cc_max_value, button_width*1.5, h, sprintf(#, "%d", cc_max_value), 0);
+
     // Perform left-click side effects on buttons
     left_button_release ? (
       focus_cc_channel_down      ? setCCChannel(lane, getCCChannel(lane)-1)
       : focus_cc_channel_up      ? setCCChannel(lane, getCCChannel(lane)+1)
       : focus_cc_controller      ? toggleListen(control_button_cc_controller_id)
+      : focus_cc_min_value       ? setCCMinValue(lane, cc_min_value)
+      : focus_cc_max_value       ? setCCMaxValue(lane, cc_max_value)
       : focus_click_channel_down ? setClickChannel(lane, getClickChannel(lane)-1)
       : focus_click_channel_up   ? setClickChannel(lane, getClickChannel(lane)+1)
       : focus_click_note         ? toggleListen(control_button_click_note_id)
@@ -1442,6 +1494,8 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     // Perform mouse-wheel side effects on buttons
     mouse_wheel_dir ? (
       focus_cc_channel      ? setCCChannel(lane, getCCChannel(lane)+mouse_wheel_dir)
+      : focus_cc_min_value  ? setCCMinValue(lane, cc_min_value+mouse_wheel_dir)
+      : focus_cc_max_value  ? setCCMaxValue(lane, cc_max_value+mouse_wheel_dir)
       : focus_click_channel ? setClickChannel(lane, getClickChannel(lane)+mouse_wheel_dir)
       : focus_click_note    ? setClickNote(lane, click_note+mouse_wheel_dir)
       : focus_click_vel     ? setClickVel(lane, getClickVel(lane)+mouse_wheel_dir)
@@ -1460,14 +1514,16 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
       );
     );
     
-    // Static tooltips
+    // Simple tooltips
     focus_click_vel        ? sprintf(#value_edit, "Click Velocity: %d", getClickVel(lane))
     : focus_delete_lane    ? sprintf(#value_edit, "Delete lane")
     : focus_div            ? sprintf(#value_edit, "Divisions: %d", getDivs(lane))
     : focus_move_lane_down ? sprintf(#value_edit, "Move lane down")
     : focus_move_lane_up   ? sprintf(#value_edit, "Move lane up")
     : focus_toggle_click   ? sprintf(#value_edit, "Click: %s (%s)", getClick(lane) ? "On" : "Off", "Right click to toggle all")
-    : focus_click_channel  ? sprintf(#value_edit, "Click Channel: %d", getClickChannel(lane));
+    : focus_click_channel  ? sprintf(#value_edit, "Click Channel: %d", getClickChannel(lane))
+    : focus_cc_min_value   ? sprintf(#value_edit, "Input CC Min Value: %d", cc_min_value)
+    : focus_cc_max_value   ? sprintf(#value_edit, "Input CC Max Value: %d", cc_max_value);
 
     // Input channel tooltips
     inputChannelButtonToolTip(getInputChannel(lane), "Input Channel",    focus_in_channel);
@@ -1478,12 +1534,12 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     noteButtonToolTip(control_button_in_max_note_id, "Input Max Note", focus_in_max_note, max_note);
     noteButtonToolTip(control_button_in_min_note_id, "Input Min Note", focus_in_min_note, min_note);
 
-    // MIDI CC-listening tooltips
+    // MIDI CC controller tooltips
     (listen_note_control == control_button_cc_controller_id) ? sprintf(#value_edit, "Input CC Controller: LISTENING")
     : focus_cc_controller                                    ? (
       cc_controller != -1 ? sprintf(#value_edit, "Input CC Controller: %d", cc_controller)
                           : sprintf(#value_edit, "Input CC Controller: NONE");
-    );
+    )
   )
 );
 
