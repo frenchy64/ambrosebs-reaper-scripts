@@ -72,6 +72,8 @@ slider25:0<0,127,1>-InputMinNote1
 slider26:127<0,127,1>-InputMaxNote1
 slider27:0<0,127,1>-InputMinVelocity1
 slider28:127<0,127,1>-InputMaxVelocity1
+slider29:0<1,16,1>-CCInputChannel1
+slider30:-1<-1,127,1>-CCValue1
 
 slider46:8<1,32,1>-Divisions2
 slider47:0<-0.91666, 0.91666,0.01>-Swing2
@@ -86,6 +88,8 @@ slider55:0<0,127,1>-InputMinNote2
 slider56:127<0,127,1>-InputMaxNote2
 slider57:0<0,127,1>-InputMinVelocity2
 slider58:127<0,127,1>-InputMaxVelocity2
+slider59:0<1,16,1>-CCInputChannel2
+slider60:-1<-1,127,1>-CCValue2
 
 slider76:8<1,32,1>-Divisions3
 slider77:0<-0.91666, 0.91666,0.01>-Swing3
@@ -100,6 +104,8 @@ slider85:0<0,127,1>-InputMinNote3
 slider86:127<0,127,1>-InputMaxNote3
 slider87:0<0,127,1>-InputMinVelocity3
 slider88:127<0,127,1>-InputMaxVelocity3
+slider89:0<1,16,1>-CCInputChannel3
+slider90:-1<-1,127,1>-CCValue3
 
 slider106:8<1,32,1>-Divisions4
 slider107:0<-0.91666, 0.91666,0.01>-Swing4
@@ -114,6 +120,8 @@ slider115:0<0,127,1>-InputMinNote4
 slider116:127<0,127,1>-InputMaxNote4
 slider117:0<0,127,1>-InputMinVelocity4
 slider118:127<0,127,1>-InputMaxVelocity4
+slider119:0<1,16,1>-CCInputChannel4
+slider120:-1<-1,127,1>-CCValue4
 
 slider136:8<1,32,1>-Divisions5
 slider137:0<-0.91666, 0.91666,0.01>-Swing5
@@ -142,6 +150,8 @@ slider175:0<0,127,1>-InputMinNote6
 slider176:127<0,127,1>-InputMaxNote6
 slider177:0<0,127,1>-InputMinVelocity6
 slider178:127<0,127,1>-InputMaxVelocity6
+slider179:0<1,16,1>-CCInputChannel6
+slider180:-1<-1,127,1>-CCValue6
 
 slider196:8<1,32,1>-Divisions7
 slider197:0<-0.91666, 0.91666,0.01>-Swing7
@@ -156,6 +166,8 @@ slider205:0<0,127,1>-InputMinNote7
 slider206:127<0,127,1>-InputMaxNote7
 slider207:0<0,127,1>-InputMinVelocity7
 slider208:127<0,127,1>-InputMaxVelocity7
+slider209:0<1,16,1>-CCInputChannel7
+slider210:-1<-1,127,1>-CCValue7
 
 slider226:8<1,32,1>-Divisions8
 slider227:0<-0.91666, 0.91666,0.01>-Swing8
@@ -170,6 +182,8 @@ slider235:0<0,127,1>-InputMinNote8
 slider236:127<0,127,1>-InputMaxNote8
 slider237:0<0,127,1>-InputMinVelocity8
 slider238:127<0,127,1>-InputMaxVelocity8
+slider239:0<1,16,1>-CCInputChannel8
+slider240:-1<-1,127,1>-CCValue8
 
 @init
 note_on = $x90;
@@ -190,8 +204,11 @@ slider_offset_in_channel = 8;
 slider_offset_in_min_note = 9;
 slider_offset_in_max_note = 10;
 slider_offset_in_min_velocity = 11;
-slider_offset_in_max_velocity = 12; // Update sliders_used_per_lane when adding more sliders per lane
-sliders_used_per_lane = 13;
+slider_offset_in_max_velocity = 12;
+slider_offset_cc_channel = 13;
+slider_offset_cc_value = 14;
+// Update sliders_used_per_lane when adding more sliders per lane
+sliders_used_per_lane = 15;
 
 control_phase = 1;
 control_swing = 2;
@@ -215,6 +232,7 @@ control_button_halve_pattern = 16;
 control_button_double_pattern = 17;
 control_button_move_lane_up = 18;
 control_button_move_lane_down = 19;
+control_button_delete_lane = 20;
 
 hist_idx = 0;
 max_hist = 200;
@@ -349,6 +367,12 @@ function getRelTime(sample_offset) local(p)
 (
   p = (beat_position + (sample_offset * (tempo / 60) / srate))/getBeats();
   p - floor(p);
+);
+
+function setLanes(nlanes)
+(
+  nlanes >= 1 && nlanes <= lanes_limit ? (slider2 = nlanes);
+  slider_automate(2 ^ 2);
 );
 
 // Getters and Setters
@@ -605,6 +629,16 @@ function moveLane(oldLane, newLane) local(direction, currentLane, laneSlider, ol
     // Reset play after moving lanes
     resetPlay();
   );
+);
+
+// move lane to the end of the active lanes and decrement the number of lanes.
+// TODO reset "deleted" lane to stock settings
+function deleteLane(lane)
+(
+  num_lanes > 1 && activeLane(lane) ?
+    (moveLane(lane, num_lanes-1);
+     setLanes(num_lanes-1);
+     resetPlay(););
 );
 
 //
@@ -1172,8 +1206,8 @@ function toggleListen(control)
 function drawToolBar(lane, l, t, w, h)
 local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up, f_click_vel_down, f_toggle_click,
       f_click_note, f_in_channel_up, f_in_channel_down, f_in_max_note, f_in_min_note,
-      f_click_channel_down, f_click_channel_up, f_move_up, f_move_down,
-      button_width, click_note, can_move_up, can_move_down)
+      f_click_channel_down, f_click_channel_up, f_move_up, f_move_down, f_delete_lane
+      button_width, click_note, can_move_up, can_move_down, can_delete_lane)
 (
   gfx_setfont(1, "Arial", 14);
   release = isLButtonRelease();
@@ -1202,6 +1236,7 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
 
     can_move_up = activeLane(lane - 1);
     can_move_down = activeLane(lane + 1);
+    can_delete_lane = num_lanes > 1;
 
     button_width = h;
 
@@ -1209,6 +1244,8 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
                             : drawDisabledButton(lane, control_button_move_lane_up, button_width, h, "↑");
     f_move_down = can_move_down ? drawButton(lane, control_button_move_lane_down, button_width, h, "↓", 0)
                                 : drawDisabledButton(lane, control_button_move_lane_down, button_width, h, "↓");
+    f_delete_lane = can_move_down ? drawButton(lane, control_button_delete_lane, button_width, h, "x", 0)
+                                  : drawDisabledButton(lane, control_button_delete_lane, button_width, h, "x");
     
     drawText(0, h, "Divisions:");
     f_div_down = drawButton(lane, control_button_div_down, button_width, h, "-", 0);
@@ -1250,12 +1287,14 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
     release && f_click_channel_up ? setClickChannel(lane, getClickChannel(lane)+1);
     release && f_move_up && can_move_up ? moveLane(lane, lane - 1);
     release && f_move_down && can_move_down ? moveLane(lane, lane + 1);
+    release && f_delete_lane && can_delete_lane ? deleteLane(lane);
         
     f_div_up || f_div_down ? sprintf(#value_edit, "Divisions: %d", getDivs(lane));
     f_click_vel_up || f_click_vel_down ? sprintf(#value_edit, "Click Velocity: %d", getClickVel(lane));
     f_toggle_click ? sprintf(#value_edit, "Click: %s (%s)", getClick(lane) ? "On" : "Off", "Right click to toggle all");
     f_move_up ? sprintf(#value_edit, "Move lane up");
     f_move_down ? sprintf(#value_edit, "Move lane down");
+    f_delete_lane ? sprintf(#value_edit, "Delete lane");
     (listen_note_control == control_button_click_note_id) ? sprintf(#value_edit, "Click Note: LISTENING") 
     : f_click_note ? sprintf(#value_edit, "Click Note: %s (%d)", noteName(click_note), click_note);
     in_chan = getInputChannel(lane);
