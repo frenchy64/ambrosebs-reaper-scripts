@@ -1510,14 +1510,16 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
       );
     );
     
-    // Static tooltips
+    // Simple tooltips
     focus_click_vel        ? sprintf(#value_edit, "Click Velocity: %d", getClickVel(lane))
     : focus_delete_lane    ? sprintf(#value_edit, "Delete lane")
     : focus_div            ? sprintf(#value_edit, "Divisions: %d", getDivs(lane))
     : focus_move_lane_down ? sprintf(#value_edit, "Move lane down")
     : focus_move_lane_up   ? sprintf(#value_edit, "Move lane up")
     : focus_toggle_click   ? sprintf(#value_edit, "Click: %s (%s)", getClick(lane) ? "On" : "Off", "Right click to toggle all")
-    : focus_click_channel  ? sprintf(#value_edit, "Click Channel: %d", getClickChannel(lane));
+    : focus_click_channel  ? sprintf(#value_edit, "Click Channel: %d", getClickChannel(lane))
+    : focus_cc_min_value   ? sprintf(#value_edit, "Input CC Min Value: %d", cc_min_value)
+    : focus_cc_max_value   ? sprintf(#value_edit, "Input CC Max Value: %d", cc_max_value);
 
     // Input channel tooltips
     inputChannelButtonToolTip(getInputChannel(lane), "Input Channel",    focus_in_channel);
@@ -1528,14 +1530,12 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     noteButtonToolTip(control_button_in_max_note_id, "Input Max Note", focus_in_max_note, max_note);
     noteButtonToolTip(control_button_in_min_note_id, "Input Min Note", focus_in_min_note, min_note);
 
-    // MIDI CC-listening tooltips
+    // MIDI CC controller tooltips
     (listen_note_control == control_button_cc_controller_id) ? sprintf(#value_edit, "Input CC Controller: LISTENING")
     : focus_cc_controller                                    ? (
       cc_controller != -1 ? sprintf(#value_edit, "Input CC Controller: %d", cc_controller)
                           : sprintf(#value_edit, "Input CC Controller: NONE");
     )
-    : focus_cc_min_value ? sprintf(#value_edit, "Input CC Min Value: %d", cc_min_value)
-    : focus_cc_max_value ? sprintf(#value_edit, "Input CC Max Value: %d", cc_max_value);
   )
 );
 
