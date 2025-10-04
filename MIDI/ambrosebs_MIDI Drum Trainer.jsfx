@@ -236,15 +236,14 @@ control_button_in_channel_up = 11;
 control_button_in_channel_down = 12;
 control_button_in_min_note = 13;
 control_button_in_max_note = 14;
-control_button_in_min_velocity = 13;
-control_button_in_max_velocity = 14;
-
-control_button_training_clear = 15;
-control_button_halve_pattern = 16;
-control_button_double_pattern = 17;
-control_button_move_lane_up = 18;
-control_button_move_lane_down = 19;
-control_button_delete_lane = 20;
+control_button_in_min_velocity = 15;
+control_button_in_max_velocity = 16;
+control_button_training_clear = 17;
+control_button_halve_pattern = 18;
+control_button_double_pattern = 19;
+control_button_move_lane_up = 20;
+control_button_move_lane_down = 21;
+control_button_delete_lane = 22;
 
 hist_idx = 0;
 max_hist = 200;
