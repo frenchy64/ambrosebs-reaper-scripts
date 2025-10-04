@@ -247,6 +247,8 @@ control_button_move_lane_down = 21;
 control_button_delete_lane = 22;
 control_button_cc_channel_up = 23;
 control_button_cc_channel_down = 24;
+control_button_cc_controller = 25;
+// allowed up to 999 of these control_* variables until we need to update controlId().
 
 hist_idx = 0;
 max_hist = 200;
@@ -925,16 +927,21 @@ function recordMidiMonitor(lane)
   v_midi_monitor_last_hit[lane] = time_precise();
 );
 
+function listeningFor(lane, control)
+(
+  listen_note_control == controlId(i, control);
+);
+
 function learnNote(note) local(i) 
 (
   i = 0;
   while (listen_note_control && i < num_lanes)
   (
-    listen_note_control == controlId(i, control_button_click_note) ? 
+    listeningFor(i, control_button_click_note) ? 
       (setClickNote(i, note); listen_note_control = 0)
-    : listen_note_control == controlId(i, control_button_in_min_note) ? 
+    : listeningFor(i, control_button_in_min_note) ? 
       (setInputMinNote(i, note); listen_note_control = 0)     
-    : listen_note_control == controlId(i, control_button_in_max_note) ? 
+    : listeningFor(i, control_button_in_max_note) ? 
       (setInputMaxNote(i, note); listen_note_control = 0);     
 
     i += 1; 
@@ -1278,7 +1285,9 @@ function drawToolBar(lane, l, t, w, h)
 local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up, f_click_vel_down, f_toggle_click,
       f_click_note, f_in_channel_up, f_in_channel_down, f_in_max_note, f_in_min_note,
       f_click_channel_down, f_click_channel_up, f_move_up, f_move_down, f_delete_lane
-      button_width, click_note, can_move_up, can_move_down, can_delete_lane, f_cc_channel_up, f_cc_channel_down, in_chan, cc_chan)
+      button_width, click_note, can_move_up, can_move_down, can_delete_lane, f_cc_channel_up, f_cc_channel_down, in_chan, cc_chan,
+      min_note, max_note, control_button_click_note_id, control_button_in_max_note_id, control_button_in_min_note_id,
+      cc_controller, f_cc_controller, control_button_cc_controller_id)
 (
   gfx_setfont(1, "Arial", 14);
   release = isLButtonRelease();
@@ -1298,23 +1307,25 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
   
   
   expand_toolbar ? (
-    click_note = getClickNote(lane);
-    min_note = getInputMinNote(lane);
-    max_note = getInputMaxNote(lane);
-    control_button_click_note_id = controlId(lane, control_button_click_note);
-    control_button_in_max_note_id = controlId(lane, control_button_in_max_note);
-    control_button_in_min_note_id = controlId(lane, control_button_in_min_note);
+    click_note    = getClickNote(lane);
+    min_note      = getInputMinNote(lane);
+    max_note      = getInputMaxNote(lane);
+    cc_controller = getCCController(lane);
+    control_button_click_note_id    = controlId(lane, control_button_click_note);
+    control_button_in_max_note_id   = controlId(lane, control_button_in_max_note);
+    control_button_in_min_note_id   = controlId(lane, control_button_in_min_note);
+    control_button_cc_controller_id = controlId(lane, control_button_cc_controller);
 
-    can_move_up = activeLane(lane - 1);
-    can_move_down = activeLane(lane + 1);
+    can_move_up     = activeLane(lane - 1);
+    can_move_down   = activeLane(lane + 1);
     can_delete_lane = num_lanes > 1;
 
     button_width = h;
 
-    f_move_up = can_move_up ? drawButton(lane, control_button_move_lane_up, button_width, h, "↑", 0)
-                            : drawDisabledButton(lane, control_button_move_lane_up, button_width, h, "↑");
-    f_move_down = can_move_down ? drawButton(lane, control_button_move_lane_down, button_width, h, "↓", 0)
-                                : drawDisabledButton(lane, control_button_move_lane_down, button_width, h, "↓");
+    f_move_up     = can_move_up   ? drawButton(lane, control_button_move_lane_up, button_width, h, "↑", 0)
+                                  : drawDisabledButton(lane, control_button_move_lane_up, button_width, h, "↑");
+    f_move_down   = can_move_down ? drawButton(lane, control_button_move_lane_down, button_width, h, "↓", 0)
+                                  : drawDisabledButton(lane, control_button_move_lane_down, button_width, h, "↓");
     f_delete_lane = can_move_down ? drawButton(lane, control_button_delete_lane, button_width, h, "x", 0)
                                   : drawDisabledButton(lane, control_button_delete_lane, button_width, h, "x");
     
@@ -1323,31 +1334,30 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
     f_div_up = drawButton(lane, control_button_div_up, button_width, h, "+", 0);
     
     drawText(0, h, "Click:");
-    f_toggle_click = drawButton(lane, control_button_click, button_width*2, h, getClick(lane)? "ON" : "OFF", getClick(lane));
-    f_click_note = drawButton(lane, control_button_click_note, button_width*1.5, h, noteName(click_note), 
-                                 (listen_note_control == control_button_click_note_id));
-    f_click_vel_down = drawButton(lane, control_button_click_vel_down, button_width, h,  "V-", 0);
-    f_click_vel_up = drawButton(lane, control_button_click_vel_up, button_width, h, "V+", 0);
-    f_click_channel_down = drawButton(lane, control_button_click_channel_down, button_width, h, "CH-", 0);
-    f_click_channel_up = drawButton(lane, control_button_click_channel_up, button_width, h, "CH+", 0);
+    f_toggle_click       = drawButton(lane, control_button_click,              button_width*2,   h, getClick(lane)? "ON" : "OFF", getClick(lane));
+    f_click_note         = drawButton(lane, control_button_click_note,         button_width*1.5, h, noteName(click_note),         (listen_note_control == control_button_click_note_id));
+    f_click_vel_down     = drawButton(lane, control_button_click_vel_down,     button_width,     h, "V-",                         0);
+    f_click_vel_up       = drawButton(lane, control_button_click_vel_up,       button_width,     h, "V+",                         0);
+    f_click_channel_down = drawButton(lane, control_button_click_channel_down, button_width,     h, "CH-",                        0);
+    f_click_channel_up   = drawButton(lane, control_button_click_channel_up,   button_width,     h, "CH+",                        0);
     
     drawText(0, h, "Input Filter:");    
-    f_in_min_note = drawButton(lane, control_button_in_min_note, button_width*1.5, h, noteName(min_note),
-                               (listen_note_control == control_button_in_min_note_id));
+    f_in_min_note = drawButton(lane, control_button_in_min_note, button_width*1.5, h, noteName(min_note), (listen_note_control == control_button_in_min_note_id));
     drawText(0, h, "->");
-    f_in_max_note = drawButton(lane, control_button_in_max_note, button_width*1.5, h, noteName(max_note),
-                               (listen_note_control == control_button_in_max_note_id));                 
+    f_in_max_note = drawButton(lane, control_button_in_max_note, button_width*1.5, h, noteName(max_note), (listen_note_control == control_button_in_max_note_id));                 
     f_in_channel_down = drawButton(lane, control_button_in_channel_down, button_width, h, "CH-", 0);
-    f_in_channel_up = drawButton(lane, control_button_in_channel_up, button_width, h, "CH+", 0);
+    f_in_channel_up   = drawButton(lane, control_button_in_channel_up,   button_width, h, "CH+", 0);
 
     f_cc_channel_down = drawButton(lane, control_button_cc_channel_down, button_width, h, "CC CH-", 0);
-    f_cc_channel_up = drawButton(lane, control_button_cc_channel_up, button_width, h, "CC CH+", 0);
+    f_cc_channel_up   = drawButton(lane, control_button_cc_channel_up,   button_width, h, "CC CH+", 0);
 
-    release && f_div_up ? setDivs(lane, getDivs(lane)+1); 
-    release && f_div_down ? setDivs(lane, getDivs(lane)-1); 
-    release && f_click_vel_up ? setClickVel(lane, floor(getClickVel(lane)/4)*4+4); 
+    f_cc_controller = drawButton(lane, control_button_cc_controller, button_width*1.5, h, cc_controller, (listen_note_control == control_button_cc_controller_id));
+
+    release && f_div_up         ? setDivs(lane, getDivs(lane)+1); 
+    release && f_div_down       ? setDivs(lane, getDivs(lane)-1); 
+    release && f_click_vel_up   ? setClickVel(lane, floor(getClickVel(lane)/4)*4+4); 
     release && f_click_vel_down ? setClickVel(lane, floor(getClickVel(lane)/4)*4-4);
-    release && f_toggle_click ? setClick(lane, !getClick(lane));
+    release && f_toggle_click   ? setClick(lane, !getClick(lane));
     
     // Right-click on Click button: enable/disable all active lanes
     rrelease && f_toggle_click ? toggleClickAllLanes();
@@ -1359,12 +1369,13 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
     release && f_cc_channel_down ? setCCChannel(lane, getCCChannel(lane)-1);
     release && f_in_max_note ? toggleListen(control_button_in_max_note_id);
     release && f_in_min_note ? toggleListen(control_button_in_min_note_id);
+    release && f_cc_controller ? toggleListen(control_button_cc_controller_id);
     release && f_click_channel_down ? setClickChannel(lane, getClickChannel(lane)-1);
     release && f_click_channel_up ? setClickChannel(lane, getClickChannel(lane)+1);
     release && f_move_up && can_move_up ? moveLane(lane, lane - 1);
     release && f_move_down && can_move_down ? moveLane(lane, lane + 1);
     release && f_delete_lane && can_delete_lane ? deleteLane(lane);
-        
+
     f_div_up || f_div_down ? sprintf(#value_edit, "Divisions: %d", getDivs(lane));
     f_click_vel_up || f_click_vel_down ? sprintf(#value_edit, "Click Velocity: %d", getClickVel(lane));
     f_toggle_click ? sprintf(#value_edit, "Click: %s (%s)", getClick(lane) ? "On" : "Off", "Right click to toggle all");
