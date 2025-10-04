@@ -1018,6 +1018,20 @@ while (midirecv(offset,msg1,msg2,msg3)) (
    // Move the above variables like velocity to their correct branches.
    
    // Handle MIDI CC messages
+   // TODO add sliders for min/max CC value per lane, then add visual
+   // representation to the GUI. If the bounds are 60-127, then add horizontal
+   // yellow lines on each green grid rectangle representing the min/max at
+   // the middle/top respectively (since the range is 0-127, 60 is around the middle).
+   // If a valid "note on" event happens for a lane that also has a CC bound and the current
+   // value of the CC controller for this lane is within the bounds of the sliders, then
+   // a green horizontal line appears somewhere between the yellow lines. For example, if
+   // a lane's min/max MIDI notes are 20-40, with a MIDI CC controller of 55, and a min/max
+   // MIDI CC value of 60-127, then if a MIDI note 23 is played, and the MIDI CC controller 55
+   // has value 100, then a green line is drawn roughly between the yellow lines (about 3/4
+   // of the way up the green grid rectangle. The green line should fade away similar to
+   // the circle that is drawn around the circles representing notes that have recently been played.
+   // If a valid "note on" event happens in this example but the MIDI CC value is out of range (say 12),
+   // then a red line is drawn near the bottom of the grid, and fades away similarly.
    is_cc ? (
      controller = msg2;
      listen_note_control ? (
