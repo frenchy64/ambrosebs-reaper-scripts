@@ -1371,14 +1371,34 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     right_button_release ? (
       focus_toggle_click ? toggleClickAllLanes()
     );
+
+    // Perform mouse-wheel side effects on buttons
+    mouse_wheel_dir && !listen_note_control ? (
+      focus_cc_channel      ? setCCChannel(lane, getCCChannel(lane)+mouse_wheel_dir)
+      : focus_click_channel ? setClickChannel(lane, getClickChannel(lane)+mouse_wheel_dir)
+      : focus_click_vel     ? setClickVel(lane, getClickVel(lane)+mouse_wheel_dir)
+      : focus_div           ? setDivs(lane, getDivs(lane)+mouse_wheel_dir)
+      : focus_in_channel    ? setInputChannel(lane, getInputChannel(lane)+mouse_wheel_dir)
+      : focus_toggle_click  ? setClick(lane, mouse_wheel_dir)
+      : focus_click_note    ? setClickNote(lane, click_note+mouse_wheel_dir)
+      : focus_in_max_note   ? setInputMaxNote(lane, max_note+mouse_wheel_dir)
+      : focus_in_min_note   ? setInputMinNote(lane, min_note+mouse_wheel_dir);
+
+      // Disable mouse-wheel for note-listening buttons when learning
+      !listen_note_control ? (
+        focus_click_note    ? setClickNote(lane, click_note+mouse_wheel_dir)
+        : focus_in_max_note ? setInputMaxNote(lane, max_note+mouse_wheel_dir)
+        : focus_in_min_note ? setInputMinNote(lane, min_note+mouse_wheel_dir)
+      );
+    );
     
     // Static tooltips
     focus_click_vel        ? sprintf(#value_edit, "Click Velocity: %d", getClickVel(lane))
     : focus_delete_lane    ? sprintf(#value_edit, "Delete lane")
-    : focus_div            ? sprintf(#value_edit, "Divisions: %d",      getDivs(lane))
+    : focus_div            ? sprintf(#value_edit, "Divisions: %d", getDivs(lane))
     : focus_move_lane_down ? sprintf(#value_edit, "Move lane down")
     : focus_move_lane_up   ? sprintf(#value_edit, "Move lane up")
-    : focus_toggle_click   ? sprintf(#value_edit, "Click: %s (%s)",     getClick(lane) ? "On" : "Off", "Right click to toggle all")
+    : focus_toggle_click   ? sprintf(#value_edit, "Click: %s (%s)", getClick(lane) ? "On" : "Off", "Right click to toggle all")
     : focus_click_channel  ? sprintf(#value_edit, "Click Channel: %d", getClickChannel(lane));
 
     // Input channel tooltips
@@ -1389,18 +1409,6 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     noteButtonToolTip(control_button_click_note_id,  "Click Note",     focus_click_note,  click_note);
     noteButtonToolTip(control_button_in_max_note_id, "Input Max Note", focus_in_max_note, max_note);
     noteButtonToolTip(control_button_in_min_note_id, "Input Min Note", focus_in_min_note, min_note);
-
-    mouse_wheel_dir && !listen_note_control ? (
-      focus_cc_channel      ? setCCChannel(lane, getCCChannel(lane)+mouse_wheel_dir)
-      : focus_click_channel ? setClickChannel(lane, getClickChannel(lane)+mouse_wheel_dir)
-      : focus_click_note    ? setClickNote(lane, click_note+mouse_wheel_dir)
-      : focus_click_vel     ? setClickVel(lane, getClickVel(lane)+mouse_wheel_dir)
-      : focus_div           ? setDivs(lane, getDivs(lane)+mouse_wheel_dir)
-      : focus_in_channel    ? setInputChannel(lane, getInputChannel(lane)+mouse_wheel_dir)
-      : focus_in_max_note   ? setInputMaxNote(lane, max_note+mouse_wheel_dir)
-      : focus_in_min_note   ? setInputMinNote(lane, min_note+mouse_wheel_dir)
-      : focus_toggle_click  ? setClick(lane, mouse_wheel_dir)
-    );
   )
 );
 
