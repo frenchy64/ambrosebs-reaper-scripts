@@ -1015,8 +1015,6 @@ function isLButtonRelease()
 
 function isRButtonPress()
 (
-  rr +=
-  (2 & mouse_cap) & (2 ~ prev_mouse_cap);
   (2 & mouse_cap) & (2 ~ prev_mouse_cap);
 );
 
