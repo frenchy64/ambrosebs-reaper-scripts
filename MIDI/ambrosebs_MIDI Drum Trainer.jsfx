@@ -1250,6 +1250,12 @@ function toggleListen(control)
   listen_note_control = listen_note_control == control ? 0 : control;
 );
 
+function noteButtonToolTip(control, tip, focus, note)
+(
+  (listen_note_control == control) ? sprintf(#value_edit, "%s: LISTENING", tip)
+  : focus                          ? sprintf(#value_edit, "%s: %s (%d)", tip, noteName(note), note); 
+);
+
 function drawToolBar(lane, l, t, w, h)
 local(left_button_release, right_button_release, focus_expand_toolbar, focus_div_up, focus_div_down, focus_click_vel_up, focus_click_vel_down, focus_toggle_click,
       focus_click_note, focus_in_channel_up, focus_in_channel_down, focus_in_max_note, focus_in_min_note,
@@ -1290,9 +1296,9 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
 
     button_width = h;
 
-    focus_move_up     = drawDisableableButton(lane, control_button_move_lane_up,   button_width, h, "↑", can_move_up);
-    focus_move_down   = drawDisableableButton(lane, control_button_move_lane_down, button_width, h, "↓", can_move_down);
-    focus_delete_lane = drawDisableableButton(lane, control_button_delete_lane,    button_width, h, "x", can_delete_lane);
+    focus_move_up     = drawDisableableButton(lane, control_button_move_lane_up,   button_width, h, "↑", !can_move_up);
+    focus_move_down   = drawDisableableButton(lane, control_button_move_lane_down, button_width, h, "↓", !can_move_down);
+    focus_delete_lane = drawDisableableButton(lane, control_button_delete_lane,    button_width, h, "x", !can_delete_lane);
     
     drawText(0, h, "Divisions:");
     focus_div_down = drawButton(lane, control_button_div_down, button_width, h, "-", 0);
@@ -1368,10 +1374,8 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
 
     focus_click_channel_down || focus_click_channel_up ? sprintf(#value_edit, "Click Channel: %d", getClickChannel(lane));
     
-    (listen_note_control == control_button_in_max_note_id) ? sprintf(#value_edit, "Input Max Note: LISTENING") 
-    : focus_in_max_note                                    ? sprintf(#value_edit, "Input Max Note: %s (%d)", noteName(max_note), max_note);
-    (listen_note_control == control_button_in_min_note_id) ? sprintf(#value_edit, "Input Min Note: LISTENING") 
-    : focus_in_min_note                                    ? sprintf(#value_edit, "Input Min Note: %s (%d)", noteName(min_note), min_note); 
+    noteButtonToolTip(control_button_in_max_note_id, "Input Max Note", focus_in_max_note, max_note);
+    noteButtonToolTip(control_button_in_min_note_id, "Input Max Note", focus_in_min_note, min_note);
 
     mouse_wheel_dir ? (
       focus_toggle_click                                                            ? setClick(lane, mouse_wheel_dir)
