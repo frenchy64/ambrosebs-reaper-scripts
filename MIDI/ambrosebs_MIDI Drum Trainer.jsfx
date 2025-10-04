@@ -72,7 +72,7 @@ slider25:0<0,127,1>-InputMinNote1
 slider26:127<0,127,1>-InputMaxNote1
 slider27:0<0,127,1>-InputMinVelocity1
 slider28:127<0,127,1>-InputMaxVelocity1
-slider29:0<1,16,1>-CCInputChannel1
+slider29:0<0,16,1>-CCInputChannel1
 slider30:-1<-1,127,1>-CCController1
 slider31:-1<-1,127,1>-CCValue1
 
@@ -89,10 +89,9 @@ slider55:0<0,127,1>-InputMinNote2
 slider56:127<0,127,1>-InputMaxNote2
 slider57:0<0,127,1>-InputMinVelocity2
 slider58:127<0,127,1>-InputMaxVelocity2
-slider59:0<1,16,1>-CCInputChannel2
-slider60:0<1,16,1>-CCInputChannel2
+slider59:0<0,16,1>-CCInputChannel2
 slider60:-1<-1,127,1>-CCController2
-slider61:-t p1<-1,127,1>-CCValue2
+slider61:-1<-1,127,1>-CCValue2
 
 slider76:8<1,32,1>-Divisions3
 slider77:0<-0.91666, 0.91666,0.01>-Swing3
@@ -107,7 +106,7 @@ slider85:0<0,127,1>-InputMinNote3
 slider86:127<0,127,1>-InputMaxNote3
 slider87:0<0,127,1>-InputMinVelocity3
 slider88:127<0,127,1>-InputMaxVelocity3
-slider89:0<1,16,1>-CCInputChannel3
+slider89:0<0,16,1>-CCInputChannel3
 slider90:-1<-1,127,1>-CCController3
 slider91:-1<-1,127,1>-CCValue3
 
@@ -124,7 +123,7 @@ slider115:0<0,127,1>-InputMinNote4
 slider116:127<0,127,1>-InputMaxNote4
 slider117:0<0,127,1>-InputMinVelocity4
 slider118:127<0,127,1>-InputMaxVelocity4
-slider119:0<1,16,1>-CCInputChannel4
+slider119:0<0,16,1>-CCInputChannel4
 slider120:-1<-1,127,1>-CCController4
 slider121:-1<-1,127,1>-CCValue4
 
@@ -141,7 +140,7 @@ slider145:0<0,127,1>-InputMinNote5
 slider146:127<0,127,1>-InputMaxNote5
 slider147:0<0,127,1>-InputMinVelocity5
 slider148:127<0,127,1>-InputMaxVelocity5
-slider150:0<1,16,1>-CCInputChannel5
+slider150:0<0,16,1>-CCInputChannel5
 slider151:-1<-1,127,1>-CCController5
 slider152:-1<-1,127,1>-CCValue5
 
@@ -158,7 +157,7 @@ slider175:0<0,127,1>-InputMinNote6
 slider176:127<0,127,1>-InputMaxNote6
 slider177:0<0,127,1>-InputMinVelocity6
 slider178:127<0,127,1>-InputMaxVelocity6
-slider179:0<1,16,1>-CCInputChannel6
+slider179:0<0,16,1>-CCInputChannel6
 slider180:-1<-1,127,1>-CCController5
 slider181:-1<-1,127,1>-CCValue6
 
@@ -175,7 +174,7 @@ slider205:0<0,127,1>-InputMinNote7
 slider206:127<0,127,1>-InputMaxNote7
 slider207:0<0,127,1>-InputMinVelocity7
 slider208:127<0,127,1>-InputMaxVelocity7
-slider209:0<1,16,1>-CCInputChannel7
+slider209:0<0,16,1>-CCInputChannel7
 slider210:-1<-1,127,1>-CCController7
 slider210:-1<-1,127,1>-CCValue7
 
@@ -192,7 +191,7 @@ slider235:0<0,127,1>-InputMinNote8
 slider236:127<0,127,1>-InputMaxNote8
 slider237:0<0,127,1>-InputMinVelocity8
 slider238:127<0,127,1>-InputMaxVelocity8
-slider239:0<1,16,1>-CCInputChannel8
+slider239:0<0,16,1>-CCInputChannel8
 slider240:-1<-1,127,1>-CCController8
 slider240:-1<-1,127,1>-CCValue8
 
