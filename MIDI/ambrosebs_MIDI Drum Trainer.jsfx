@@ -1307,7 +1307,7 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
       focus_click_channel_down, focus_click_channel_up, focus_click_channel, focus_move_lane_up, focus_move_lane_down, focus_delete_lane
       button_width, click_note, can_move_lane_up, can_move_lane_down, can_delete_lane, focus_cc_channel_up, focus_cc_channel_down,
       min_note, max_note, control_button_click_note_id, control_button_in_max_note_id, control_button_in_min_note_id,
-      cc_controller, focus_cc_controller, control_button_cc_controller_id, tmpstr)
+      cc_controller, focus_cc_controller, control_button_cc_controller_id, cc_controller_label)
 (
   gfx_setfont(1, "Arial", 14);
   left_button_release = isLButtonRelease();
@@ -1379,9 +1379,9 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     focus_cc_channel_up   = drawButton(lane, control_button_cc_channel_up,   button_width, h, "CC CH+", 0);
     focus_cc_channel      = focus_cc_channel_down || focus_cc_channel_up;
 
-    cc_controller != -1 ? sprintf(tmpstr, "%d", cc_controller)
-                        : sprintf(tmpstr, "no CC");
-    focus_cc_controller = drawButton(lane, control_button_cc_controller, button_width*1.5, h, tmpstr, listen_note_control == control_button_cc_controller_id);
+    cc_controller != -1 ? sprintf(cc_controller_label, "%d", cc_controller)
+                        : sprintf(cc_controller_label, "no CC");
+    focus_cc_controller = drawButton(lane, control_button_cc_controller, button_width*1.5, h, cc_controller_label, listen_note_control == control_button_cc_controller_id);
 
     // Perform left-click side effects on buttons
     left_button_release ? (
