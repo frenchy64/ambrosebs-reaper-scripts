@@ -573,6 +573,7 @@ function setCCChannel(lane, value)
   setSlider(lane, slider_offset_cc_channel, value, 0, 16, 0);
 );
 
+// Returns -1 if this lane is not listening for MIDI CC events.
 function getCCController(lane)
 (
   getSlider(lane, slider_offset_cc_controller);
@@ -970,11 +971,11 @@ function getLaneOfCC(controller, channel) local(i, result, cc_chan, cc_ctrl)
   result = -1;
   i = 0;
   while (i < num_lanes && (result == -1)) (
-    cc_chan = getCCChannel(i);
     cc_ctrl = getCCController(i);
-    ((cc_chan == 0) || (cc_chan == channel + 1)) &&
-    (cc_ctrl == controller) ?
-      result = i;
+    cc_ctrl != -1 ? (
+      cc_chan = getCCChannel(i);
+      ((cc_chan == 0) || (cc_chan == channel + 1)) && (cc_ctrl == controller) ? result = i;
+    );
     i += 1;
   );
   result; 
@@ -1306,7 +1307,7 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
       focus_click_channel_down, focus_click_channel_up, focus_click_channel, focus_move_lane_up, focus_move_lane_down, focus_delete_lane
       button_width, click_note, can_move_lane_up, can_move_lane_down, can_delete_lane, focus_cc_channel_up, focus_cc_channel_down,
       min_note, max_note, control_button_click_note_id, control_button_in_max_note_id, control_button_in_min_note_id,
-      cc_controller, focus_cc_controller, control_button_cc_controller_id)
+      cc_controller, focus_cc_controller, control_button_cc_controller_id, tmpstr)
 (
   gfx_setfont(1, "Arial", 14);
   left_button_release = isLButtonRelease();
@@ -1378,7 +1379,9 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     focus_cc_channel_up   = drawButton(lane, control_button_cc_channel_up,   button_width, h, "CC CH+", 0);
     focus_cc_channel      = focus_cc_channel_down || focus_cc_channel_up;
 
-    focus_cc_controller = drawButton(lane, control_button_cc_controller, button_width*1.5, h, cc_controller, listen_note_control == control_button_cc_controller_id);
+    cc_controller != -1 ? sprintf(tmpstr, "%d", cc_controller)
+                        : sprintf(tmpstr, "no CC");
+    focus_cc_controller = drawButton(lane, control_button_cc_controller, button_width*1.5, h, tmpstr, listen_note_control == control_button_cc_controller_id);
 
     // Perform left-click side effects on buttons
     left_button_release ? (
@@ -1408,22 +1411,23 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     );
 
     // Perform mouse-wheel side effects on buttons
-    mouse_wheel_dir && !listen_note_control ? (
+    mouse_wheel_dir ? (
       focus_cc_channel      ? setCCChannel(lane, getCCChannel(lane)+mouse_wheel_dir)
       : focus_click_channel ? setClickChannel(lane, getClickChannel(lane)+mouse_wheel_dir)
+      : focus_click_note    ? setClickNote(lane, click_note+mouse_wheel_dir)
       : focus_click_vel     ? setClickVel(lane, getClickVel(lane)+mouse_wheel_dir)
       : focus_div           ? setDivs(lane, getDivs(lane)+mouse_wheel_dir)
       : focus_in_channel    ? setInputChannel(lane, getInputChannel(lane)+mouse_wheel_dir)
-      : focus_toggle_click  ? setClick(lane, mouse_wheel_dir)
-      : focus_click_note    ? setClickNote(lane, click_note+mouse_wheel_dir)
       : focus_in_max_note   ? setInputMaxNote(lane, max_note+mouse_wheel_dir)
-      : focus_in_min_note   ? setInputMinNote(lane, min_note+mouse_wheel_dir);
+      : focus_in_min_note   ? setInputMinNote(lane, min_note+mouse_wheel_dir)
+      : focus_toggle_click  ? setClick(lane, mouse_wheel_dir);
 
       // Disable mouse-wheel for note-listening buttons when learning
       !listen_note_control ? (
-        focus_click_note    ? setClickNote(lane, click_note+mouse_wheel_dir)
-        : focus_in_max_note ? setInputMaxNote(lane, max_note+mouse_wheel_dir)
-        : focus_in_min_note ? setInputMinNote(lane, min_note+mouse_wheel_dir)
+        focus_click_note      ? setClickNote(lane, click_note+mouse_wheel_dir)
+        : focus_in_max_note   ? setInputMaxNote(lane, max_note+mouse_wheel_dir)
+        : focus_in_min_note   ? setInputMinNote(lane, min_note+mouse_wheel_dir)
+        : focus_cc_controller ? setCCController(lane, cc_controller+mouse_wheel_dir);
       );
     );
     
@@ -1444,6 +1448,13 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     noteButtonToolTip(control_button_click_note_id,  "Click Note",     focus_click_note,  click_note);
     noteButtonToolTip(control_button_in_max_note_id, "Input Max Note", focus_in_max_note, max_note);
     noteButtonToolTip(control_button_in_min_note_id, "Input Min Note", focus_in_min_note, min_note);
+
+    // MIDI CC-listening tooltips
+    (listen_note_control == control_button_cc_controller_id) ? sprintf(#value_edit, "Input CC Controller: LISTENING")
+    : focus_cc_controller                                    ? (
+      cc_controller != -1 ? sprintf(#value_edit, "Input CC Controller: %d", cc_controller)
+                          : sprintf(#value_edit, "Input CC Controller: NONE");
+    );
   )
 );
 
