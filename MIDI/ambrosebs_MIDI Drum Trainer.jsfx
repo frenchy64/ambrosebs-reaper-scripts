@@ -244,6 +244,8 @@ control_button_double_pattern = 19;
 control_button_move_lane_up = 20;
 control_button_move_lane_down = 21;
 control_button_delete_lane = 22;
+control_button_cc_channel_up = 23;
+control_button_cc_channel_down = 24;
 
 hist_idx = 0;
 max_hist = 200;
@@ -533,14 +535,14 @@ function isGridEnabled(lane, idx) local(d,idx,mask)
   mask & (1<<idx);
 );
 
-function getGridMask(lane, idx)
+function getGridMask(lane, idx) local(d)
 (
   d = getDivs(lane);
   idx = (idx + d) % d;
   1 & (getMask(lane) >> idx);
 );
 
-function setGridMask(lane, idx, value)
+function setGridMask(lane, idx, value) local(d)
 (
   d = getDivs(lane);
   idx = (idx + d) % d;
@@ -554,9 +556,19 @@ function getInputChannel(lane)
   getSlider(lane, slider_offset_in_channel);
 );
 
-function setInputChannel(lane, value) local(idx)
+function setInputChannel(lane, value)
 (
   setSlider(lane, slider_offset_in_channel, value, 0, 16, 0);
+);
+
+function getCCChannel(lane)
+(
+  getSlider(lane, slider_offset_cc_channel);
+);
+
+function setCCChannel(lane, value)
+(
+  setSlider(lane, slider_offset_cc_channel, value, 0, 16, 0);
 );
 
 function getInputMinNote(lane)
@@ -564,7 +576,7 @@ function getInputMinNote(lane)
   getSlider(lane, slider_offset_in_min_note);
 );
 
-function setInputMinNote(lane, value) local(idx)
+function setInputMinNote(lane, value)
 (
   setSlider(lane, slider_offset_in_min_note, value, 0, 127, 0);
 );
@@ -574,7 +586,7 @@ function getInputMaxNote(lane)
   getSlider(lane, slider_offset_in_max_note);
 );
 
-function setInputMaxNote(lane, value) local(idx)
+function setInputMaxNote(lane, value)
 (
   setSlider(lane, slider_offset_in_max_note, value, 0, 127, 0);
 );
@@ -584,7 +596,7 @@ function getInputMinVelocity(lane)
   getSlider(lane, slider_offset_in_min_velocity);
 );
 
-function setInputMinVelocity(lane, value) local(idx)
+function setInputMinVelocity(lane, value)
 (
   setSlider(lane, slider_offset_in_min_velocity, value, 0, 127, 0);
 );
@@ -594,7 +606,7 @@ function getInputMaxVelocity(lane)
   getSlider(lane, slider_offset_in_max_velocity);
 );
 
-function setInputMaxVelocity(lane, value) local(idx)
+function setInputMaxVelocity(lane, value)
 (
   setSlider(lane, slider_offset_in_max_velocity, value, 0, 127, 0);
 );
@@ -909,7 +921,7 @@ function learnNote(note) local(i)
   listen_note_control = 0;
 );
 
-function getLaneOfNote(note, channel, velocity) local(i, result)
+function getLaneOfNote(note, channel, velocity) local(i, result, in_chan)
 (
   result = -1;
   i = 0;
@@ -1218,7 +1230,7 @@ function drawToolBar(lane, l, t, w, h)
 local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up, f_click_vel_down, f_toggle_click,
       f_click_note, f_in_channel_up, f_in_channel_down, f_in_max_note, f_in_min_note,
       f_click_channel_down, f_click_channel_up, f_move_up, f_move_down, f_delete_lane
-      button_width, click_note, can_move_up, can_move_down, can_delete_lane)
+      button_width, click_note, can_move_up, can_move_down, can_delete_lane, f_cc_channel_up, f_cc_channel_down, in_chan, cc_chan)
 (
   gfx_setfont(1, "Arial", 14);
   release = isLButtonRelease();
@@ -1268,8 +1280,8 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
                                  (listen_note_control == control_button_click_note_id));
     f_click_vel_down = drawButton(lane, control_button_click_vel_down, button_width, h,  "V-", 0);
     f_click_vel_up = drawButton(lane, control_button_click_vel_up, button_width, h, "V+", 0);
-    f_click_channel_down = drawButton(lane, control_button_in_channel_down, button_width, h, "CH-", 0);
-    f_click_channel_up = drawButton(lane, control_button_in_channel_up, button_width, h, "CH+", 0);
+    f_click_channel_down = drawButton(lane, control_button_click_channel_down, button_width, h, "CH-", 0);
+    f_click_channel_up = drawButton(lane, control_button_click_channel_up, button_width, h, "CH+", 0);
     
     drawText(0, h, "Input Filter:");    
     f_in_min_note = drawButton(lane, control_button_in_min_note, button_width*1.5, h, noteName(min_note),
@@ -1279,6 +1291,9 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
                                (listen_note_control == control_button_in_max_note_id));                 
     f_in_channel_down = drawButton(lane, control_button_in_channel_down, button_width, h, "CH-", 0);
     f_in_channel_up = drawButton(lane, control_button_in_channel_up, button_width, h, "CH+", 0);
+
+    f_cc_channel_down = drawButton(lane, control_button_cc_channel_down, button_width, h, "CC CH-", 0);
+    f_cc_channel_up = drawButton(lane, control_button_cc_channel_up, button_width, h, "CC CH+", 0);
 
     release && f_div_up ? setDivs(lane, getDivs(lane)+1); 
     release && f_div_down ? setDivs(lane, getDivs(lane)-1); 
@@ -1292,6 +1307,8 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
     release && f_click_note ? toggleListen(control_button_click_note_id);
     release && f_in_channel_up ? setInputChannel(lane, getInputChannel(lane)+1);
     release && f_in_channel_down ? setInputChannel(lane, getInputChannel(lane)-1);
+    release && f_cc_channel_up ? setCCChannel(lane, getCCChannel(lane)+1);
+    release && f_cc_channel_down ? setCCChannel(lane, getCCChannel(lane)-1);
     release && f_in_max_note ? toggleListen(control_button_in_max_note_id);
     release && f_in_min_note ? toggleListen(control_button_in_min_note_id);
     release && f_click_channel_down ? setClickChannel(lane, getClickChannel(lane)-1);
@@ -1313,6 +1330,11 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
       in_chan ? sprintf(#value_edit, "Input Channel: %d", in_chan)
               : sprintf(#value_edit, "Input Channel: ALL");
     );
+    cc_chan = getCCChannel(lane);
+    f_cc_channel_up || f_cc_channel_down ? (
+      cc_chan ? sprintf(#value_edit, "Input CC Channel: %d", cc_chan)
+              : sprintf(#value_edit, "Input CC Channel: ALL");
+    );
     f_click_channel_down || f_click_channel_up ? sprintf(#value_edit, "Click Channel: %d", getClickChannel(lane));
     
     (listen_note_control == control_button_in_max_note_id) ? sprintf(#value_edit, "Input Max Note: LISTENING") 
@@ -1325,6 +1347,7 @@ local(release, rrelease, f_expand_toolbar, f_div_up, f_div_down, f_click_vel_up,
       : (f_click_vel_up || f_click_vel_down) ? setClickVel(lane, getClickVel(lane)+mouse_wheel_dir)
       : f_click_note && (listen_note_control != control_button_click_note_id) ? setClickNote(lane, click_note+mouse_wheel_dir)
       : (f_in_channel_up || f_in_channel_down) ? setInputChannel(lane, getInputChannel(lane)+mouse_wheel_dir)
+      : (f_cc_channel_up || f_cc_channel_down) ? setCCChannel(lane, getCCChannel(lane)+mouse_wheel_dir)
       : f_in_max_note && (listen_note_control != control_button_in_max_note_id) ? setInputMaxNote(lane, max_note+mouse_wheel_dir)
       : f_in_min_note && (listen_note_control != control_button_in_min_note_id) ? setInputMinNote(lane, min_note+mouse_wheel_dir)
       : (f_click_channel_down || f_click_channel_up) ? setClickChannel(lane, getClickChannel(lane)+mouse_wheel_dir)
