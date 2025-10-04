@@ -92,7 +92,7 @@ slider58:127<0,127,1>-InputMaxVelocity2
 slider59:0<1,16,1>-CCInputChannel2
 slider60:0<1,16,1>-CCInputChannel2
 slider60:-1<-1,127,1>-CCController2
-slider61:-1<-1,127,1>-CCValue2
+slider61:-t p1<-1,127,1>-CCValue2
 
 slider76:8<1,32,1>-Divisions3
 slider77:0<-0.91666, 0.91666,0.01>-Swing3
@@ -992,15 +992,18 @@ isPlaying() ? (
   getClick(7) && (num_lanes>7) ? playGrid(7);
 );
 
-// MIDI CC handling: A MIDI CC message matches a lane
-// if channel == getCCChannel(lane) and msg2 (controller) == getCCController(lane).
-// When a lane matches, the CC value (msg3) is recorded in setCCValue(lane, value).
 while (midirecv(offset,msg1,msg2,msg3)) (
    noteStatus = msg1 & 0xF0;
    channel = msg1 & 0x0F;
    velocity = msg3;
    is_note_on = noteStatus==note_on && msg3!=0;
    is_cc = noteStatus==control_change;
+
+   // TODO refactor below code like this:
+   //   is_cc ? ( <cc logic> )
+   //   : is_note_on ? ( <note on logic> )
+   //   : ( < logic for other notes> )
+   // Move the above variables like velocity to their correct branches.
    
    // Handle MIDI CC messages
    is_cc ? (
@@ -1010,6 +1013,7 @@ while (midirecv(offset,msg1,msg2,msg3)) (
      cc_lane >= 0 ? setCCValue(cc_lane, cc_value);
    );
    
+   // Handle MIDI Note On messages
    is_note_on ? ( 
      note = msg2;
      lane = getLaneOfNote(note, channel, velocity);
