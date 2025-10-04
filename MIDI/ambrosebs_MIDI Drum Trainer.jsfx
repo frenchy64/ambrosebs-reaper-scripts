@@ -1357,9 +1357,6 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     focus_move_down                            ? sprintf(#value_edit, "Move lane down");
     focus_delete_lane                          ? sprintf(#value_edit, "Delete lane");
 
-    (listen_note_control == control_button_click_note_id) ? sprintf(#value_edit, "Click Note: LISTENING") 
-    : focus_click_note                                    ? sprintf(#value_edit, "Click Note: %s (%d)", noteName(click_note), click_note);
-
     in_chan = getInputChannel(lane);
     focus_in_channel_up || focus_in_channel_down ? (
       in_chan ? sprintf(#value_edit, "Input Channel: %d", in_chan)
@@ -1374,8 +1371,9 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
 
     focus_click_channel_down || focus_click_channel_up ? sprintf(#value_edit, "Click Channel: %d", getClickChannel(lane));
     
+    noteButtonToolTip(control_button_click_note_id,  "Click Note",     focus_click_note,  click_note);
     noteButtonToolTip(control_button_in_max_note_id, "Input Max Note", focus_in_max_note, max_note);
-    noteButtonToolTip(control_button_in_min_note_id, "Input Max Note", focus_in_min_note, min_note);
+    noteButtonToolTip(control_button_in_min_note_id, "Input Min Note", focus_in_min_note, min_note);
 
     mouse_wheel_dir ? (
       focus_toggle_click                                                            ? setClick(lane, mouse_wheel_dir)
