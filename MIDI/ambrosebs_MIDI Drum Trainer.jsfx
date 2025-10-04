@@ -217,6 +217,8 @@ control_change = $xB0;
 
 error_bound_scale = 250;
 
+lanes_limit = 8; // manually set in slider2
+
 sliders_per_lane = 30;
 first_lane_slider = 16;
 slider_offset_divs = 0;
@@ -309,14 +311,13 @@ v_histogram_max_value = malloc(4);
 v_rounds = malloc(4);
 v_beat_pos = malloc(4);
 
-// CC visual feedback tracking (up to 8 lanes)
-max_lanes = 8;
-v_cc_feedback_time = malloc(max_lanes);      // Time of last note event for CC feedback
-v_cc_feedback_value = malloc(max_lanes);     // CC value at time of last note event
-v_cc_feedback_in_range = malloc(max_lanes);  // Whether CC value was in range (1=yes, 0=no)
-memset(v_cc_feedback_time, 0, max_lanes);
-memset(v_cc_feedback_value, 0, max_lanes);
-memset(v_cc_feedback_in_range, 0, max_lanes);
+// CC visual feedback tracking
+v_cc_feedback_time = malloc(lanes_limit);      // Time of last note event for CC feedback
+v_cc_feedback_value = malloc(lanes_limit);     // CC value at time of last note event
+v_cc_feedback_in_range = malloc(lanes_limit);  // Whether CC value was in range (1=yes, 0=no)
+memset(v_cc_feedback_time, 0, lanes_limit);
+memset(v_cc_feedback_value, 0, lanes_limit);
+memset(v_cc_feedback_in_range, 0, lanes_limit);
 
 v_normal_dist = malloc(31);
 v_normal_dist[0] = 0;
@@ -881,7 +882,6 @@ function getRelLatencyCompensation()
 @slider
 
 num_lanes = slider2+1;
-lanes_limit = 8; // manually set in slider2
 beats_limit = 32; // manually set in slider1
 divs_limit = 32; // manually set in slider13, slider26, ...
 error_bound = slider3/error_bound_scale;
