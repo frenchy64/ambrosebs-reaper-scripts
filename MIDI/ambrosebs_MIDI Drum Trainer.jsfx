@@ -309,6 +309,15 @@ v_histogram_max_value = malloc(4);
 v_rounds = malloc(4);
 v_beat_pos = malloc(4);
 
+// CC visual feedback tracking (up to 8 lanes)
+max_lanes = 8;
+v_cc_feedback_time = malloc(max_lanes);      // Time of last note event for CC feedback
+v_cc_feedback_value = malloc(max_lanes);     // CC value at time of last note event
+v_cc_feedback_in_range = malloc(max_lanes);  // Whether CC value was in range (1=yes, 0=no)
+memset(v_cc_feedback_time, 0, max_lanes);
+memset(v_cc_feedback_value, 0, max_lanes);
+memset(v_cc_feedback_in_range, 0, max_lanes);
+
 v_normal_dist = malloc(31);
 v_normal_dist[0] = 0;
 v_normal_dist[1] = 0.0398;
@@ -953,6 +962,22 @@ function recordHistory(reltime, hit, lane, note)
   hist_idx = (hist_idx + 1) % max_hist;
 );
 
+// Record CC feedback for visual display when a note is played
+function recordCCFeedback(lane) local(cc_ctrl, cc_value, cc_min, cc_max, in_range)
+(
+  cc_ctrl = getCCController(lane);
+  cc_ctrl != -1 ? (
+    cc_value = getCCValue(lane);
+    cc_min = getCCMinValue(lane);
+    cc_max = getCCMaxValue(lane);
+    in_range = (cc_value >= cc_min) && (cc_value <= cc_max);
+    
+    v_cc_feedback_time[lane] = time_precise();
+    v_cc_feedback_value[lane] = cc_value;
+    v_cc_feedback_in_range[lane] = in_range ? 1 : 0;
+  );
+);
+
 function recordTraining() local(t, prev_time)
 (
   t = time();
@@ -1105,6 +1130,7 @@ while (midirecv(offset,msg1,msg2,msg3)) (
        hit == 0 ? midisend(offset,msg1,note,msg3);
        decayHistogram(lane);
        recordHistory(reltime, hit, lane, note);
+       recordCCFeedback(lane);
        recordHistogram(reltime, lane);
      )
    ) : (
@@ -1231,6 +1257,48 @@ function drawEvent(x, y, note, age) local(str)
     gfx_a = ((fresh_event_thresh-age)/fresh_event_thresh);
     gfx_circle(x, y, 7, 0, 0);
   )
+);
+
+// Max age for CC feedback visual in seconds
+cc_feedback_max_age = 3;
+
+// Draw CC bounds indicators (yellow lines) and current CC value (green/red line)
+function drawCCFeedback(lane, l, t, w, h) local(cc_ctrl, cc_min, cc_max, cc_value, age, now, 
+                                                  y_min, y_max, y_current, fade_alpha, in_range)
+(
+  cc_ctrl = getCCController(lane);
+  cc_ctrl != -1 ? (
+    cc_min = getCCMinValue(lane);
+    cc_max = getCCMaxValue(lane);
+    
+    // Draw yellow lines for CC bounds
+    // Map CC range (0-127) to grid height
+    // If bounds are 60-127, min is at middle, max is at top
+    y_min = t + h * (1 - cc_min / 127);
+    y_max = t + h * (1 - cc_max / 127);
+    
+    gfx_a = 0.6;
+    rgb(1, 1, 0); // Yellow
+    gfx_line(l, y_min, l+w, y_min);
+    gfx_line(l, y_max, l+w, y_max);
+    
+    // Draw current CC value line (green if in range, red if out of range)
+    now = time_precise();
+    age = now - v_cc_feedback_time[lane];
+    
+    (age < cc_feedback_max_age) && (v_cc_feedback_time[lane] > 0) ? (
+      cc_value = v_cc_feedback_value[lane];
+      in_range = v_cc_feedback_in_range[lane];
+      
+      y_current = t + h * (1 - cc_value / 127);
+      
+      fade_alpha = 1 - (age / cc_feedback_max_age);
+      gfx_a = fade_alpha * 0.8;
+      
+      in_range ? rgb(0, 1, 0) : rgb(1, 0, 0); // Green if in range, red if out
+      gfx_line(l, y_current, l+w, y_current);
+    );
+  );
 );
 
 function isMouseInRect(l,t,w,h)
@@ -1744,6 +1812,9 @@ function drawGrid(lane, l,t,w,h) local(beat_mark_ratio, i, x,y, age, birth, hit,
     gfx_a = 1-(l_pattern + w_pattern - x) / w_margin;
     gfx_line(x-w_pattern, t, x-w_pattern, t+h);
   );  
+  
+  // Draw CC feedback (bounds and current value)
+  drawCCFeedback(lane, l, t, w, h - toolbar_height);
   
   drawToolBar(lane, l+2,t+h-toolbar_height-1,w-2,20);
   drawMidiMonitor(lane, l+w-12, t+h-14, 8, 8);  
