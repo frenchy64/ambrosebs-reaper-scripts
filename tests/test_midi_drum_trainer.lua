@@ -2,7 +2,8 @@
 -- Now supports per-lane output channel mapping via hidden JSFX sliders.
 
 -- The following are named exactly after the JSFX globals:
-local sliders_per_lane = 30
+local global_slider_count = 5
+local sliders_used_per_lane = 19
 local first_lane_slider = 16
 local slider_offset_output_channel = 18
 
@@ -15,13 +16,40 @@ local function setup_jsfx_on_new_track(jsfx_name)
   return track, fx_idx
 end
 
+-- sliders have internal indices based on the order they are declared in jsfx.
+local function get_lane_slider_index(lane_index, lane_slider_offset)
+  -- lane_index is 0-based (first lane = 0)
+  return global_slider_count + lane_index * sliders_used_per_lane + lane_slider_offset
+end
+
 -- Set per-lane output channel sliders for testing mode using offsets matching the JSFX script
 local function set_lane_output_channels(track, fx_idx, lanes)
+  -- The JSFX slider definition is: slider34:0<0,16,1>Lane 1 output channel [hidden]
+  -- So the min is 0, max is 16 (total 17 steps: 0, 1, ..., 16)
+  local min_val = 0
+  local max_val = 16
   for i = 0, #lanes - 1 do
     -- Calculate slider index for lane output channel
-    local slider_idx = first_lane_slider + i * sliders_per_lane + slider_offset_output_channel
-    -- For testing: lane 0 outputs on ch 0, lane 1 on ch 1, etc. (slider value = lane index + 1)
-    reaper.TrackFX_SetParam(track, fx_idx, slider_idx, i + 1)
+    local slider_idx = get_lane_slider_index(lane, slider_offset_output_channel)
+    -- Value to set: for testing, lane 0 outputs on ch 0, lane 1 on ch 1, etc. (slider value = lane index + 1)
+    local desired_value = i + 1
+    -- Normalize value to [0,1] for TrackFX_SetParam API
+    -- normalization: (value - min) / (max - min)
+    --local normalized_value = (desired_value - min_val) / (max_val - min_val)
+    local normalized_value = 0.5
+    -- Note: Since the slider is <0,16,1>, max_val is 16, and there are 17 valid integer steps (0 through 16)
+    reaper.TrackFX_SetParam(track, fx_idx, slider_idx, normalized_value)
+    -- Debug: print the actual parameter value after setting
+    local ok, actual_value, minval, maxval = reaper.TrackFX_GetParam(track, fx_idx, slider_idx)
+    reaper.ShowConsoleMsg(
+      string.format("Slider %d: set normalized %.4f, got actual %.4f\n", 
+        slider_idx, normalized_value, actual_value)
+    )
+    for param = 0, reaper.TrackFX_GetNumParams(track, fx_idx)-1 do
+      local ok, val = reaper.TrackFX_GetParam(track, fx_idx, param)
+      reaper.ShowConsoleMsg(string.format("Param %d = %.4f\n", param, val))
+    end
+
   end
 end
 

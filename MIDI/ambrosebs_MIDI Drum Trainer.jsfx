@@ -58,6 +58,7 @@ slider2:0<0,7,1{1,2,3,4,5,6,7,8}>Lanes
 slider3:100<1,250,1>Error Bound (ms)
 slider4:0<0,1,1{Off,On}>Auto Shrink Error Bound
 slider5:0<-200,200>Latency Compensation (ms)
+// Important! update global_slider_count when adding new sliders here.
 
 // Hidden sliders per lane
 slider16:8<1,32,1>-Divisions1
@@ -227,6 +228,8 @@ control_change = $xB0;
 error_bound_scale = 250;
 
 lanes_limit = 8; // manually set in slider2
+
+global_slider_count = 5;         // Number of global (non-lane) sliders
 
 sliders_per_lane = 30;
 first_lane_slider = 16;
