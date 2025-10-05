@@ -1111,14 +1111,13 @@ isPlaying() ? (
   getClick(7) && (num_lanes>7) ? playGrid(7);
 );
 
-// Helper for sending Note On/Off with lane output channel consideration
+// Helper for sending MIDI Note On with lane output channel consideration
 function send_lane_midi(lane, offset, msg1, msg2, msg3)
 local(out_chan_slider, out_chan, out_status)
 (
   out_chan_slider = getOutputChannel(lane); // 0: preserve input channel, >0: force out channel
-  out_chan = msg1 & 0x0f; // input channel by default
   out_status = msg1;
-  out_chan_slider > 0 ? (
+  out_chan_slider > 0 ? ( // input channel by default
     out_chan = out_chan_slider - 1; // 1=ch0, 2=ch1, ..., 16=ch15
     out_status = (msg1 & 0xf0) | out_chan;
   );
