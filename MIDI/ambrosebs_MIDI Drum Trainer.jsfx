@@ -1,8 +1,8 @@
 desc: MIDI Drum Trainer
 author: Ambrose Bonnaire-Sergeant
-version: 1.1
+version: 1.2
 changelog:
-  * Fixed: Multiple lanes listening to the same MIDI CC controller with different min/max value ranges now correctly route notes based on the current CC value.
+  * Fixed: Multiple lanes listening to the same MIDI CC controller with different min/max value ranges now correctly route notes based on the current CC value (CC values are now updated for all matching lanes, not just the first one).
   * Right click to toggle "Click" for all lanes
     * If any active lane is disabled, enables all lanes, otherwise disables all lanes.
   * Add buttons to move lane up/down.
@@ -1117,8 +1117,16 @@ while (midirecv(offset,msg1,msg2,msg3)) (
      );
 
      cc_value = msg3;
-     cc_lane = getLaneOfCC(controller, channel);
-     cc_lane != -1 ? setCCValue(cc_lane, cc_value);
+     // Update CC value for all lanes listening to this controller
+     i = 0;
+     while (i < num_lanes) (
+       cc_ctrl = getCCController(i);
+       cc_ctrl != -1 ? (
+         cc_chan = getCCChannel(i);
+         ((cc_chan == 0) || (cc_chan == channel + 1)) && (cc_ctrl == controller) ? setCCValue(i, cc_value);
+       );
+       i += 1;
+     );
    );
    
    // Handle MIDI Note On messages
