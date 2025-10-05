@@ -612,6 +612,12 @@ function setInputChannel(lane, value)
   setSlider(lane, slider_offset_in_channel, value, 0, 16, 0);
 );
 
+// no setter -- output channel for internal testing use only.
+function getOutputChannel(lane)
+(
+  getSlider(lane, slider_offset_output_channel);
+);
+
 function getCCChannel(lane)
 (
   getSlider(lane, slider_offset_cc_channel);
