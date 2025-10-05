@@ -1262,10 +1262,18 @@ function drawEvent(x, y, note, age, cc_status) local(str, tri_size)
   cc_status != 0 ? (
     cc_status > 0 ? (
       // Triangle pointing up (CC too high)
-      gfx_triangle(x, y - tri_size, x - tri_size, y + tri_size, x + tri_size, y + tri_size);
+      gfx_x = x;
+      gfx_y = y - tri_size;
+      gfx_lineto(x - tri_size, y + tri_size);
+      gfx_lineto(x + tri_size, y + tri_size);
+      gfx_lineto(x, y - tri_size);
     ) : (
       // Triangle pointing down (CC too low)
-      gfx_triangle(x, y + tri_size, x - tri_size, y - tri_size, x + tri_size, y - tri_size);
+      gfx_x = x;
+      gfx_y = y + tri_size;
+      gfx_lineto(x - tri_size, y - tri_size);
+      gfx_lineto(x + tri_size, y - tri_size);
+      gfx_lineto(x, y + tri_size);
     );
   ) : (
     // Draw circle for normal events
@@ -1277,9 +1285,17 @@ function drawEvent(x, y, note, age, cc_status) local(str, tri_size)
     cc_status != 0 ? (
       // Outer triangle for fresh events
       cc_status > 0 ? (
-        gfx_triangle(x, y - tri_size - 3, x - tri_size - 3, y + tri_size + 3, x + tri_size + 3, y + tri_size + 3);
+        gfx_x = x;
+        gfx_y = y - tri_size - 3;
+        gfx_lineto(x - tri_size - 3, y + tri_size + 3);
+        gfx_lineto(x + tri_size + 3, y + tri_size + 3);
+        gfx_lineto(x, y - tri_size - 3);
       ) : (
-        gfx_triangle(x, y + tri_size + 3, x - tri_size - 3, y - tri_size - 3, x + tri_size + 3, y - tri_size - 3);
+        gfx_x = x;
+        gfx_y = y + tri_size + 3;
+        gfx_lineto(x - tri_size - 3, y - tri_size - 3);
+        gfx_lineto(x + tri_size + 3, y - tri_size - 3);
+        gfx_lineto(x, y + tri_size + 3);
       );
     ) : (
       gfx_circle(x, y, 7, 0, 0);
