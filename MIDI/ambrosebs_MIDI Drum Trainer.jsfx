@@ -2,7 +2,7 @@ desc: MIDI Drum Trainer
 author: Ambrose Bonnaire-Sergeant
 version: 1.2
 changelog:
-  * Fixed: Multiple lanes listening to the same MIDI CC controller with different min/max value ranges now correctly route notes based on the current CC value (corrected fallback logic).
+  * Fixed: Multiple lanes listening to the same MIDI CC controller with different min/max value ranges now correctly route notes based on the current CC value (CC values are now updated for all matching lanes, not just the first one).
   * Right click to toggle "Click" for all lanes
     * If any active lane is disabled, enables all lanes, otherwise disables all lanes.
   * Add buttons to move lane up/down.
@@ -1037,12 +1037,10 @@ function learnController(controller) local(i)
   );
 );
 
-function getLaneOfNote(note, channel, velocity) local(i, result, in_chan, cc_ctrl, cc_value, cc_min, cc_max, fallback)
+function getLaneOfNote(note, channel, velocity) local(i, result, in_chan, cc_ctrl, cc_value, cc_min, cc_max)
 (
   result = -1;
-  fallback = -1;
   i = 0;
-  // First pass: prioritize lanes with CC controllers that have matching CC values
   while (i < num_lanes && (result == -1)) (
     in_chan = getInputChannel(i);
     ((in_chan == 0) || (in_chan == channel + 1)) &&
@@ -1051,25 +1049,23 @@ function getLaneOfNote(note, channel, velocity) local(i, result, in_chan, cc_ctr
     (velocity >= getInputMinVelocity(i)) &&
     (velocity <= getInputMaxVelocity(i)) ?
       (
+        // Also check CC value range if this lane is monitoring a CC controller
         cc_ctrl = getCCController(i);
         cc_ctrl != -1 ? (
-          // Lane is monitoring a CC controller
           cc_value = getCCValue(i);
           cc_value != -1 ? (
             cc_min = getCCMinValue(i);
             cc_max = getCCMaxValue(i);
-            // Check if CC value is in range
+            // Only assign to this lane if CC value is in range
             (cc_value >= cc_min) && (cc_value <= cc_max) ? result = i;
           );
         ) : (
-          // Lane is not monitoring CC - save as fallback
-          fallback == -1 ? fallback = i;
+          // Lane is not monitoring CC, so assign based on note/velocity only
+          result = i;
         );
       );
     i += 1;
   );
-  // If no CC-matching lane found, use the first lane without CC controller that matched
-  result == -1 ? result = fallback;
   result; 
 );
 
@@ -1121,8 +1117,16 @@ while (midirecv(offset,msg1,msg2,msg3)) (
      );
 
      cc_value = msg3;
-     cc_lane = getLaneOfCC(controller, channel);
-     cc_lane != -1 ? setCCValue(cc_lane, cc_value);
+     // Update CC value for all lanes listening to this controller
+     i = 0;
+     while (i < num_lanes) (
+       cc_ctrl = getCCController(i);
+       cc_ctrl != -1 ? (
+         cc_chan = getCCChannel(i);
+         ((cc_chan == 0) || (cc_chan == channel + 1)) && (cc_ctrl == controller) ? setCCValue(i, cc_value);
+       );
+       i += 1;
+     );
    );
    
    // Handle MIDI Note On messages
