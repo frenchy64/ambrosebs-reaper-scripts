@@ -50,12 +50,18 @@ end
 
 -- Helper: Render JSFX output to new MIDI item and get resulting NOTE events (Note On/Off only)
 local function render_and_get_output_note_events(track)
+  -- Arm the track for recording
   reaper.SetMediaTrackInfo_Value(track, "I_RECARM", 1)
+  -- Set track to record: output (MIDI)
   reaper.SetMediaTrackInfo_Value(track, "I_RECINPUT", 4096)
-  reaper.SetMediaTrackInfo_Value(track, "I_RECMODE", 2)
+  -- Set recording mode: record output (MIDI)
+  reaper.SetMediaTrackInfo_Value(track, "I_RECMODE", 4)
+  -- Start recording (transport: record)
   reaper.Main_OnCommand(1013, 0)
-  -- No Sleep needed
+  -- (No sleep needed between start and stop: in this script context, the process is synchronous/instantaneous)
+  -- Stop recording (transport: stop)
   reaper.Main_OnCommand(1016, 0)
+  -- Get the most recent recorded item (output from FX chain)
   local item = reaper.GetTrackMediaItem(track, reaper.CountTrackMediaItems(track)-1)
   local take = reaper.GetActiveTake(item)
   local events = {}
