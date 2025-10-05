@@ -294,11 +294,13 @@ v_history_rel_time = malloc(max_hist);
 v_history_hits = malloc(max_hist);
 v_history_lane = malloc(max_hist);
 v_history_notes = malloc(max_hist);
+v_history_cc_status = malloc(max_hist);
 memset(v_history_time, 0, max_hist);
 memset(v_history_rel_time, 0, max_hist);
 memset(v_history_hits, 0, max_hist);
 memset(v_history_lane, 0, max_hist);
 memset(v_history_notes, 0, max_hist);
+memset(v_history_cc_status, 0, max_hist);
 v_midi_monitor_last_hit = malloc(4);
 v_play_indices = malloc(4);
 v_play_timers = malloc(4);
@@ -948,13 +950,14 @@ function recordHistogram(reltime, lane)
   v_histogram[histogram_size*lane + 2*bucket] += 1;
 );
 
-function recordHistory(reltime, hit, lane, note)
+function recordHistory(reltime, hit, lane, note, cc_status)
 (
   v_history_time[hist_idx] = time_precise();
   v_history_rel_time[hist_idx] = reltime;
   v_history_hits[hist_idx] = hit;
   v_history_lane[hist_idx] = lane;
   v_history_notes[hist_idx] = note;
+  v_history_cc_status[hist_idx] = cc_status;
   events_count = events_count * hit_memory + 1;
   hits_count = hits_count * hit_memory + (hit==0);
   hit_rate = hits_count/events_count;
@@ -1109,19 +1112,29 @@ while (midirecv(offset,msg1,msg2,msg3)) (
        midisend(offset, msg1, msg2, msg3)
      : (
        reltime = getRelTime(offset);
-       //TODO account for MIDI CC information. It's a "miss" if
-       // a lane is recording MIDI CC information and the MIDI CC value
-       // is out of range when an otherwise-valid "hit" occurs.
-       // Update the GUI to draw a triangle in these cases.
-       // The triangle should point up if the CC value was too high,
-       // and point down if the CC value was too low.
-       // Use the same colors for early/late notes, except use purple
-       // if only the CC value was out of range (and the note was otherwise
-       // going to be a hit).
+       // Check if lane is monitoring CC and if CC value is in range
+       cc_ctrl = getCCController(lane);
+       cc_in_range = 1; // Default to in-range if not monitoring CC
+       cc_status = 0; // 0=ok, 1=too_high, -1=too_low
+       cc_ctrl != -1 ? (
+         cc_value = getCCValue(lane);
+         cc_min = getCCMinValue(lane);
+         cc_max = getCCMaxValue(lane);
+         cc_in_range = (cc_value >= cc_min) && (cc_value <= cc_max);
+         !cc_in_range ? (
+           cc_status = cc_value > cc_max ? 1 : -1;
+         );
+       );
+       
        hit = isHit(modOne(reltime + getRelLatencyCompensation()), lane);
+       
+       // If CC is out of range, convert timing hit (0) to CC miss (2)
+       // or keep timing miss but record CC status for visualization
+       (hit == 0 && !cc_in_range) ? hit = 2;
+       
        hit == 0 ? midisend(offset,msg1,note,msg3);
        decayHistogram(lane);
-       recordHistory(reltime, hit, lane, note);
+       recordHistory(reltime, hit, lane, note, cc_status);
        recordCCFeedback(lane);
        recordHistogram(reltime, lane);
      )
@@ -1241,13 +1254,52 @@ function noteName(note) local(names,sharps,nm,sh,str)
 
 
 fresh_event_thresh = 2;
-function drawEvent(x, y, note, age) local(str)
+function drawEvent(x, y, note, age, cc_status) local(str, tri_size)
 (
-  gfx_circle(x, y, 4, 1, 0);
+  tri_size = 4;
+  
+  // Draw triangle if CC status is set (pointing up if too high, down if too low)
+  cc_status != 0 ? (
+    cc_status > 0 ? (
+      // Triangle pointing up (CC too high)
+      gfx_x = x;
+      gfx_y = y - tri_size;
+      gfx_lineto(x - tri_size, y + tri_size);
+      gfx_lineto(x + tri_size, y + tri_size);
+      gfx_lineto(x, y - tri_size);
+    ) : (
+      // Triangle pointing down (CC too low)
+      gfx_x = x;
+      gfx_y = y + tri_size;
+      gfx_lineto(x - tri_size, y - tri_size);
+      gfx_lineto(x + tri_size, y - tri_size);
+      gfx_lineto(x, y + tri_size);
+    );
+  ) : (
+    // Draw circle for normal events
+    gfx_circle(x, y, 4, 1, 0);
+  );
   
   (age < fresh_event_thresh) ? (
     gfx_a = ((fresh_event_thresh-age)/fresh_event_thresh);
-    gfx_circle(x, y, 7, 0, 0);
+    cc_status != 0 ? (
+      // Outer triangle for fresh events
+      cc_status > 0 ? (
+        gfx_x = x;
+        gfx_y = y - tri_size - 3;
+        gfx_lineto(x - tri_size - 3, y + tri_size + 3);
+        gfx_lineto(x + tri_size + 3, y + tri_size + 3);
+        gfx_lineto(x, y - tri_size - 3);
+      ) : (
+        gfx_x = x;
+        gfx_y = y + tri_size + 3;
+        gfx_lineto(x - tri_size - 3, y - tri_size - 3);
+        gfx_lineto(x + tri_size + 3, y - tri_size - 3);
+        gfx_lineto(x, y + tri_size + 3);
+      );
+    ) : (
+      gfx_circle(x, y, 7, 0, 0);
+    );
   )
 );
 
@@ -1770,19 +1822,26 @@ function drawGrid(lane, l,t,w,h) local(beat_mark_ratio, i, x,y, age, birth, hit,
       birth = v_history_time[i];
       (birth != 0) && (v_history_lane[i] == lane) ? (
         hit = v_history_hits[i];
+        cc_status = v_history_cc_status[i];
         age = min(max_age, now - birth);
+        // Color coding:
+        // hit == 0: green (good hit)
+        // hit == 2: purple (CC out of range, but timing was good)
+        // hit == 1: red (late)
+        // hit == -1: blue (early)
         (hit == 0) ? rgb(0,1,0) : 
+          (hit == 2) ? rgb(0.5,0,0.5) :
           (hit == 1) ? rgb(1,0,0) : rgb(0,0,1);
         x = w_pattern * modOne(v_history_rel_time[i] + getRelLatencyCompensation());
         y = age*20;
         gfx_a = 1 - sqrt(y/h);
         y < h ? (
-          drawEvent(l_pattern+x,t+y, v_history_notes[i], age);
+          drawEvent(l_pattern+x,t+y, v_history_notes[i], age, cc_status);
           rgb(0.5, 0.5, 0.5);
           (x < w_margin) ?
-            drawEvent(l_pattern+w_pattern+x,t+y, v_history_notes[i], age);
+            drawEvent(l_pattern+w_pattern+x,t+y, v_history_notes[i], age, cc_status);
           (x >= w_pattern - w_margin) ?
-            drawEvent(l_pattern-w_pattern+x,t+y, v_history_notes[i], age);
+            drawEvent(l_pattern-w_pattern+x,t+y, v_history_notes[i], age, cc_status);
         );
         age == max_age ? (v_history_time[i] = 0);
       );
