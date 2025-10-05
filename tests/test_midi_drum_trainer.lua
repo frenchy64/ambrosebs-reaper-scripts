@@ -30,13 +30,12 @@ local function set_lane_output_channels(track, fx_idx, lanes)
   local max_val = 16
   for i = 0, #lanes - 1 do
     -- Calculate slider index for lane output channel
-    local slider_idx = get_lane_slider_index(lane, slider_offset_output_channel)
+    local slider_idx = get_lane_slider_index(i, slider_offset_output_channel)
     -- Value to set: for testing, lane 0 outputs on ch 0, lane 1 on ch 1, etc. (slider value = lane index + 1)
     local desired_value = i + 1
     -- Normalize value to [0,1] for TrackFX_SetParam API
     -- normalization: (value - min) / (max - min)
-    --local normalized_value = (desired_value - min_val) / (max_val - min_val)
-    local normalized_value = 0.5
+    local normalized_value = (desired_value - min_val) / (max_val - min_val)
     -- Note: Since the slider is <0,16,1>, max_val is 16, and there are 17 valid integer steps (0 through 16)
     reaper.TrackFX_SetParam(track, fx_idx, slider_idx, normalized_value)
     -- Debug: print the actual parameter value after setting
