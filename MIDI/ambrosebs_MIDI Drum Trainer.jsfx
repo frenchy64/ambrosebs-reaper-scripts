@@ -1,8 +1,8 @@
 desc: MIDI Drum Trainer
 author: Ambrose Bonnaire-Sergeant
-version: 1.1
+version: 1.2
 changelog:
-  * Fixed: Multiple lanes listening to the same MIDI CC controller with different min/max value ranges now correctly route notes based on the current CC value.
+  * Fixed: Multiple lanes listening to the same MIDI CC controller with different min/max value ranges now correctly route notes based on the current CC value (corrected fallback logic).
   * Right click to toggle "Click" for all lanes
     * If any active lane is disabled, enables all lanes, otherwise disables all lanes.
   * Add buttons to move lane up/down.
