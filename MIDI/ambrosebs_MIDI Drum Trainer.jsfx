@@ -1515,7 +1515,8 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     button_drag_dir != button_drag_value ? (
       button_drag_value = button_drag_dir;
       button_drag_prev_y = mouse_y;
-      button_drag_occurred = 1; // Mark that a drag occurred
+      // Only mark as drag if total movement exceeds threshold (5 pixels)
+      abs(button_drag_orig_y - mouse_y) >= 5 ? button_drag_occurred = 1;
     ) : button_drag_dir = 0;
   ) : (active_control > 0 && (active_control % 1000 >= 3) && !(mouse_cap & 1)) ? (
     // Reset when mouse button released
