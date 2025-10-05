@@ -1437,7 +1437,8 @@ function drawButton(lane, id, w, h, str, state) local(strw, strh, focus, button_
   w=max(w,strw+8);
   button_id = controlId(lane, id);
   !active_control && isMouseInRect(l,t,w,h) && mouse_cap & 1 ? active_control = button_id;
-  focus = (!active_control || active_control == button_id) && isMouseInRect(l,t,w,h);
+  // Keep button in focus during drag even if mouse moves outside bounds
+  focus = (!active_control || active_control == button_id) && (isMouseInRect(l,t,w,h) || (active_control == button_id && mouse_cap & 1));
   focus_brightness = 0.1 * focus;
   state_brightness = 0.1 * state;
   press_brightness = 0.2 * focus * (mouse_cap & 1);
