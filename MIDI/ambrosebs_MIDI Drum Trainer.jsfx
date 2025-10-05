@@ -1111,6 +1111,20 @@ isPlaying() ? (
   getClick(7) && (num_lanes>7) ? playGrid(7);
 );
 
+// Helper for sending Note On/Off with lane output channel consideration
+function send_lane_midi(lane, offset, msg1, msg2, msg3)
+local(out_chan_slider, out_chan, out_status)
+(
+  out_chan_slider = getOutputChannel(lane); // 0: preserve input channel, >0: force out channel
+  out_chan = msg1 & 0x0f; // input channel by default
+  out_status = msg1;
+  out_chan_slider > 0 ? (
+    out_chan = out_chan_slider - 1; // 1=ch0, 2=ch1, ..., 16=ch15
+    out_status = (msg1 & 0xf0) | out_chan;
+  );
+  midisend(offset, out_status, msg2, msg3);
+);
+
 while (midirecv(offset,msg1,msg2,msg3)) (
    noteStatus = msg1 & 0xF0;
    channel = msg1 & 0x0F;
@@ -1156,6 +1170,7 @@ while (midirecv(offset,msg1,msg2,msg3)) (
        midisend(offset, msg1, msg2, msg3)
      )
      : lane < 0 ?
+       //FIXME why is this MIDI message being forwarded even though it matches no lanes?
        midisend(offset, msg1, msg2, msg3)
      : (
        reltime = getRelTime(offset);
@@ -1183,7 +1198,7 @@ while (midirecv(offset,msg1,msg2,msg3)) (
        // or keep timing miss but record CC status for visualization
        (hit == 0 && !cc_in_range) ? hit = 2;
        
-       hit == 0 ? midisend(offset,msg1,note,msg3);
+       hit == 0 ? send_lane_midi(lane,offset,msg1,note,msg3);
        decayHistogram(lane);
        recordHistory(reltime, hit, lane, note, cc_status);
        recordCCFeedback(lane);
