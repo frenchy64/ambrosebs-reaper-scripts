@@ -1,0 +1,32 @@
+desc: MIDI CC Generator & Note Passthru
+author: Ambrose Bonnaire-Sergeant
+version: 1.0
+about:
+  # MIDI CC Generator & Note Passthru
+
+  A tool to generate MIDI CC messages and passthru note on/off events.
+  Useful for testing purposes.
+
+slider1:1<1,16,1>Channel
+slider2:1<0,127,1>CC Number
+slider3:0<0,127,1>CC Value
+slider4:1<0,1,1{Off,On}>Send CC every block
+
+@block
+// If slider4 is On, send the CC every block
+slider4 ? (
+  midisend(0, 0xB0 + slider1 - 1, slider2, slider3);
+);
+
+while (
+  midirecv(offset,msg1,msg2,msg3) ?
+    (
+      noteStatus = msg1 & 0xF0;
+      // Pass through all note on/off events from MIDI keyboard
+      (noteStatus == 0x90 || noteStatus == 0x80) ?
+        midisend(offset,msg1,msg2,msg3)
+      :
+        // Do not pass through CCs or other messages to avoid confusion
+        0;
+    );
+);
