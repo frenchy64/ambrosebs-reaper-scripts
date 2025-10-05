@@ -1493,6 +1493,43 @@ function inputChannelButtonToolTip(chan, tip, focus)
     )
 );
 
+function activeButtonControl() local(control_type)
+(
+  control_type = active_control % 1000;
+  (control_type != control_phase) && (control_type != control_swing);
+);
+
+// Calculate vertical drag direction for buttons
+function buttonDragDirection() local(button_drag_dir)
+(
+  button_drag_dir = 0;
+  // Only apply to button controls
+  activeButtonControl ? (
+    button_drag_orig_y && (mouse_y != button_drag_prev_y) && (mouse_cap & 1) ? (
+      button_drag_dir = floor((button_drag_orig_y - mouse_y) / 5); // 5 pixels = 1 step, inverted (up = positive)
+      button_drag_dir != button_drag_value ? (
+        button_drag_value = button_drag_dir;
+        button_drag_prev_y = mouse_y;
+        // Only mark as drag if total movement exceeds threshold (5 pixels)
+        abs(button_drag_orig_y - mouse_y) >= 5 ? button_drag_occurred = 1;
+      ) : button_drag_dir = 0;
+    ) : (active_control > 0 && !(mouse_cap & 1)) ? (
+      // Reset when mouse button released
+      button_drag_orig_y = 0;
+      button_drag_value = 0;
+      button_drag_prev_y = 0;
+      button_drag_occurred = 0;
+    ) : ((mouse_cap & 1) && button_drag_orig_y == 0) ? (
+      // Initialize on button press
+      button_drag_orig_y = mouse_y;
+      button_drag_prev_y = mouse_y;
+      button_drag_value = 0;
+      button_drag_occurred = 0;
+    );
+  );
+  button_drag_dir;
+);
+
 function drawToolBar(lane, l, t, w, h)
 local(left_button_release, right_button_release, focus_expand_toolbar, focus_div_up, focus_div_down, focus_div, focus_click_vel_up, focus_click_vel_down, focus_click_vel,
       focus_toggle_click, focus_click_note, focus_in_channel_up, focus_in_channel_down, focus_in_channel, focus_in_max_note, focus_in_min_note,
@@ -1506,31 +1543,7 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
   left_button_release = isLButtonRelease();
   right_button_release = isRButtonRelease();
   mouse_wheel_dir = mouse_wheel / 120;
-  
-  // Calculate vertical drag direction for buttons
-  // Only apply to button controls (control_button_* >= 3), not phase/swing (1-2)
-  button_drag_dir = 0;
-  (mouse_y != button_drag_prev_y) && (active_control > 0) && (active_control % 1000 >= 3) && (mouse_cap & 1) ? (
-    button_drag_dir = floor((button_drag_orig_y - mouse_y) / 5); // 5 pixels = 1 step, inverted (up = positive)
-    button_drag_dir != button_drag_value ? (
-      button_drag_value = button_drag_dir;
-      button_drag_prev_y = mouse_y;
-      // Only mark as drag if total movement exceeds threshold (5 pixels)
-      abs(button_drag_orig_y - mouse_y) >= 5 ? button_drag_occurred = 1;
-    ) : button_drag_dir = 0;
-  ) : (active_control > 0 && (active_control % 1000 >= 3) && !(mouse_cap & 1)) ? (
-    // Reset when mouse button released
-    button_drag_orig_y = 0;
-    button_drag_value = 0;
-    button_drag_prev_y = 0;
-    button_drag_occurred = 0;
-  ) : (active_control > 0 && (active_control % 1000 >= 3) && (mouse_cap & 1) && button_drag_orig_y == 0) ? (
-    // Initialize on button press
-    button_drag_orig_y = mouse_y;
-    button_drag_prev_y = mouse_y;
-    button_drag_value = 0;
-    button_drag_occurred = 0;
-  );
+  button_drag_dir = buttonDragDirection();
   expand_toolbar ? (
     rgb(0,0,0);
     gfx_a = 0.6;
