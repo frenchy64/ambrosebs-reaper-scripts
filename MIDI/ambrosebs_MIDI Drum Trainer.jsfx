@@ -626,6 +626,7 @@ function setCCController(lane, value)
 
 // Returns the latest known value for the lane's controller.
 // If getCCController(lane) is -1, returns garbage as the lane is not listening to any controller.
+// Returns -1 if CC controller has not yet been recorded.
 function getCCValue(lane)
 (
   getSlider(lane, slider_offset_cc_value);
@@ -1052,10 +1053,12 @@ function getLaneOfNote(note, channel, velocity) local(i, result, in_chan, cc_ctr
         cc_ctrl = getCCController(i);
         cc_ctrl != -1 ? (
           cc_value = getCCValue(i);
-          cc_min = getCCMinValue(i);
-          cc_max = getCCMaxValue(i);
-          // Only assign to this lane if CC value is in range
-          (cc_value >= cc_min) && (cc_value <= cc_max) ? result = i;
+          cc_value != -1 ? (
+            cc_min = getCCMinValue(i);
+            cc_max = getCCMaxValue(i);
+            // Only assign to this lane if CC value is in range
+            (cc_value >= cc_min) && (cc_value <= cc_max) ? result = i;
+          );
         ) : (
           // Lane is not monitoring CC, so assign based on note/velocity only
           result = i;
@@ -1138,6 +1141,10 @@ while (midirecv(offset,msg1,msg2,msg3)) (
        cc_in_range = 1; // Default to in-range if not monitoring CC
        cc_status = 0; // 0=ok, 1=too_high, -1=too_low
        cc_ctrl != -1 ? (
+         //TODO handle the case where we haven't recorded a value for this controller yet.
+         // cc_value will be -1 in this case.
+         // Some distinct visual feedback would be nice, like a question mark shape being used
+         // for that note.
          cc_value = getCCValue(lane);
          cc_min = getCCMinValue(lane);
          cc_max = getCCMaxValue(lane);
