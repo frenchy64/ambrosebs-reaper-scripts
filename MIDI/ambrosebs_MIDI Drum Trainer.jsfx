@@ -1,7 +1,8 @@
 desc: MIDI Drum Trainer
 author: Ambrose Bonnaire-Sergeant
-version: 1.0
+version: 1.1
 changelog:
+  * Fixed: Multiple lanes listening to the same MIDI CC controller with different min/max value ranges now correctly route notes based on the current CC value.
   * Right click to toggle "Click" for all lanes
     * If any active lane is disabled, enables all lanes, otherwise disables all lanes.
   * Add buttons to move lane up/down.
@@ -1035,7 +1036,7 @@ function learnController(controller) local(i)
   );
 );
 
-function getLaneOfNote(note, channel, velocity) local(i, result, in_chan)
+function getLaneOfNote(note, channel, velocity) local(i, result, in_chan, cc_ctrl, cc_value, cc_min, cc_max)
 (
   result = -1;
   i = 0;
@@ -1046,7 +1047,20 @@ function getLaneOfNote(note, channel, velocity) local(i, result, in_chan)
     (note <= getInputMaxNote(i)) &&
     (velocity >= getInputMinVelocity(i)) &&
     (velocity <= getInputMaxVelocity(i)) ?
-      result = i;
+      (
+        // Also check CC value range if this lane is monitoring a CC controller
+        cc_ctrl = getCCController(i);
+        cc_ctrl != -1 ? (
+          cc_value = getCCValue(i);
+          cc_min = getCCMinValue(i);
+          cc_max = getCCMaxValue(i);
+          // Only assign to this lane if CC value is in range
+          (cc_value >= cc_min) && (cc_value <= cc_max) ? result = i;
+        ) : (
+          // Lane is not monitoring CC, so assign based on note/velocity only
+          result = i;
+        );
+      );
     i += 1;
   );
   result; 
