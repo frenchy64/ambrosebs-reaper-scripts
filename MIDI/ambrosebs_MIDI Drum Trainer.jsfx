@@ -286,6 +286,7 @@ hist_idx = 0;
 button_drag_orig_y = 0;
 button_drag_prev_y = 0;
 button_drag_value = 0;
+button_drag_occurred = 0;
 
 heap_top = 0;
 
@@ -1514,17 +1515,20 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     button_drag_dir != button_drag_value ? (
       button_drag_value = button_drag_dir;
       button_drag_prev_y = mouse_y;
+      button_drag_occurred = 1; // Mark that a drag occurred
     ) : button_drag_dir = 0;
   ) : (active_control > 0 && (active_control % 1000 >= 3) && !(mouse_cap & 1)) ? (
     // Reset when mouse button released
     button_drag_orig_y = 0;
     button_drag_value = 0;
     button_drag_prev_y = 0;
+    button_drag_occurred = 0;
   ) : (active_control > 0 && (active_control % 1000 >= 3) && (mouse_cap & 1) && button_drag_orig_y == 0) ? (
     // Initialize on button press
     button_drag_orig_y = mouse_y;
     button_drag_prev_y = mouse_y;
     button_drag_value = 0;
+    button_drag_occurred = 0;
   );
   expand_toolbar ? (
     rgb(0,0,0);
@@ -1602,8 +1606,8 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     drawText(0, h, "->");
     focus_cc_max_value = drawButton(lane, control_button_cc_max_value, button_width*1.5, h, sprintf(#, "%d", cc_max_value), 0);
 
-    // Perform left-click side effects on buttons
-    left_button_release ? (
+    // Perform left-click side effects on buttons (only if no drag occurred)
+    left_button_release && !button_drag_occurred ? (
       focus_cc_channel_down      ? setCCChannel(lane, getCCChannel(lane)-1)
       : focus_cc_channel_up      ? setCCChannel(lane, getCCChannel(lane)+1)
       : focus_cc_controller      ? toggleListen(control_button_cc_controller_id)
