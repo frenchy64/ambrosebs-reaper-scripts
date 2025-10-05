@@ -1504,7 +1504,7 @@ function buttonDragDirection() local(button_drag_dir)
 (
   button_drag_dir = 0;
   // Only apply to button controls
-  activeButtonControl ? (
+  activeButtonControl() ? (
     button_drag_orig_y && (mouse_y != button_drag_prev_y) && (mouse_cap & 1) ? (
       button_drag_dir = floor((button_drag_orig_y - mouse_y) / 5); // 5 pixels = 1 step, inverted (up = positive)
       button_drag_dir != button_drag_value ? (
