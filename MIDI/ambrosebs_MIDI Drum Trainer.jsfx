@@ -1496,7 +1496,7 @@ function inputChannelButtonToolTip(chan, tip, focus)
 function activeButtonControl() local(control_type)
 (
   control_type = active_control % 1000;
-  (control_type != control_phase) && (control_type != control_swing);
+  active_control && (control_type != control_phase) && (control_type != control_swing);
 );
 
 // Calculate vertical drag direction for buttons
