@@ -78,6 +78,7 @@ slider30:-1<-1,127,1>-CCController1
 slider31:-1<-1,127,1>-CCValue1
 slider32:0<0,127,1>-CCMinValue1
 slider33:127<0,127,1>-CCMaxValue1
+slider34:0<0,16,1>-OutputChannel1
 
 slider46:8<1,32,1>-Divisions2
 slider47:0<-0.91666, 0.91666,0.01>-Swing2
@@ -97,6 +98,7 @@ slider60:-1<-1,127,1>-CCController2
 slider61:-1<-1,127,1>-CCValue2
 slider62:0<0,127,1>-CCMinValue2
 slider63:127<0,127,1>-CCMaxValue2
+slider64:0<0,16,1>-OutputChannel2
 
 slider76:8<1,32,1>-Divisions3
 slider77:0<-0.91666, 0.91666,0.01>-Swing3
@@ -116,6 +118,7 @@ slider90:-1<-1,127,1>-CCController3
 slider91:-1<-1,127,1>-CCValue3
 slider92:0<0,127,1>-CCMinValue3
 slider93:127<0,127,1>-CCMaxValue3
+slider94:0<0,16,1>-OutputChannel3
 
 slider106:8<1,32,1>-Divisions4
 slider107:0<-0.91666, 0.91666,0.01>-Swing4
@@ -135,6 +138,7 @@ slider120:-1<-1,127,1>-CCController4
 slider121:-1<-1,127,1>-CCValue4
 slider122:0<0,127,1>-CCMinValue4
 slider123:127<0,127,1>-CCMaxValue4
+slider124:0<0,16,1>-OutputChannel4
 
 slider136:8<1,32,1>-Divisions5
 slider137:0<-0.91666, 0.91666,0.01>-Swing5
@@ -154,6 +158,7 @@ slider151:-1<-1,127,1>-CCController5
 slider152:-1<-1,127,1>-CCValue5
 slider153:0<0,127,1>-CCMinValue5
 slider154:127<0,127,1>-CCMaxValue5
+slider155:0<0,16,1>-OutputChannel5
 
 slider166:8<1,32,1>-Divisions6
 slider167:0<-0.91666, 0.91666,0.01>-Swing6
@@ -173,6 +178,7 @@ slider180:-1<-1,127,1>-CCController5
 slider181:-1<-1,127,1>-CCValue6
 slider182:0<0,127,1>-CCMinValue6
 slider183:127<0,127,1>-CCMaxValue6
+slider184:0<0,16,1>-OutputChannel6
 
 slider196:8<1,32,1>-Divisions7
 slider197:0<-0.91666, 0.91666,0.01>-Swing7
@@ -192,6 +198,7 @@ slider210:-1<-1,127,1>-CCController7
 slider211:-1<-1,127,1>-CCValue7
 slider212:0<0,127,1>-CCMinValue7
 slider213:127<0,127,1>-CCMaxValue7
+slider214:0<0,16,1>-OutputChannel7
 
 slider226:8<1,32,1>-Divisions8
 slider227:0<-0.91666, 0.91666,0.01>-Swing8
@@ -211,6 +218,7 @@ slider240:-1<-1,127,1>-CCController8
 slider241:-1<-1,127,1>-CCValue8
 slider242:0<0,127,1>-CCMinValue8
 slider243:127<0,127,1>-CCMaxValue8
+slider244:0<0,16,1>-OutputChannel8
 
 @init
 note_on = $x90;
@@ -240,8 +248,9 @@ slider_offset_cc_controller = 14;
 slider_offset_cc_value = 15;
 slider_offset_cc_min_value = 16;
 slider_offset_cc_max_value = 17;
+slider_offset_output_channel = 18;
 // Update sliders_used_per_lane when adding more sliders per lane
-sliders_used_per_lane = 18;
+sliders_used_per_lane = 19;
 
 control_phase = 1;
 control_swing = 2;
