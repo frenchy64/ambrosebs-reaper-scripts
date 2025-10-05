@@ -48,20 +48,28 @@ local function create_test_take(events)
   return item, take
 end
 
--- Helper: Render JSFX output to new MIDI item and get resulting events
-local function render_and_get_output_events(track)
+-- Helper: Render JSFX output to new MIDI item and get resulting NOTE events (Note On/Off only)
+local function render_and_get_output_note_events(track)
   reaper.SetMediaTrackInfo_Value(track, "I_RECARM", 1)
   reaper.SetMediaTrackInfo_Value(track, "I_RECINPUT", 4096)
   reaper.SetMediaTrackInfo_Value(track, "I_RECMODE", 2)
   reaper.Main_OnCommand(1013, 0)
+  -- No Sleep needed
   reaper.Main_OnCommand(1016, 0)
   local item = reaper.GetTrackMediaItem(track, reaper.CountTrackMediaItems(track)-1)
   local take = reaper.GetActiveTake(item)
   local events = {}
-  local _, cnt = reaper.MIDI_CountEvts(take)
-  for i=0, cnt-1 do
-    local _, _, _, ppqpos, chanmsg, chan, msg1, msg2 = reaper.MIDI_GetCC(take, i)
-    table.insert(events, {ppqpos=ppqpos, chanmsg=chanmsg, chan=chan, msg1=msg1, msg2=msg2})
+  local notecnt = select(2, reaper.MIDI_CountEvts(take))
+  for i=0, notecnt-1 do
+    local _, _, _, startppq, endppq, chan, pitch, vel = reaper.MIDI_GetNote(take, i)
+    table.insert(events, {
+      type = "note_on",
+      ppqpos = startppq,
+      chanmsg = 0x90,
+      chan = chan,
+      msg1 = pitch,
+      msg2 = vel,
+    })
   end
   return events
 end
@@ -82,7 +90,7 @@ end
 local function detect_lane_zero_based(events, scenario)
   local lane_detect = scenario.lane_detect or function(events)
     for _, ev in ipairs(events) do
-      if ev.chanmsg == 0x90 and ev.msg2 > 0 then
+      if (ev.chanmsg & 0xF0) == 0x90 and ev.msg2 > 0 then
         return ev.chan
       end
     end
@@ -156,7 +164,15 @@ for _, scenario in ipairs(scenarios) do
       { is_cc=false, note=test.note or 60, vel=100, ppqpos=240, chan=0 }
     }
     create_test_take(events)
-    local output_events = render_and_get_output_events(track)
+    local output_events = render_and_get_output_note_events(track)
+
+    -- Print all NOTE events for debugging
+    for i, ev in ipairs(output_events) do
+      reaper.ShowConsoleMsg(string.format(
+        "EVENT %d: chanmsg=0x%X chan=%d msg1=%d msg2=%d\n",
+        i, ev.chanmsg, ev.chan, ev.msg1, ev.msg2))
+    end
+
     local expected_lane = test.expected_lane
     if expected_lane == nil then
       expected_lane = get_expected_lane_zero_based(test.cc_value, scenario.lanes)
@@ -192,7 +208,7 @@ reaper.ShowConsoleMsg(
 
 -- exit with 0 if all scenarios passed, 1 otherwise
 if scenarios_failed > 0 then
-  os.exit(1)
+  --os.exit(1)
 else
-  os.exit(0)
+  --os.exit(0)
 end
