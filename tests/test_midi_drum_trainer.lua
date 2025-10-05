@@ -1,6 +1,11 @@
 -- Data-driven JSFX Drum Trainer test script for REAPER
 -- Now supports per-lane output channel mapping via hidden JSFX sliders.
 
+-- The following are named exactly after the JSFX globals:
+local sliders_per_lane = 30
+local first_lane_slider = 16
+local slider_offset_output_channel = 18
+
 -- Helper: Insert and configure JSFX, returning track and fx index
 local function setup_jsfx_on_new_track(jsfx_name)
   reaper.Main_OnCommand(40001, 0)
@@ -10,21 +15,13 @@ local function setup_jsfx_on_new_track(jsfx_name)
   return track, fx_idx
 end
 
--- Set per-lane output channel sliders for testing mode
+-- Set per-lane output channel sliders for testing mode using offsets matching the JSFX script
 local function set_lane_output_channels(track, fx_idx, lanes)
-  -- Estimate: output channel sliders are added after existing per-lane sliders.
-  -- From the original script, per-lane slots go: 
-  --   in_channel, cc_channel, cc_controller, cc_value, cc_min_value, cc_max_value,
-  --   in_min_note, in_max_note, in_min_velocity, in_max_velocity, ... (10 per lane)
-  -- So if N lanes: first per-lane slider = 0, lane 2 = 10, lane 3 = 20, ...
-  -- Hypothetically, output_channel is at offset 10 per lane (i.e. the 11th slider per lane, zero-based).
-  -- So, for lane i (zero-based): slider idx = i*11 + 10
-  local per_lane_slider_count = 11 -- 10 previous plus 1 output_channel per lane
-  local output_chan_slider_offset = 10
-  for i=0,#lanes-1 do
-    local slider_idx = i * per_lane_slider_count + output_chan_slider_offset
+  for i = 0, #lanes - 1 do
+    -- Calculate slider index for lane output channel
+    local slider_idx = first_lane_slider + i * sliders_per_lane + slider_offset_output_channel
     -- For testing: lane 0 outputs on ch 0, lane 1 on ch 1, etc. (slider value = lane index + 1)
-    reaper.TrackFX_SetParam(track, fx_idx, slider_idx, i+1)
+    reaper.TrackFX_SetParam(track, fx_idx, slider_idx, i + 1)
   end
 end
 
@@ -141,8 +138,16 @@ local scenarios = {
   }
 }
 
+local total_scenarios = #scenarios
+local scenarios_passed = 0
+local scenarios_failed = 0
+local total_tests = 0
+local tests_passed = 0
+local tests_failed = 0
+
 for _, scenario in ipairs(scenarios) do
   reaper.ShowConsoleMsg("==== Running Scenario: " .. scenario.name .. " ====\n")
+  local all_pass = true
   for _, test in ipairs(scenario.tests) do
     cleanup()
     local track, fx_idx = setup_jsfx_on_new_track(scenario.jsfx_name or "ambrosebs_MIDI Drum Trainer")
@@ -159,12 +164,36 @@ for _, scenario in ipairs(scenarios) do
     end
     local detected = detect_lane_zero_based(output_events, scenario)
     local pass = detected == expected_lane
+    if pass then
+      tests_passed = tests_passed + 1
+    else
+      all_pass = false
+      tests_failed = tests_failed + 1
+    end
+    total_tests = total_tests + 1
     local expected_str = expected_lane == nil and "no lane" or ("lane " .. tostring(expected_lane))
     local got_str = detected == nil and "no lane" or ("lane " .. tostring(detected))
     reaper.ShowConsoleMsg(test.name .. ": " .. (pass and "PASS" or "FAIL") ..
       " (Expected " .. expected_str .. ", got " .. got_str .. ")\n")
   end
+  if all_pass then
+    scenarios_passed = scenarios_passed + 1
+  else
+    scenarios_failed = scenarios_failed + 1
+  end
   reaper.ShowConsoleMsg("==== End Scenario: " .. scenario.name .. " ====\n\n")
 end
 
-reaper.ShowConsoleMsg("All scenarios and tabular tests complete.\n")
+reaper.ShowConsoleMsg(
+  string.format(
+    "Test results: %d/%d scenarios passed, %d/%d tests passed.\n",
+    scenarios_passed, total_scenarios, tests_passed, total_tests
+  )
+)
+
+-- exit with 0 if all scenarios passed, 1 otherwise
+if scenarios_failed > 0 then
+  os.exit(1)
+else
+  os.exit(0)
+end
