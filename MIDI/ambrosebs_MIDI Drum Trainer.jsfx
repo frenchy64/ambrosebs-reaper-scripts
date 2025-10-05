@@ -269,6 +269,7 @@ control_button_cc_channel_down = 24;
 control_button_cc_controller = 25;
 control_button_cc_min_value = 26;
 control_button_cc_max_value = 27;
+control_button_expand = 28;
 // allowed up to 999 of these control_* variables until we need to update controlId().
 
 hist_idx = 0;
@@ -280,6 +281,12 @@ prev_select = -1;
 histogram_buckets = 1024;
 histogram_size = histogram_buckets*2;
 hist_idx = 0;
+
+// Button drag tracking
+button_drag_orig_y = 0;
+button_drag_prev_y = 0;
+button_drag_value = 0;
+button_drag_occurred = 0;
 
 heap_top = 0;
 
@@ -1431,7 +1438,8 @@ function drawButton(lane, id, w, h, str, state) local(strw, strh, focus, button_
   w=max(w,strw+8);
   button_id = controlId(lane, id);
   !active_control && isMouseInRect(l,t,w,h) && mouse_cap & 1 ? active_control = button_id;
-  focus = (!active_control || active_control == button_id) && isMouseInRect(l,t,w,h);
+  // Keep button in focus during drag even if mouse moves outside bounds
+  focus = (!active_control || active_control == button_id) && (isMouseInRect(l,t,w,h) || (active_control == button_id && mouse_cap & 1));
   focus_brightness = 0.1 * focus;
   state_brightness = 0.1 * state;
   press_brightness = 0.2 * focus * (mouse_cap & 1);
@@ -1485,6 +1493,43 @@ function inputChannelButtonToolTip(chan, tip, focus)
     )
 );
 
+function activeButtonControl() local(control_type)
+(
+  control_type = active_control % 1000;
+  active_control && (control_type != control_phase) && (control_type != control_swing);
+);
+
+// Calculate vertical drag direction for buttons
+function buttonDragDirection() local(button_drag_dir)
+(
+  button_drag_dir = 0;
+  // Only apply to button controls
+  activeButtonControl() ? (
+    button_drag_orig_y && (mouse_y != button_drag_prev_y) && (mouse_cap & 1) ? (
+      button_drag_dir = floor((button_drag_orig_y - mouse_y) / 5); // 5 pixels = 1 step, inverted (up = positive)
+      button_drag_dir != button_drag_value ? (
+        button_drag_value = button_drag_dir;
+        button_drag_prev_y = mouse_y;
+        // Only mark as drag if total movement exceeds threshold (5 pixels)
+        abs(button_drag_orig_y - mouse_y) >= 5 ? button_drag_occurred = 1;
+      ) : button_drag_dir = 0;
+    ) : (active_control > 0 && !(mouse_cap & 1)) ? (
+      // Reset when mouse button released
+      button_drag_orig_y = 0;
+      button_drag_value = 0;
+      button_drag_prev_y = 0;
+      button_drag_occurred = 0;
+    ) : ((mouse_cap & 1) && button_drag_orig_y == 0) ? (
+      // Initialize on button press
+      button_drag_orig_y = mouse_y;
+      button_drag_prev_y = mouse_y;
+      button_drag_value = 0;
+      button_drag_occurred = 0;
+    );
+  );
+  button_drag_dir;
+);
+
 function drawToolBar(lane, l, t, w, h)
 local(left_button_release, right_button_release, focus_expand_toolbar, focus_div_up, focus_div_down, focus_div, focus_click_vel_up, focus_click_vel_down, focus_click_vel,
       focus_toggle_click, focus_click_note, focus_in_channel_up, focus_in_channel_down, focus_in_channel, focus_in_max_note, focus_in_min_note,
@@ -1492,12 +1537,13 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
       button_width, click_note, can_move_lane_up, can_move_lane_down, can_delete_lane, focus_cc_channel_up, focus_cc_channel_down,
       min_note, max_note, control_button_click_note_id, control_button_in_max_note_id, control_button_in_min_note_id,
       cc_controller, focus_cc_controller, control_button_cc_controller_id, cc_controller_label,
-      cc_min_value, cc_max_value, focus_cc_min_value, focus_cc_max_value)
+      cc_min_value, cc_max_value, focus_cc_min_value, focus_cc_max_value, button_drag_dir)
 (
   gfx_setfont(1, "Arial", 14);
   left_button_release = isLButtonRelease();
   right_button_release = isRButtonRelease();
   mouse_wheel_dir = mouse_wheel / 120;
+  button_drag_dir = buttonDragDirection();
   expand_toolbar ? (
     rgb(0,0,0);
     gfx_a = 0.6;
@@ -1574,8 +1620,8 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
     drawText(0, h, "->");
     focus_cc_max_value = drawButton(lane, control_button_cc_max_value, button_width*1.5, h, sprintf(#, "%d", cc_max_value), 0);
 
-    // Perform left-click side effects on buttons
-    left_button_release ? (
+    // Perform left-click side effects on buttons (only if no drag occurred)
+    left_button_release && !button_drag_occurred ? (
       focus_cc_channel_down      ? setCCChannel(lane, getCCChannel(lane)-1)
       : focus_cc_channel_up      ? setCCChannel(lane, getCCChannel(lane)+1)
       : focus_cc_controller      ? toggleListen(control_button_cc_controller_id)
@@ -1603,26 +1649,26 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
       focus_toggle_click ? toggleClickAllLanes()
     );
 
-    // Perform mouse-wheel side effects on buttons
-    mouse_wheel_dir ? (
-      focus_cc_channel      ? setCCChannel(lane, getCCChannel(lane)+mouse_wheel_dir)
-      : focus_cc_min_value  ? setCCMinValue(lane, cc_min_value+mouse_wheel_dir)
-      : focus_cc_max_value  ? setCCMaxValue(lane, cc_max_value+mouse_wheel_dir)
-      : focus_click_channel ? setClickChannel(lane, getClickChannel(lane)+mouse_wheel_dir)
-      : focus_click_note    ? setClickNote(lane, click_note+mouse_wheel_dir)
-      : focus_click_vel     ? setClickVel(lane, getClickVel(lane)+mouse_wheel_dir)
-      : focus_div           ? setDivs(lane, getDivs(lane)+mouse_wheel_dir)
-      : focus_in_channel    ? setInputChannel(lane, getInputChannel(lane)+mouse_wheel_dir)
-      : focus_in_max_note   ? setInputMaxNote(lane, max_note+mouse_wheel_dir)
-      : focus_in_min_note   ? setInputMinNote(lane, min_note+mouse_wheel_dir)
-      : focus_toggle_click  ? setClick(lane, mouse_wheel_dir);
+    // Perform mouse-wheel and drag side effects on buttons
+    (mouse_wheel_dir || button_drag_dir) ? (
+      focus_cc_channel      ? setCCChannel(lane, getCCChannel(lane)+mouse_wheel_dir+button_drag_dir)
+      : focus_cc_min_value  ? setCCMinValue(lane, cc_min_value+mouse_wheel_dir+button_drag_dir)
+      : focus_cc_max_value  ? setCCMaxValue(lane, cc_max_value+mouse_wheel_dir+button_drag_dir)
+      : focus_click_channel ? setClickChannel(lane, getClickChannel(lane)+mouse_wheel_dir+button_drag_dir)
+      : focus_click_note    ? setClickNote(lane, click_note+mouse_wheel_dir+button_drag_dir)
+      : focus_click_vel     ? setClickVel(lane, getClickVel(lane)+mouse_wheel_dir+button_drag_dir)
+      : focus_div           ? setDivs(lane, getDivs(lane)+mouse_wheel_dir+button_drag_dir)
+      : focus_in_channel    ? setInputChannel(lane, getInputChannel(lane)+mouse_wheel_dir+button_drag_dir)
+      : focus_in_max_note   ? setInputMaxNote(lane, max_note+mouse_wheel_dir+button_drag_dir)
+      : focus_in_min_note   ? setInputMinNote(lane, min_note+mouse_wheel_dir+button_drag_dir)
+      : focus_toggle_click  ? setClick(lane, mouse_wheel_dir+button_drag_dir);
 
-      // Disable mouse-wheel for note-listening buttons when learning
+      // Disable mouse-wheel and drag for note-listening buttons when learning
       !listen_note_control ? (
-        focus_click_note      ? setClickNote(lane, click_note+mouse_wheel_dir)
-        : focus_in_max_note   ? setInputMaxNote(lane, max_note+mouse_wheel_dir)
-        : focus_in_min_note   ? setInputMinNote(lane, min_note+mouse_wheel_dir)
-        : focus_cc_controller ? setCCController(lane, cc_controller+mouse_wheel_dir);
+        focus_click_note      ? setClickNote(lane, click_note+mouse_wheel_dir+button_drag_dir)
+        : focus_in_max_note   ? setInputMaxNote(lane, max_note+mouse_wheel_dir+button_drag_dir)
+        : focus_in_min_note   ? setInputMinNote(lane, min_note+mouse_wheel_dir+button_drag_dir)
+        : focus_cc_controller ? setCCController(lane, cc_controller+mouse_wheel_dir+button_drag_dir);
       );
     );
     
