@@ -72,8 +72,47 @@ While tools exist to train timing and accuracy (for example, [ambrosebs_MIDI Dru
 
 ## Status
 
-**This project is in the planning stage.**  
-Initial goal: set up video capture, run pose estimation, and output posture status via MIDI CC to a virtual port.
+**This project is in the initial implementation stage.**  
+
+The Leiningen project has been set up with the following components:
+
+- ✅ **Project Structure**: Leiningen project with `project.clj` and proper namespaces
+- ✅ **Video Capture Layer**: Using Webcam Capture library for webcam access
+- ✅ **Pose Estimation**: Stub implementation ready for integration with DJL/MoveNet
+- ✅ **Posture Analysis**: Heuristic-based posture analysis (forward head posture detection)
+- ✅ **MIDI Output**: MIDI CC output using `javax.sound.midi`
+- ✅ **Integration**: Main application loop that connects all components
+
+### Running the Application
+
+To run the application, you need:
+- A webcam connected to your system
+- Java 8 or higher
+- Leiningen installed
+
+Run the application with:
+```bash
+lein run
+```
+
+Alternatively, build a standalone jar:
+```bash
+lein uberjar
+java -jar target/uberjar/posture-midi-filter-0.1.0-SNAPSHOT-standalone.jar
+```
+
+### Current Limitations
+
+- Pose estimation currently uses mock keypoints (placeholder for actual ML model integration)
+- Requires v4l2 libraries on Linux for webcam access
+- MIDI output will use simulated output if no MIDI devices are available
+
+### Next Steps
+
+- Integrate actual pose estimation model (DJL with MoveNet)
+- Refine posture analysis heuristics
+- Add configuration options for CC number, thresholds, etc.
+- Create visual feedback UI
 
 ---
 
