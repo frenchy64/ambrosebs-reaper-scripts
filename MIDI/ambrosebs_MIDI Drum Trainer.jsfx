@@ -1506,19 +1506,20 @@ local(left_button_release, right_button_release, focus_expand_toolbar, focus_div
   mouse_wheel_dir = mouse_wheel / 120;
   
   // Calculate vertical drag direction for buttons
+  // Only apply to button controls (control_button_* >= 3), not phase/swing (1-2)
   button_drag_dir = 0;
-  (mouse_y != button_drag_prev_y) && (active_control > 0) && (active_control < 1000) && (mouse_cap & 1) ? (
+  (mouse_y != button_drag_prev_y) && (active_control > 0) && (active_control % 1000 >= 3) && (mouse_cap & 1) ? (
     button_drag_dir = floor((button_drag_orig_y - mouse_y) / 5); // 5 pixels = 1 step, inverted (up = positive)
     button_drag_dir != button_drag_value ? (
       button_drag_value = button_drag_dir;
       button_drag_prev_y = mouse_y;
     ) : button_drag_dir = 0;
-  ) : (active_control > 0 && active_control < 1000 && !(mouse_cap & 1)) ? (
+  ) : (active_control > 0 && (active_control % 1000 >= 3) && !(mouse_cap & 1)) ? (
     // Reset when mouse button released
     button_drag_orig_y = 0;
     button_drag_value = 0;
     button_drag_prev_y = 0;
-  ) : (active_control > 0 && active_control < 1000 && (mouse_cap & 1) && button_drag_orig_y == 0) ? (
+  ) : (active_control > 0 && (active_control % 1000 >= 3) && (mouse_cap & 1) && button_drag_orig_y == 0) ? (
     // Initialize on button press
     button_drag_orig_y = mouse_y;
     button_drag_prev_y = mouse_y;
