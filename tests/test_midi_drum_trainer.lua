@@ -38,16 +38,6 @@ local function set_lane_output_channels(track, fx_idx, lanes)
     local normalized_value = (desired_value - min_val) / (max_val - min_val)
     -- Note: Since the slider is <0,16,1>, max_val is 16, and there are 17 valid integer steps (0 through 16)
     reaper.TrackFX_SetParam(track, fx_idx, slider_idx, normalized_value)
-    -- Debug: print the actual parameter value after setting
-    local ok, actual_value, minval, maxval = reaper.TrackFX_GetParam(track, fx_idx, slider_idx)
-    reaper.ShowConsoleMsg(
-      string.format("Slider %d: set normalized %.4f, got actual %.4f\n", 
-        slider_idx, normalized_value, actual_value)
-    )
-    for param = 0, reaper.TrackFX_GetNumParams(track, fx_idx)-1 do
-      local ok, val = reaper.TrackFX_GetParam(track, fx_idx, param)
-      reaper.ShowConsoleMsg(string.format("Param %d = %.4f\n", param, val))
-    end
 
   end
 end
