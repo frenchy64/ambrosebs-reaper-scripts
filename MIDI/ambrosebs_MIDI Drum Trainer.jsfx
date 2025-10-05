@@ -1037,10 +1037,12 @@ function learnController(controller) local(i)
   );
 );
 
-function getLaneOfNote(note, channel, velocity) local(i, result, in_chan, cc_ctrl, cc_value, cc_min, cc_max)
+function getLaneOfNote(note, channel, velocity) local(i, result, in_chan, cc_ctrl, cc_value, cc_min, cc_max, fallback)
 (
   result = -1;
+  fallback = -1;
   i = 0;
+  // First pass: prioritize lanes with CC controllers that have matching CC values
   while (i < num_lanes && (result == -1)) (
     in_chan = getInputChannel(i);
     ((in_chan == 0) || (in_chan == channel + 1)) &&
@@ -1049,23 +1051,25 @@ function getLaneOfNote(note, channel, velocity) local(i, result, in_chan, cc_ctr
     (velocity >= getInputMinVelocity(i)) &&
     (velocity <= getInputMaxVelocity(i)) ?
       (
-        // Also check CC value range if this lane is monitoring a CC controller
         cc_ctrl = getCCController(i);
         cc_ctrl != -1 ? (
+          // Lane is monitoring a CC controller
           cc_value = getCCValue(i);
           cc_value != -1 ? (
             cc_min = getCCMinValue(i);
             cc_max = getCCMaxValue(i);
-            // Only assign to this lane if CC value is in range
+            // Check if CC value is in range
             (cc_value >= cc_min) && (cc_value <= cc_max) ? result = i;
           );
         ) : (
-          // Lane is not monitoring CC, so assign based on note/velocity only
-          result = i;
+          // Lane is not monitoring CC - save as fallback
+          fallback == -1 ? fallback = i;
         );
       );
     i += 1;
   );
+  // If no CC-matching lane found, use the first lane without CC controller that matched
+  result == -1 ? result = fallback;
   result; 
 );
 
