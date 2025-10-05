@@ -1,12 +1,31 @@
 -- Data-driven JSFX Drum Trainer test script for REAPER
+-- Now supports per-lane output channel mapping via hidden JSFX sliders.
 
--- Helper: Insert and configure JSFX
+-- Helper: Insert and configure JSFX, returning track and fx index
 local function setup_jsfx_on_new_track(jsfx_name)
   reaper.Main_OnCommand(40001, 0)
   local track = reaper.GetTrack(0, reaper.CountTracks(0)-1)
   local fx_idx = reaper.TrackFX_AddByName(track, jsfx_name, false, 1)
   if fx_idx == -1 then error("Could not load JSFX: " .. tostring(jsfx_name)) end
   return track, fx_idx
+end
+
+-- Set per-lane output channel sliders for testing mode
+local function set_lane_output_channels(track, fx_idx, lanes)
+  -- Estimate: output channel sliders are added after existing per-lane sliders.
+  -- From the original script, per-lane slots go: 
+  --   in_channel, cc_channel, cc_controller, cc_value, cc_min_value, cc_max_value,
+  --   in_min_note, in_max_note, in_min_velocity, in_max_velocity, ... (10 per lane)
+  -- So if N lanes: first per-lane slider = 0, lane 2 = 10, lane 3 = 20, ...
+  -- Hypothetically, output_channel is at offset 10 per lane (i.e. the 11th slider per lane, zero-based).
+  -- So, for lane i (zero-based): slider idx = i*11 + 10
+  local per_lane_slider_count = 11 -- 10 previous plus 1 output_channel per lane
+  local output_chan_slider_offset = 10
+  for i=0,#lanes-1 do
+    local slider_idx = i * per_lane_slider_count + output_chan_slider_offset
+    -- For testing: lane 0 outputs on ch 0, lane 1 on ch 1, etc. (slider value = lane index + 1)
+    reaper.TrackFX_SetParam(track, fx_idx, slider_idx, i+1)
+  end
 end
 
 -- Helper: Create test MIDI take with specified events
@@ -18,9 +37,9 @@ local function create_test_take(events)
     local is_cc = ev.is_cc == true
     local msg1
     if is_cc then
-      msg1 = ev.cc_controller or 2 -- default controller 2 for CC
+      msg1 = ev.cc_controller or 2
     else
-      msg1 = ev.note or 60  -- default note 60 for Note On
+      msg1 = ev.note or 60
     end
     reaper.MIDI_InsertCC(
       take, false, false, ev.ppqpos or 0,
@@ -126,7 +145,8 @@ for _, scenario in ipairs(scenarios) do
   reaper.ShowConsoleMsg("==== Running Scenario: " .. scenario.name .. " ====\n")
   for _, test in ipairs(scenario.tests) do
     cleanup()
-    local track, _ = setup_jsfx_on_new_track(scenario.jsfx_name or "ambrosebs_MIDI Drum Trainer")
+    local track, fx_idx = setup_jsfx_on_new_track(scenario.jsfx_name or "ambrosebs_MIDI Drum Trainer")
+    set_lane_output_channels(track, fx_idx, scenario.lanes)
     local events = {
       { is_cc=true,  cc_controller=test.cc_controller or 2, msg2=test.cc_value, ppqpos=0, chan=0 },
       { is_cc=false, note=test.note or 60, vel=100, ppqpos=240, chan=0 }
