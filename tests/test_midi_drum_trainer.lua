@@ -23,26 +23,17 @@ function get_slider_param_index_by_name(track, fx_idx, slider_name)
   return nil
 end
 
--- Set per-lane output channel sliders for testing mode using offsets matching the JSFX script
-local function set_lane_output_channels(track, fx_idx, lanes)
-  -- The JSFX slider definition is: slider34:0<0,16,1>Lane 1 output channel [hidden]
-  -- So the min is 0, max is 16 (total 17 steps: 0, 1, ..., 16)
-  local min_val = 0
-  local max_val = 16
-  for i = 0, #lanes - 1 do
-    -- Calculate slider index for lane output channel
-    --local slider_idx = get_lane_slider_index(i, slider_offset_output_channel)
-    local slider_idx = get_slider_param_index_by_name(track, fx_idx, "OutputChannel"..tostring(i+1))
-    -- Value to set: for testing, lane 0 outputs on ch 0, lane 1 on ch 1, etc. (slider value = lane index + 1)
-    local desired_value = i + 1
-    -- Normalize value to [0,1] for TrackFX_SetParam API
-    -- normalization: (value - min) / (max - min)
-    local normalized_value = (desired_value - min_val) / (max_val - min_val)
-    -- Note: Since the slider is <0,16,1>, max_val is 16, and there are 17 valid integer steps (0 through 16)
-    reaper.TrackFX_SetParam(track, fx_idx, slider_idx, normalized_value)
-    local val = reaper.TrackFX_GetParam(track, fx_idx, slider_idx)
-    reaper.ShowConsoleMsg("Slider " .. slider_idx .. " is " .. normalized_value .. " which is normalized from " .. desired_value ..  "\n")
 local function set_lane_config(track, fx_idx, lanes)
+  -- update number of lanes slider
+  local lanes_slider_idx = get_slider_param_index_by_name(track, fx_idx, "Lanes")
+  if lanes_slider_idx then
+    -- Lanes slider expects lane count minus 1 (if 0-based), or just the count if 1-based (check your JSFX slider definition).
+    -- Most JSFX "lanes" sliders are 1-based, so just use #scenario.lanes
+    reaper.TrackFX_SetParam(track, fx_idx, lanes_slider_idx, #lanes)
+  else
+    reaper.ShowConsoleMsg("WARNING: Could not find 'Lanes' slider in JSFX.\n")
+  end
+
   for i, lane in ipairs(lanes) do
     local lane_num = i
     -- Set CC Controller
@@ -209,7 +200,6 @@ for _, scenario in ipairs(scenarios) do
     cleanup()
     local track, fx_idx = setup_jsfx_on_new_track(scenario.jsfx_name or "ambrosebs_MIDI Drum Trainer")
     set_lane_config(track, fx_idx, scenario.lanes)
-
     -- **Send the initial CC event to set JSFX's CCValueN**
     -- (It's important to send the CC event BEFORE the note event to ensure the lane's CCValue is initialized)
     local events = {
