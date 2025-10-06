@@ -15,7 +15,6 @@ on:
 env:
   REAPER_MAJOR_VERSION: "7"
   REAPER_MINOR_VERSION: "48"
-  REAPER_VERSION: "7.48"
   SWS_VERSION: "2.14.0.7"
   WDL_COMMIT: "3024ec8e000f769454b5ee4ac927dc5cecfc6a6b"
 
@@ -46,8 +45,9 @@ jobs:
         # if: steps.cache_wdl.outputs.cache-hit != 'true'  # uncomment for cache use
         run: |
           git clone https://github.com/justinfrankel/WDL.git wdl
-          cd wdl/WDL
+          cd wdl
           git checkout ${WDL_COMMIT}
+          cd WDL/swell
           make NOGDK=1 -Wno-error
           echo "Listing all files under $(pwd) to search for libSwell.so:"
           find . -type f | tee /tmp/wdl-files.log
@@ -67,7 +67,7 @@ jobs:
           mv reaper_linux_x86_64/reaper reaper/REAPER/reaper
           chmod +x reaper/REAPER/reaper
           # Locate libSwell.so from WDL build and copy to REAPER directory
-          cp wdl/WDL/libSwell.so reaper/REAPER/libSwell.so
+          cp wdl/WDL/swell/libSwell.so reaper/REAPER/libSwell.so
 
       - name: Copy test script into REAPER scripts
         run: |
