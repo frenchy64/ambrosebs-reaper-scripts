@@ -43,7 +43,7 @@ jobs:
           mkdir -p reaper/REAPER/UserPlugins
           tar -tvf sws.tar.xz
           ls
-          cp *.so reaper/REAPER/UserPlugins/
+          cp UserPlugins/reaper_sws-x86_64.so reaper/REAPER/UserPlugins/
 
       - name: Copy test script into REAPER scripts
         run: |
