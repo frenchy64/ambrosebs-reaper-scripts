@@ -33,22 +33,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential libx11-dev libglib2.0-0 libgtk-3-0 xz-utils git cmake
 
-      # Cache WDL build
-      - name: Cache WDL headless build
-        id: cache_wdl
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ github.workspace }}/wdl
-          key: wdl-${{ env.WDL_COMMIT }}
+      # - name: Cache WDL headless build
+      #   id: cache_wdl
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       ${{ github.workspace }}/wdl
+      #     key: wdl-${{ env.WDL_COMMIT }}
 
-      - name: Build WDL headless if cache miss
-        if: steps.cache_wdl.outputs.cache-miss == 'true'
+      # Build WDL headless (always runs unless cache-hit is true, but cache step is commented out)
+      - name: Build WDL headless
+        # if: steps.cache_wdl.outputs.cache-hit != 'true'  # uncomment for cache use
         run: |
           git clone https://github.com/justinfrankel/WDL.git wdl
           cd wdl/WDL
           git checkout ${WDL_COMMIT}
-          make NOGDK=1
+          make NOGDK=1 -Wno-error
           echo "Listing all files under $(pwd) to search for libSwell.so:"
           find . -type f | tee /tmp/wdl-files.log
           echo "Directory tree under $(pwd):"
