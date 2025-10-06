@@ -1172,7 +1172,9 @@ while (midirecv(offset,msg1,msg2,msg3)) (
        midisend(offset, msg1, msg2, msg3)
      )
      : lane < 0 ?
-       //FIXME why is this MIDI message being forwarded even though it matches no lanes?
+       // TODO figure out fallthru logic. see Scenario 2 "No third lane" for a good motivation
+       // to simply not pass thru midi notes that match no lanes. Sometimes you might want
+       // it pass thru, so maybe this needs to be a config.
        midisend(offset, msg1, msg2, msg3)
      : (
        reltime = getRelTime(offset);

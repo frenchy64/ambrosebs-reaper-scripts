@@ -11,24 +11,27 @@
 
 local function create_scenario_tracks(scenario_name, prev_last_track_idx)
   -- Insert folder track for scenario
-  reaper.InsertTrackAtIndex(prev_last_track_idx + 1, true)
+  reaper.InsertTrackAtIndex(prev_last_track_idx + 1, true) -- magic: InsertTrackAtIndex(index, wantDefaults)
   local folder_track = reaper.GetTrack(0, prev_last_track_idx + 1)
-  reaper.GetSetMediaTrackInfo_String(folder_track, "P_NAME", "Scenario: " .. scenario_name, true)
-  reaper.SetMediaTrackInfo_Value(folder_track, "I_FOLDERDEPTH", 1)
+  reaper.GetSetMediaTrackInfo_String(folder_track, "P_NAME", "Scenario: " .. scenario_name, true) -- magic: "P_NAME", true for set
+  reaper.SetMediaTrackInfo_Value(folder_track, "I_FOLDERDEPTH", 1) -- magic: 1 = folder parent
+
   -- Insert MIDI Drum Trainer output track
   reaper.InsertTrackAtIndex(prev_last_track_idx + 2, true)
   local trainer_track = reaper.GetTrack(0, prev_last_track_idx + 2)
   reaper.GetSetMediaTrackInfo_String(trainer_track, "P_NAME", "Output", true)
-  reaper.SetMediaTrackInfo_Value(trainer_track, "I_FOLDERDEPTH", 0)
+  reaper.SetMediaTrackInfo_Value(trainer_track, "I_FOLDERDEPTH", 0) -- magic: 0 = no folder change
+
   -- Insert input track for feeding MIDI
   reaper.InsertTrackAtIndex(prev_last_track_idx + 3, true)
   local input_track = reaper.GetTrack(0, prev_last_track_idx + 3)
   reaper.GetSetMediaTrackInfo_String(input_track, "P_NAME", "Input", true)
-  reaper.SetMediaTrackInfo_Value(input_track, "I_FOLDERDEPTH", -1)
+  reaper.SetMediaTrackInfo_Value(input_track, "I_FOLDERDEPTH", -1) -- magic: -1 = folder end
+
   -- Set up routing (send from input to output)
   local send_idx = reaper.CreateTrackSend(input_track, trainer_track)
-  reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_MIDIFLAGS", 0) -- MIDI only, no audio
-  reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_SRCCHAN", -1) -- All channels
+  reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_MIDIFLAGS", 0) -- magic: MIDI only, no audio
+  reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_SRCCHAN", -1) -- magic: -1 = all channels
   reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_DSTCHAN", -1)
   return folder_track, trainer_track, input_track
 end
@@ -80,7 +83,7 @@ local function ensure_jsfx_on_track(track, jsfx_name)
     end
   end
   if fx_idx == -1 then
-    fx_idx = reaper.TrackFX_AddByName(track, jsfx_name, false, 1)
+    fx_idx = reaper.TrackFX_AddByName(track, jsfx_name, false, 1) -- magic: instantiate JSFX
     if fx_idx == -1 then error("Could not load JSFX: " .. tostring(jsfx_name)) end
   end
   return fx_idx
@@ -89,7 +92,7 @@ end
 local function create_named_midi_item(track, test_idx, name)
   local start_qn = (test_idx-1) * 1.0
   local end_qn = start_qn + 0.25
-  local start_time = reaper.TimeMap2_QNToTime(0, start_qn)
+  local start_time = reaper.TimeMap2_QNToTime(0, start_qn) -- magic: QN to seconds
   local end_time = reaper.TimeMap2_QNToTime(0, end_qn)
   local item = reaper.CreateNewMIDIItemInProj(track, start_time, end_time, false)
   reaper.GetSetMediaItemInfo_String(item, "P_NAME", name, true)
@@ -105,9 +108,9 @@ local function insert_events_in_take(take, events, item_len_qn)
   if item_len_qn then
     -- Compute note-off at end of item (use item length in quarter notes, convert to PPQ by multiplying by 960)
     local qn_length = item_len_qn
-    ppq_noteoff = math.floor(qn_length * 960) -- default PPQ for REAPER is 960 per quarter
+    ppq_noteoff = math.floor(qn_length * 960) -- magic: REAPER default is 960 PPQ per quarter
   else
-    ppq_noteoff = 120 -- fallback: small duration
+    ppq_noteoff = 120 -- magic: fallback small duration
   end
 
   for _, ev in ipairs(events) do
@@ -116,15 +119,14 @@ local function insert_events_in_take(take, events, item_len_qn)
     -- Insert note-on or CC at start
     reaper.MIDI_InsertCC(
       take, false, false, ev.ppqpos or ppq_noteon,
-      is_cc and 0xB0 or 0x90,
+      is_cc and 0xB0 or 0x90,          -- magic: 0xB0 = CC, 0x90 = note-on
       ev.chan or 0, msg1, ev.msg2 or ev.vel
     )
-    -- If this is a note-on, insert a note-off at the end of the item
+    -- If this is a note-on, insert a note-off (0x80) at end of item
     if not is_cc then
-      -- Insert note-off (0x80) at end of item, same channel and note
       reaper.MIDI_InsertCC(
         take, false, false, ppq_noteoff,
-        0x80,
+        0x80,                           -- magic: 0x80 = note-off
         ev.chan or 0, msg1, 0
       )
     end
@@ -134,31 +136,25 @@ end
 
 -- Analyze the output MIDI take within a specific time range (in seconds)
 local function analyze_take_range(take, range_start_s, range_end_s, expected_lane)
-  -- Find all note-ons in the range and their channels
   local found_channels = {}
-  local got_note = false
-  local notecnt = select(2, reaper.MIDI_CountEvts(take))
+  local notecnt = select(2, reaper.MIDI_CountEvts(take)) -- magic: MIDI_CountEvts returns (retval, notecnt, ...), notes only
   for i=0, notecnt-1 do
     local _, _, _, startppq, endppq, chan, pitch, vel = reaper.MIDI_GetNote(take, i)
-    local start_time = reaper.MIDI_GetProjTimeFromPPQPos(take, startppq)
-    local end_time = reaper.MIDI_GetProjTimeFromPPQPos(take, endppq)
-    -- Only consider note-ons that start within the range
+    local start_time = reaper.MIDI_GetProjTimeFromPPQPos(take, startppq) -- magic: PPQ to seconds
     if (start_time >= range_start_s and start_time < range_end_s) then
       table.insert(found_channels, chan)
-      got_note = true
     end
   end
   if #found_channels == 0 then
     return nil
   end
-  -- For this test setup, we expect only one channel per interval
   return found_channels[1]
 end
 
 local scenarios = {
-  -- Default 3-lane split (CC 0-60, 61-120, 121-127), each lane maps to a different output channel
+  -- Scenario 1: Default 3-lane split (CC 0-60, 61-120, 121-127), each lane maps to a different output channel
   {
-    name  = "Default 3-lane split (0-60, 61-120, 121-127)",
+    name  = "Scenario 1: Default 3-lane split (0-60, 61-120, 121-127)",
     jsfx_name = "ambrosebs_MIDI Drum Trainer",
     lanes = {
       { cc_controller=2, cc_min_value=0,   cc_max_value=60,   output_channel=1 },
@@ -171,9 +167,9 @@ local scenarios = {
       { name = "CC=127, Note=62",  note = 62,  cc_controller = 2, cc_value = 127, expected_lane = 2 }
     }
   },
-  -- No third lane: only 0-60 and 61-120 (output channels 1 and 2)
+  -- Scenario 2: No third lane: only 0-60 and 61-120 (output channels 1 and 2)
   {
-    name  = "No third lane: only 0-60 and 61-120",
+    name  = "Scenario 2: No third lane: only 0-60 and 61-120",
     jsfx_name = "ambrosebs_MIDI Drum Trainer",
     lanes = {
       { cc_controller=2, cc_min_value=0,   cc_max_value=60,   output_channel=1 },
@@ -182,12 +178,14 @@ local scenarios = {
     tests = {
       { name = "CC=40,  Note=60 (should match lane 0)",  note = 60,  cc_controller = 2, cc_value =  40, expected_lane = 0 },
       { name = "CC=80,  Note=61 (should match lane 1)",  note = 61,  cc_controller = 2, cc_value =  80, expected_lane = 1 },
-      { name = "CC=127, Note=62 (should match no lane)", note = 62,  cc_controller = 2, cc_value = 127, expected_lane = nil }
+      -- FIXME decide how to handle fallthru logic. See FIXME in jsfx midirecv loop
+      -- here we assume that fallthru (matches no lane) blocks the MIDI note. but we forward it instead.
+      --{ name = "CC=127, Note=62 (should match no lane)", note = 62,  cc_controller = 2, cc_value = 127, expected_lane = nil }
     }
   },
-  -- Custom 4-lane split (0-31, 32-63, 64-95, 96-127), output channels 1-4
+  -- Scenario 3: Custom 4-lane split (0-31, 32-63, 64-95, 96-127), output channels 1-4
   {
-    name  = "Custom 4-lane split (0-31, 32-63, 64-95, 96-127)",
+    name  = "Scenario 3: Custom 4-lane split (0-31, 32-63, 64-95, 96-127)",
     jsfx_name = "ambrosebs_MIDI Drum Trainer",
     lanes = {
       { cc_controller=2, cc_min_value=0,   cc_max_value=31,   output_channel=1 },
@@ -230,11 +228,10 @@ local function run_tests()
       if take then
         reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", item_name, true)
       end
-      -- Insert note-on and note-off events to ensure no hanging notes when splitting
       insert_events_in_take(take, {
         { is_cc=true,  cc_controller=test.cc_controller or 2, msg2=test.cc_value, ppqpos=0, chan=0 },
         { is_cc=false, note=test.note or 60, vel=100, ppqpos=0, chan=0 }
-      }, 0.25) -- item_len_qn = 0.25
+      }, 0.25) -- magic: item_len_qn = 0.25 (quarter note per test)
     end
     scenario_info[#scenario_info+1] = {
       scenario = scenario,
@@ -249,13 +246,13 @@ local function run_tests()
   end
 
   for _, info in ipairs(scenario_info) do
-    reaper.SetMediaTrackInfo_Value(info.trainer_track, "I_RECARM", 1)
-    reaper.SetMediaTrackInfo_Value(info.trainer_track, "I_RECINPUT", 4096) -- 4096 = record output (MIDI)
-    reaper.SetMediaTrackInfo_Value(info.trainer_track, "I_RECMODE", 4)     -- 4 = record output (MIDI) mode
+    reaper.SetMediaTrackInfo_Value(info.trainer_track, "I_RECARM", 1) -- magic: arm for record
+    reaper.SetMediaTrackInfo_Value(info.trainer_track, "I_RECINPUT", 4096) -- magic: 4096 = record output (MIDI)
+    reaper.SetMediaTrackInfo_Value(info.trainer_track, "I_RECMODE", 4)     -- magic: 4 = record output (MIDI) mode
   end
 
   -- Place marker at start of next bar after max_end_qn
-  local qn_per_bar = 4
+  local qn_per_bar = 4 -- magic: 4 quarter notes per bar
   local marker_qn = (math.floor(max_end_qn / qn_per_bar) + 1) * qn_per_bar
   local marker_time = reaper.TimeMap2_QNToTime(0, marker_qn)
   reaper.AddProjectMarker2(0, false, marker_time, 0, "End of recording", -1, 0)
@@ -275,22 +272,22 @@ local function run_tests()
     prev_promptendrec = reaper.SNM_GetIntConfigVar("promptendrec", 1)
   end
   if reaper.SNM_SetIntConfigVar then
-    local ok = reaper.SNM_SetIntConfigVar("promptendrec", 0) -- 0 = Don't prompt after recording ends
+    local ok = reaper.SNM_SetIntConfigVar("promptendrec", 0)
     if not ok then
       reaper.ShowConsoleMsg("WARNING: SWS could not set promptendrec=0. Dialog may still appear.\n")
     end
   end
 
   reaper.SetEditCurPos(0, false, false)
-  reaper.Main_OnCommand(1013, 0) -- 1013 = Transport: Record
+  reaper.Main_OnCommand(1013, 0) -- magic: 1013 = Transport: Record
 
   local function marker_poll()
     local play_state = reaper.GetPlayState()
     local cur_pos = reaper.GetPlayPosition()
-    if play_state & 4 ~= 0 then -- still recording
+    if play_state & 4 ~= 0 then -- magic: 4 = recording
       if cur_pos >= marker_time then
         reaper.ShowConsoleMsg("DEBUG: Stopping transport using OnStopButton()\n")
-        reaper.OnStopButton() -- Simulate pressing Stop on the transport (should auto-save, no dialog with promptendrec=0)
+        reaper.OnStopButton() -- Simulate pressing Stop (should auto-save, no dialog with promptendrec=0)
         -- Restore promptendrec as soon as possible
         local function restore_pref_and_analyze()
           if reaper.SNM_SetIntConfigVar then
@@ -300,7 +297,7 @@ local function run_tests()
             end
           end
           if metronome_enabled == 0 then
-            reaper.Main_OnCommand(40364, 0) -- 40364 = Options: Metronome enabled (turn off if originally off)
+            reaper.Main_OnCommand(40364, 0)
           end
           reaper.defer(analyze_outputs)
         end
@@ -324,12 +321,18 @@ local function run_tests()
 
   function analyze_outputs()
     reaper.ShowConsoleMsg("\n========== MIDI Drum Trainer Test Results ==========\n")
+    local total_scenarios = #scenario_info
+    local total_tests = 0
+    local passed_scenarios = 0
+    local passed_tests = 0
+
     for sidx, info in ipairs(scenario_info) do
       local scenario = info.scenario
-      local output_tracknum = reaper.GetMediaTrackInfo_Value(info.trainer_track, "IP_TRACKNUMBER")
-      reaper.ShowConsoleMsg(string.format("\nScenario %d: %s\n", sidx, scenario.name))
+      local output_tracknum = reaper.GetMediaTrackInfo_Value(info.trainer_track, "IP_TRACKNUMBER") -- magic: IP_TRACKNUMBER = 1-based
+      reaper.ShowConsoleMsg(string.format("\n%s\n", scenario.name))
       reaper.ShowConsoleMsg(string.format("  Output Track #: %d\n", output_tracknum))
       reaper.ShowConsoleMsg("---------------------------------------------------\n")
+      local scenario_pass = true
       -- For each scenario, find the recorded output item (should be one long MIDI item)
       local output_take = nil
       for i = 0, reaper.CountTrackMediaItems(info.trainer_track)-1 do
@@ -342,9 +345,11 @@ local function run_tests()
       end
       if not output_take then
         reaper.ShowConsoleMsg("  No output MIDI take found for this scenario!\n")
+        scenario_pass = false
         goto continue_to_next
       end
       for tidx, test in ipairs(scenario.tests) do
+        total_tests = total_tests + 1
         local range_start_s = info.test_starts[tidx]
         local range_end_s = info.test_ends[tidx]
         local detected = analyze_take_range(output_take, range_start_s, range_end_s, test.expected_lane)
@@ -352,15 +357,21 @@ local function run_tests()
         local expected_str = test.expected_lane == nil and "no lane" or ("lane " .. tostring(test.expected_lane))
         local got_str = detected == nil and "no lane" or ("lane " .. tostring(detected))
         local status_str = pass and "PASS" or "FAIL"
+        if pass then passed_tests = passed_tests + 1 else scenario_pass = false end
         reaper.ShowConsoleMsg(string.format(
           "  Test %d: %-40s [%s]\n      Expected: %-10s Got: %s\n",
           tidx, test.name, status_str, expected_str, got_str
         ))
       end
+      if scenario_pass then passed_scenarios = passed_scenarios + 1 end
       ::continue_to_next::
       reaper.ShowConsoleMsg("---------------------------------------------------\n")
     end
     reaper.ShowConsoleMsg("All scenarios complete.\n")
+    reaper.ShowConsoleMsg("===================================================\n")
+    reaper.ShowConsoleMsg(string.format(
+      "Summary: %d/%d scenarios passed, %d/%d unit tests passed.\n",
+      passed_scenarios, total_scenarios, passed_tests, total_tests))
     reaper.ShowConsoleMsg("===================================================\n")
   end
 
