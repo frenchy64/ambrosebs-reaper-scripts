@@ -1,5 +1,9 @@
 name: MIDI Drum Trainer Automated Tests
 
+permissions:
+  contents: read
+  actions: write
+
 on:
   workflow_dispatch:
   push:
@@ -16,6 +20,7 @@ env:
 jobs:
   test-midi-drum-trainer:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
@@ -54,6 +59,7 @@ jobs:
         env:
           DISPLAY: ":99"
         run: |
+          # Start Xvfb for GUI-less REAPER execution
           Xvfb :99 &
 
           # Run REAPER with the test script, streaming output to both stdout and log file
@@ -68,11 +74,23 @@ jobs:
           summary=$(grep 'Summary:' reaper_test_output.log || true)
           echo "$summary"
 
+          # Check for REAPER usage output (indicating script did not run)
+          if grep -q "Usage: reaper" reaper_test_output.log; then
+            echo "ERROR: REAPER printed usage instructions instead of running the script."
+            exit 1
+          fi
+
+          # Fail if summary is empty (i.e., script did not run or did not output summary)
+          if [[ -z "$summary" ]]; then
+            echo "ERROR: No summary found in REAPER output. Script did not run or test results not printed."
+            exit 1
+          fi
+
           # Extract passed/total counts
-          scenario_passed=$(echo "$summary" | sed -n 's/.* \([0-9]\+\/[0-9]\+\) scenarios passed.*/\1/p' | cut -d'/' -f1)
-          scenario_total=$(echo "$summary" | sed -n 's/.* \([0-9]\+\/[0-9]\+\) scenarios passed.*/\1/p' | cut -d'/' -f2)
-          test_passed=$(echo "$summary" | sed -n 's/.* \([0-9]\+\/[0-9]\+\) unit tests passed.*/\1/p' | cut -d'/' -f1)
-          test_total=$(echo "$summary" | sed -n 's/.* \([0-9]\+\/[0-9]\+\) unit tests passed.*/\1/p' | cut -d'/' -f2)
+          scenario_passed=$(echo "$summary" | sed -n 's/.* \([0-9]\+\)\/\([0-9]\+\) scenarios passed.*/\1/p')
+          scenario_total=$(echo "$summary" | sed -n 's/.* \([0-9]\+\)\/\([0-9]\+\) scenarios passed.*/\2/p')
+          test_passed=$(echo "$summary" | sed -n 's/.* \([0-9]\+\)\/\([0-9]\+\) unit tests passed.*/\1/p')
+          test_total=$(echo "$summary" | sed -n 's/.* \([0-9]\+\)\/\([0-9]\+\) unit tests passed.*/\2/p')
 
           if [[ "$scenario_passed" != "$scenario_total" || "$test_passed" != "$test_total" ]]; then
             echo "ERROR: Not all scenarios or unit tests passed!"
