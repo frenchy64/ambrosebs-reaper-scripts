@@ -63,7 +63,7 @@ jobs:
           Xvfb :99 &
 
           # Run REAPER with the test script, streaming output to both stdout and log file
-          reaper/REAPER/reaper -nosplash reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua 2>&1 | tee reaper_test_output.log
+          reaper/REAPER/reaper -nosplash -new -ignoreerrors -close:exit reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua 2>&1 | tee reaper_test_output.log
 
       - name: Check test results and fail if any unit test fails
         run: |
