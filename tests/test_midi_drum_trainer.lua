@@ -111,15 +111,6 @@ local function cleanup()
   reaper.Main_OnCommand(40005, 0)
 end
 
-local function get_expected_lane_zero_based(cc_value, lanes)
-  for i, lane in ipairs(lanes) do
-    if cc_value >= lane.cc_min_value and cc_value <= lane.cc_max_value then
-      return i - 1
-    end
-  end
-  return nil
-end
-
 local function detect_lane_zero_based(events, scenario)
   local lane_detect = scenario.lane_detect or function(events)
     for _, ev in ipairs(events) do
@@ -209,9 +200,6 @@ for _, scenario in ipairs(scenarios) do
     end
 
     local expected_lane = test.expected_lane
-    if expected_lane == nil then
-      expected_lane = get_expected_lane_zero_based(test.cc_value, scenario.lanes)
-    end
     local detected = detect_lane_zero_based(output_events, scenario)
     local pass = detected == expected_lane
     if pass then
