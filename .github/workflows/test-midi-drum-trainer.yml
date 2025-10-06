@@ -38,7 +38,7 @@ jobs:
         id: cache_reaper
         uses: actions/cache@v4
         with:
-          path: tmp_reaper/reaper.tar.xz
+          path: ${{ github.workspace }}/tmp_reaper/reaper.tar.xz
           key: ${{ env.ACTIONS_CACHE_VERSION }}-reaper-tarball-${{ env.REAPER_MAJOR_VERSION }}-${{ env.REAPER_MINOR_VERSION }}
 
       - name: Download REAPER tarball if needed
@@ -46,24 +46,24 @@ jobs:
         env:
           REAPER_DOWNLOAD_URL: "https://www.reaper.fm/files/${{ env.REAPER_MAJOR_VERSION }}.x/reaper${{ env.REAPER_MAJOR_VERSION }}${{ env.REAPER_MINOR_VERSION }}_linux_x86_64.tar.xz"
         run: |
-          mkdir -p tmp_reaper
-          wget -O tmp_reaper/reaper.tar.xz $REAPER_DOWNLOAD_URL
+          mkdir -p "$GITHUB_WORKSPACE/tmp_reaper"
+          wget -O "$GITHUB_WORKSPACE/tmp_reaper/reaper.tar.xz" $REAPER_DOWNLOAD_URL
 
       - name: Extract REAPER and setup directories
         run: |
-          mkdir -p tmp_reaper
-          tar -xf tmp_reaper/reaper.tar.xz -C tmp_reaper
-          mkdir -p reaper
-          cp -r tmp_reaper/reaper_linux_x86_64/* reaper/
-          mkdir -p reaper/REAPER/UserPlugins
-          mkdir -p reaper/REAPER/Scripts/tests
+          mkdir -p "$GITHUB_WORKSPACE/tmp_reaper"
+          tar -xf "$GITHUB_WORKSPACE/tmp_reaper/reaper.tar.xz" -C "$GITHUB_WORKSPACE/tmp_reaper"
+          mkdir -p "$GITHUB_WORKSPACE/reaper"
+          cp -r "$GITHUB_WORKSPACE/tmp_reaper/reaper_linux_x86_64/"* "$GITHUB_WORKSPACE/reaper/"
+          mkdir -p "$GITHUB_WORKSPACE/reaper/REAPER/UserPlugins"
+          mkdir -p "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests"
 
       # Cache SWS extension directly in reaper/REAPER/UserPlugins
       - name: Cache SWS Extension
         id: cache_sws
         uses: actions/cache@v4
         with:
-          path: reaper/REAPER/UserPlugins/reaper_sws-x86_64.so
+          path: ${{ github.workspace }}/reaper/REAPER/UserPlugins/reaper_sws-x86_64.so
           key: ${{ env.ACTIONS_CACHE_VERSION }}-sws-${{ env.SWS_VERSION }}
 
       - name: Download and extract SWS Extension
@@ -71,38 +71,38 @@ jobs:
         env:
           SWS_DOWNLOAD_URL: "https://www.sws-extension.org/download/featured/sws-${{ env.SWS_VERSION }}-Linux-x86_64.tar.xz"
         run: |
-          mkdir -p tmp_sws
-          wget -O tmp_sws/sws.tar.xz $SWS_DOWNLOAD_URL
-          tar -xf tmp_sws/sws.tar.xz -C tmp_sws
-          ls tmp_sws/UserPlugins
-          cp tmp_sws/UserPlugins/reaper_sws-x86_64.so reaper/REAPER/UserPlugins/
+          mkdir -p "$GITHUB_WORKSPACE/tmp_sws"
+          wget -O "$GITHUB_WORKSPACE/tmp_sws/sws.tar.xz" $SWS_DOWNLOAD_URL
+          tar -xf "$GITHUB_WORKSPACE/tmp_sws/sws.tar.xz" -C "$GITHUB_WORKSPACE/tmp_sws"
+          ls "$GITHUB_WORKSPACE/tmp_sws/UserPlugins"
+          cp "$GITHUB_WORKSPACE/tmp_sws/UserPlugins/reaper_sws-x86_64.so" "$GITHUB_WORKSPACE/reaper/REAPER/UserPlugins/"
 
       # Cache WDL build (libSwell.so in REAPER dir)
       - name: Cache WDL headless build
         id: cache_wdl
         uses: actions/cache@v4
         with:
-          path: reaper/REAPER/libSwell.so
+          path: ${{ github.workspace }}/reaper/REAPER/libSwell.so
           key: ${{ env.ACTIONS_CACHE_VERSION }}-libSwell-${{ env.WDL_COMMIT }}
 
       # Build WDL headless and install libSwell.so into REAPER
       - name: Build WDL headless and install libSwell.so
         if: steps.cache_wdl.outputs.cache-hit != 'true'
         run: |
-          git clone https://github.com/justinfrankel/WDL.git tmp_wdl_src
-          cd tmp_wdl_src
+          git clone https://github.com/justinfrankel/WDL.git "$GITHUB_WORKSPACE/tmp_wdl_src"
+          cd "$GITHUB_WORKSPACE/tmp_wdl_src"
           git checkout ${WDL_COMMIT}
           cd WDL/swell
           make NOGDK=1 -Wno-error
-          cp libSwell.so ../../../../reaper/REAPER/libSwell.so
+          cp "$(pwd)/libSwell.so" "$GITHUB_WORKSPACE/reaper/REAPER/libSwell.so"
 
       - name: Copy test script into REAPER scripts
         run: |
-          cp tests/test_midi_drum_trainer.lua reaper/REAPER/Scripts/tests/
+          cp "$GITHUB_WORKSPACE/tests/test_midi_drum_trainer.lua" "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/"
 
       - name: Install REAPER license
         run: |
-          echo "${{ secrets.REAPER_LICENSE_KEY }}" > reaper/REAPER/license.txt
+          echo "${{ secrets.REAPER_LICENSE_KEY }}" > "$GITHUB_WORKSPACE/reaper/REAPER/license.txt"
 
       # Combined step: start Xvfb, tail resource directory, run Hello World and main test scripts
       - name: Tail REAPER resource directory and run tests
@@ -114,29 +114,29 @@ jobs:
           sleep 2
 
           echo "Tailing REAPER resource directory for live changes..."
-          (find reaper/REAPER -type f | xargs -r tail -F 2>/dev/null | tee tail-resource.log &)
+          (find "$GITHUB_WORKSPACE/reaper/REAPER" -type f | xargs -r tail -F 2>/dev/null | tee "$GITHUB_WORKSPACE/tail-resource.log" &)
 
           echo "Creating Hello World Lua script..."
-          echo 'reaper.ShowConsoleMsg("Hello World from GitHub Actions!\\n")' > reaper/REAPER/Scripts/tests/test_hello_world.lua
+          echo 'reaper.ShowConsoleMsg("Hello World from GitHub Actions!\\n")' > "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_hello_world.lua"
 
           echo "Starting REAPER Hello World test..."
-          reaper/REAPER/reaper -nosplash -new -ignoreerrors -close:exit reaper/REAPER/Scripts/tests/test_hello_world.lua || true
+          "$GITHUB_WORKSPACE/reaper/REAPER/reaper" -nosplash -new -ignoreerrors -close:exit "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_hello_world.lua" || true
           echo "Finished REAPER Hello World test."
 
           echo "Running MIDI Drum Trainer test script in REAPER..."
-          reaper/REAPER/reaper -nosplash -new -ignoreerrors -close:exit reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua 2>&1 | tee reaper_test_output.log
+          "$GITHUB_WORKSPACE/reaper/REAPER/reaper" -nosplash -new -ignoreerrors -close:exit "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua" 2>&1 | tee "$GITHUB_WORKSPACE/reaper_test_output.log"
 
       - name: Check test results and fail if any unit test fails
         run: |
           echo "========== MIDI Drum Trainer Test Results =========="
-          cat reaper_test_output.log
+          cat "$GITHUB_WORKSPACE/reaper_test_output.log"
 
           # Grep the summary and check for 'unit tests passed'
-          summary=$(grep 'Summary:' reaper_test_output.log || true)
+          summary=$(grep 'Summary:' "$GITHUB_WORKSPACE/reaper_test_output.log" || true)
           echo "$summary"
 
           # Check for REAPER usage output (indicating script did not run)
-          if grep -q "Usage: reaper" reaper_test_output.log; then
+          if grep -q "Usage: reaper" "$GITHUB_WORKSPACE/reaper_test_output.log"; then
             echo "ERROR: REAPER printed usage instructions instead of running the script."
             exit 1
           fi
@@ -165,11 +165,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: reaper-test-output
-          path: reaper_test_output.log
+          path: ${{ github.workspace }}/reaper_test_output.log
 
       - name: Upload REAPER resource tail log (always)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: reaper-resource-tail
-          path: tail-resource.log
+          path: ${{ github.workspace }}/tail-resource.log
