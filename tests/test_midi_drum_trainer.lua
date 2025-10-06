@@ -16,10 +16,18 @@ local function setup_jsfx_on_new_track(jsfx_name)
   return track, fx_idx
 end
 
--- sliders have internal indices based on the order they are declared in jsfx.
-local function get_lane_slider_index(lane_index, lane_slider_offset)
-  -- lane_index is 0-based (first lane = 0)
-  return global_slider_count + lane_index * sliders_used_per_lane + lane_slider_offset
+-- Looks up the internal parameter index for a JSFX slider by its name, for a given track and fx index.
+-- Returns the parameter index (0-based) if found, or nil otherwise.
+function get_slider_param_index_by_name(track, fx_idx, slider_name)
+  local num_params = reaper.TrackFX_GetNumParams(track, fx_idx)
+  for i = 0, num_params - 1 do
+    local _, name = reaper.TrackFX_GetParamName(track, fx_idx, i, "")
+    -- Remove whitespace for robust matching
+    if name:gsub("%s+", "") == slider_name:gsub("%s+", "") then
+      return i
+    end
+  end
+  return nil
 end
 
 -- Set per-lane output channel sliders for testing mode using offsets matching the JSFX script
@@ -30,7 +38,8 @@ local function set_lane_output_channels(track, fx_idx, lanes)
   local max_val = 16
   for i = 0, #lanes - 1 do
     -- Calculate slider index for lane output channel
-    local slider_idx = get_lane_slider_index(i, slider_offset_output_channel)
+    --local slider_idx = get_lane_slider_index(i, slider_offset_output_channel)
+    local slider_idx = get_slider_param_index_by_name(track, fx_idx, "OutputChannel"..tostring(i+1))
     -- Value to set: for testing, lane 0 outputs on ch 0, lane 1 on ch 1, etc. (slider value = lane index + 1)
     local desired_value = i + 1
     -- Normalize value to [0,1] for TrackFX_SetParam API
@@ -38,7 +47,8 @@ local function set_lane_output_channels(track, fx_idx, lanes)
     local normalized_value = (desired_value - min_val) / (max_val - min_val)
     -- Note: Since the slider is <0,16,1>, max_val is 16, and there are 17 valid integer steps (0 through 16)
     reaper.TrackFX_SetParam(track, fx_idx, slider_idx, normalized_value)
-
+    local val = reaper.TrackFX_GetParam(track, fx_idx, slider_idx)
+    reaper.ShowConsoleMsg("Slider " .. slider_idx .. " is " .. normalized_value .. " which is normalized from " .. desired_value ..  "\n")
   end
 end
 
@@ -134,7 +144,7 @@ local scenarios = {
     tests = {
       { name = "CC=40,  Note=60",  note = 60,  cc_controller = 2, cc_value =  40, expected_lane = 0 },
       { name = "CC=80,  Note=61",  note = 61,  cc_controller = 2, cc_value =  80, expected_lane = 1 },
-      -- { name = "CC=127, Note=62",  note = 62,  cc_controller = 2, cc_value = 127, expected_lane = 2 }
+      { name = "CC=127, Note=62",  note = 62,  cc_controller = 2, cc_value = 127, expected_lane = 2 }
     }
   },
   --[[
