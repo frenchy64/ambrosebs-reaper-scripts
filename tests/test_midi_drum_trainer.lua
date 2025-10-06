@@ -1,4 +1,4 @@
--- Data-driven JSFX Drum Trainer test script for REAPER, enhanced fixture setup.
+-- Data-driven JSFX Drum Trainer test script for REAPER, async CPS conversion.
 
 -- Helper: Insert and configure JSFX, returning track and fx index
 local function setup_jsfx_on_new_track(jsfx_name)
@@ -65,9 +65,21 @@ local function set_lane_config(track, fx_idx, lanes)
   end
 end
 
--- Helper: Create test MIDI take with specified events
-local function create_test_take(events)
-  local track = reaper.GetTrack(0, reaper.CountTracks(0)-1)
+-- Helper: Create a new track for input and route its MIDI to the trainer track
+local function setup_input_routing(trainer_track)
+  reaper.Main_OnCommand(40001, 0) -- Insert new track
+  local input_track = reaper.GetTrack(0, reaper.CountTracks(0)-1)
+  -- Route all MIDI from input_track to trainer_track
+  local send_idx = reaper.CreateTrackSend(input_track, trainer_track)
+  -- Set send to MIDI only (disable audio)
+  reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_MIDIFLAGS", 0)
+  reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_SRCCHAN", -1) -- All MIDI
+  reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_DSTCHAN", -1) -- All MIDI
+  return input_track
+end
+
+-- Helper: Create test MIDI take with specified events on a given track
+local function create_test_take_on_track(track, events)
   local item = reaper.CreateNewMIDIItemInProj(track, 0, 2.0, false)
   local take = reaper.GetActiveTake(item)
   for _, ev in ipairs(events) do
@@ -88,36 +100,57 @@ local function create_test_take(events)
   return item, take
 end
 
--- Helper: Render JSFX output to new MIDI item and get resulting NOTE events (Note On/Off only)
-local function render_and_get_output_note_events(track)
-  -- Arm the track for recording
-  reaper.SetMediaTrackInfo_Value(track, "I_RECARM", 1)
-  -- Set track to record: output (MIDI)
-  reaper.SetMediaTrackInfo_Value(track, "I_RECINPUT", 4096)
-  -- Set recording mode: record output (MIDI)
-  reaper.SetMediaTrackInfo_Value(track, "I_RECMODE", 4)
-  -- Start recording (transport: record)
-  reaper.Main_OnCommand(1013, 0)
-  -- (No sleep needed between start and stop: in this script context, the process is synchronous/instantaneous)
-  -- Stop recording (transport: stop)
-  reaper.Main_OnCommand(1016, 0)
-  -- Get the most recent recorded item (output from FX chain)
-  local item = reaper.GetTrackMediaItem(track, reaper.CountTrackMediaItems(track)-1)
-  local take = reaper.GetActiveTake(item)
-  local events = {}
-  local notecnt = select(2, reaper.MIDI_CountEvts(take))
-  for i=0, notecnt-1 do
-    local _, _, _, startppq, endppq, chan, pitch, vel = reaper.MIDI_GetNote(take, i)
-    table.insert(events, {
-      type = "note_on",
-      ppqpos = startppq,
-      chanmsg = 0x90,
-      chan = chan,
-      msg1 = pitch,
-      msg2 = vel,
-    })
+-- Wait until play position reaches (or exceeds) the given time, then stop the transport and call the callback
+function record_until(target_time, after_stop_callback)
+  local function poll()
+    local play_state = reaper.GetPlayState()
+    local cur_pos = reaper.GetPlayPosition()
+    if play_state & 4 ~= 0 then -- still recording
+      if cur_pos >= target_time then
+        reaper.Main_OnCommand(1016, 0) -- Stop
+        reaper.defer(function()
+          -- Defer one more cycle to ensure item is available
+          after_stop_callback()
+        end)
+      else
+        reaper.defer(poll)
+      end
+    else
+      -- Not recording, just call callback right away
+      after_stop_callback()
+    end
   end
-  return events
+  poll()
+end
+
+-- Render Drum Trainer output to new MIDI item and get resulting NOTE events (Note On/Off only), async CPS
+function render_and_get_output_note_events_async(trainer_track, record_time, cb)
+  -- Arm the track for recording
+  reaper.SetMediaTrackInfo_Value(trainer_track, "I_RECARM", 1)
+  reaper.SetMediaTrackInfo_Value(trainer_track, "I_RECINPUT", 4096)
+  reaper.SetMediaTrackInfo_Value(trainer_track, "I_RECMODE", 4)
+  reaper.Main_OnCommand(1013, 0) -- Start recording
+  record_until(record_time, function()
+    -- Get the most recent recorded item (output from FX chain)
+    local item = reaper.GetTrackMediaItem(trainer_track, reaper.CountTrackMediaItems(trainer_track)-1)
+    local take = item and reaper.GetActiveTake(item)
+    local events = {}
+    if take then
+      local notecnt = select(2, reaper.MIDI_CountEvts(take))
+      for i=0, notecnt-1 do
+        local _, _, _, startppq, endppq, chan, pitch, vel = reaper.MIDI_GetNote(take, i)
+        table.insert(events, {
+          type = "note_on",
+          ppqpos = startppq,
+          chanmsg = 0x90,
+          chan = chan,
+          msg1 = pitch,
+          msg2 = vel,
+        })
+      end
+    end
+    cb(events)
+  end)
 end
 
 local function cleanup()
@@ -184,6 +217,7 @@ local scenarios = {
   ]]
 }
 
+-- Async test runner CPS style
 local total_scenarios = #scenarios
 local scenarios_passed = 0
 local scenarios_failed = 0
@@ -191,28 +225,60 @@ local total_tests = 0
 local tests_passed = 0
 local tests_failed = 0
 
-for _, scenario in ipairs(scenarios) do
-  reaper.ShowConsoleMsg("==== Running Scenario: " .. scenario.name .. " ====\n")
-  local all_pass = true
-  for _, test in ipairs(scenario.tests) do
-    cleanup()
-    local track, fx_idx = setup_jsfx_on_new_track(scenario.jsfx_name or "ambrosebs_MIDI Drum Trainer")
-    set_lane_config(track, fx_idx, scenario.lanes)
-    -- **Send the initial CC event to set JSFX's CCValueN**
-    -- (It's important to send the CC event BEFORE the note event to ensure the lane's CCValue is initialized)
-    local events = {
-      { is_cc=true,  cc_controller=test.cc_controller or 2, msg2=test.cc_value, ppqpos=0, chan=0 },
-      { is_cc=false, note=test.note or 60, vel=100, ppqpos=240, chan=0 }
-    }
-    local item, take = create_test_take(events)
-    local output_events = render_and_get_output_note_events(track)
+local function run_test_scenarios(scenarios, scenario_idx, test_idx)
+  scenario_idx = scenario_idx or 1
+  test_idx = test_idx or 1
+  if scenario_idx > #scenarios then
+    -- All done!
+    reaper.ShowConsoleMsg(
+      string.format(
+        "Test results: %d/%d scenarios passed, %d/%d tests passed.\n",
+        scenarios_passed, total_scenarios, tests_passed, total_tests
+      )
+    )
+    return
+  end
+  local scenario = scenarios[scenario_idx]
+  if test_idx == 1 then
+    reaper.ShowConsoleMsg("==== Running Scenario: " .. scenario.name .. " ====\n")
+  end
+  local test = scenario.tests[test_idx]
+  if not test then
+    -- Finished this scenario, go to next
+    if scenario.all_pass then scenarios_passed = scenarios_passed + 1 else scenarios_failed = scenarios_failed + 1 end
+    reaper.ShowConsoleMsg("==== End Scenario: " .. scenario.name .. " ====\n\n")
+    run_test_scenarios(scenarios, scenario_idx + 1, 1)
+    return
+  end
 
-    -- Move play cursor to start of item
+  cleanup()
+  -- 1. Setup Drum Trainer track with JSFX
+  local trainer_track, fx_idx = setup_jsfx_on_new_track(scenario.jsfx_name or "ambrosebs_MIDI Drum Trainer")
+  set_lane_config(trainer_track, fx_idx, scenario.lanes)
+
+  -- 2. Setup input track and routing
+  local input_track = setup_input_routing(trainer_track)
+
+  -- 3. Insert test MIDI item on input track
+  -- Insert MIDI on the grid: for 8 divisions, each division is 1/8 of 2.0 (since MIDI item is 2.0 quarter notes long)
+  local divisions = 8
+  local grid_len = 2.0 / divisions
+  local grid_ppq = 480 -- default REAPER PPQ per quarter note
+  local cc_ppqpos = 0
+  local note_ppqpos = 1 * grid_ppq * grid_len -- second division (can adjust as needed)
+  local events = {
+    { is_cc=true,  cc_controller=test.cc_controller or 2, msg2=test.cc_value, ppqpos=cc_ppqpos, chan=0 },
+    { is_cc=false, note=test.note or 60, vel=100, ppqpos=note_ppqpos, chan=0 }
+  }
+  local item, take = create_test_take_on_track(input_track, events)
+
+  -- 4. Arm trainer track, record, and wait until end of input item (2.0 quarter notes)
+  local record_time = 2.1 -- slightly after end of MIDI item to ensure capture
+
+  render_and_get_output_note_events_async(trainer_track, record_time, function(output_events)
+    -- Move play cursor to start of item for completeness
     local pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     reaper.SetEditCurPos(pos, false, false)
-    reaper.Main_OnCommand(1007, 0) -- Play
-    -- No sleep needed; REAPER will stop at the end of the MIDI item if nothing else is in the project.
-    --reaper.Main_OnCommand(1016, 0) -- Stop (optional, for safety)
 
     -- Print all NOTE events for debugging
     for i, ev in ipairs(output_events) do
@@ -224,10 +290,10 @@ for _, scenario in ipairs(scenarios) do
     local expected_lane = test.expected_lane
     local detected = detect_lane_zero_based(output_events, scenario)
     local pass = detected == expected_lane
+    scenario.all_pass = (scenario.all_pass == nil) and pass or (scenario.all_pass and pass)
     if pass then
       tests_passed = tests_passed + 1
     else
-      all_pass = false
       tests_failed = tests_failed + 1
     end
     total_tests = total_tests + 1
@@ -235,25 +301,11 @@ for _, scenario in ipairs(scenarios) do
     local got_str = detected == nil and "no lane" or ("lane " .. tostring(detected))
     reaper.ShowConsoleMsg(test.name .. ": " .. (pass and "PASS" or "FAIL") ..
       " (Expected " .. expected_str .. ", got " .. got_str .. ")\n")
-  end
-  if all_pass then
-    scenarios_passed = scenarios_passed + 1
-  else
-    scenarios_failed = scenarios_failed + 1
-  end
-  reaper.ShowConsoleMsg("==== End Scenario: " .. scenario.name .. " ====\n\n")
+
+    -- Next test (CPS)
+    run_test_scenarios(scenarios, scenario_idx, test_idx + 1)
+  end)
 end
 
-reaper.ShowConsoleMsg(
-  string.format(
-    "Test results: %d/%d scenarios passed, %d/%d tests passed.\n",
-    scenarios_passed, total_scenarios, tests_passed, total_tests
-  )
-)
-
--- exit with 0 if all scenarios passed, 1 otherwise
-if scenarios_failed > 0 then
-  --os.exit(1)
-else
-  --os.exit(0)
-end
+-- Start async scenario runner
+run_test_scenarios(scenarios)
