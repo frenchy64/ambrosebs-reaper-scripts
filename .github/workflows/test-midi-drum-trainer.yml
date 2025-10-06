@@ -104,8 +104,7 @@ jobs:
         run: |
           echo "${{ secrets.REAPER_LICENSE_KEY }}" > "$GITHUB_WORKSPACE/reaper/REAPER/license.txt"
 
-      # Combined step: start Xvfb, tail resource directory, run Hello World and main test scripts
-      - name: Tail REAPER resource directory and run tests
+      - name: Run Tests
         env:
           DISPLAY: ":99"
         run: |
@@ -113,8 +112,24 @@ jobs:
           Xvfb :99 &
           sleep 2
 
-          echo "Tailing REAPER resource directory for live changes..."
-          (find "$GITHUB_WORKSPACE/reaper/REAPER" -type f | xargs -r tail -F 2>/dev/null | tee "$GITHUB_WORKSPACE/tail-resource.log" &)
+          echo "Monitoring REAPER resource directory for file activity..."
+          MONITOR_DIR="$GITHUB_WORKSPACE/reaper/REAPER"
+          LOG_FILE="$GITHUB_WORKSPACE/tail-resource.log"
+          echo "Monitoring $MONITOR_DIR for changes..." > "$LOG_FILE"
+
+          # Start the background activity monitor
+          (
+            while true; do
+              activity=$(find "$MONITOR_DIR" -type f -newermt "-10 seconds")
+              current_time=$(date "+%Y-%m-%d %H:%M:%S")
+              if [ ! -z "$activity" ]; then
+                echo "Activity detected at $current_time" | tee -a "$LOG_FILE"
+              else
+                echo "No activity detected at $current_time" | tee -a "$LOG_FILE"
+              fi
+              sleep 10
+            done
+          ) &
 
           echo "Creating Hello World Lua script..."
           echo 'reaper.ShowConsoleMsg("Hello World from GitHub Actions!\\n")' > "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_hello_world.lua"
