@@ -140,72 +140,24 @@ jobs:
           Xvfb :99 &
           sleep 2
 
-          MONITOR_DIR="$GITHUB_WORKSPACE/reaper/REAPER"
-          LOG_FILE="$GITHUB_WORKSPACE/tail-resource.log"
-          MIDI_DRUM_TRAINER_SCRIPT="$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua"
-          echo "Monitoring $MONITOR_DIR for changes..." > "$LOG_FILE"
+          SUMMARY_FILE="$GITHUB_WORKSPACE/reaper_test_summary.txt"
 
-          # General activity monitor
-          (
-            while true; do
-              activity=$(find "$MONITOR_DIR" -type f -newermt "-10 seconds")
-              current_time=$(date "+%Y-%m-%d %H:%M:%S")
-              if [ ! -z "$activity" ]; then
-                echo "Activity detected at $current_time" | tee -a "$LOG_FILE"
-              else
-                echo "No activity detected at $current_time" | tee -a "$LOG_FILE"
-              fi
-              sleep 10
-            done
-          ) &
-
-          # Run REAPER with MIDI Drum Trainer and monitor its output for "Summary:"
-          echo "Starting REAPER MIDI Drum Trainer test..."
-          reaper -nosplash -new -ignoreerrors -close:exit "$MIDI_DRUM_TRAINER_SCRIPT" > "$GITHUB_WORKSPACE/reaper_test_output.log" 2>&1 &
-          REAPER_PID=$!
-
-          echo "Monitoring REAPER output for test completion..."
-          TIMEOUT=120
-          SECONDS_WAITED=0
-          while true; do
-            if grep -q "Summary:" "$GITHUB_WORKSPACE/reaper_test_output.log"; then
-              echo "Test summary detected. Killing REAPER process $REAPER_PID."
-              kill $REAPER_PID || true
-              break
-            fi
-            sleep 2
-            SECONDS_WAITED=$((SECONDS_WAITED + 2))
-            if [ "$SECONDS_WAITED" -ge "$TIMEOUT" ]; then
-              echo "Timed out waiting for test summary. Killing REAPER process $REAPER_PID."
-              kill $REAPER_PID || true
-              break
-            fi
-          done
-
-          echo "Finished REAPER MIDI Drum Trainer test."
+          # Run test runner script and monitor summary file
+          bash "$GITHUB_WORKSPACE/scripts/run_midi_drum_trainer_tests.sh" "$SUMMARY_FILE"
 
       - name: Check test results and fail if any unit test fails
         run: |
           echo "========== MIDI Drum Trainer Test Results =========="
-          cat "$GITHUB_WORKSPACE/reaper_test_output.log"
+          cat "$GITHUB_WORKSPACE/reaper_test_summary.txt"
 
-          # Grep the summary and check for 'unit tests passed'
-          summary=$(grep 'Summary:' "$GITHUB_WORKSPACE/reaper_test_output.log" || true)
+          summary=$(cat "$GITHUB_WORKSPACE/reaper_test_summary.txt" | grep 'Summary:' || true)
           echo "$summary"
 
-          # Check for REAPER usage output (indicating script did not run)
-          if grep -q "Usage: reaper" "$GITHUB_WORKSPACE/reaper_test_output.log"; then
-            echo "ERROR: REAPER printed usage instructions instead of running the script."
-            exit 1
-          fi
-
-          # Fail if summary is empty (i.e., script did not run or did not output summary)
           if [[ -z "$summary" ]]; then
-            echo "ERROR: No summary found in REAPER output. Script did not run or test results not printed."
+            echo "ERROR: No summary found in REAPER summary file. Script did not run or test results not printed."
             exit 1
           fi
 
-          # Extract passed/total counts
           scenario_passed=$(echo "$summary" | sed -n 's/.* \([0-9]\+\)\/\([0-9]\+\) scenarios passed.*/\1/p')
           scenario_total=$(echo "$summary" | sed -n 's/.* \([0-9]\+\)\/\([0-9]\+\) scenarios passed.*/\2/p')
           test_passed=$(echo "$summary" | sed -n 's/.* \([0-9]\+\)\/\([0-9]\+\) unit tests passed.*/\1/p')
@@ -215,15 +167,14 @@ jobs:
             echo "ERROR: Not all scenarios or unit tests passed!"
             exit 1
           fi
-
           echo "All tests passed."
 
-      - name: Upload REAPER test output log (always)
+      - name: Upload REAPER test summary file (always)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reaper-test-output
-          path: ${{ github.workspace }}/reaper_test_output.log
+          name: reaper-test-summary
+          path: ${{ github.workspace }}/reaper_test_summary.txt
 
       - name: Upload REAPER resource tail log (always)
         if: always()
