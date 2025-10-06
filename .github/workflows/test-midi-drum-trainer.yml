@@ -178,19 +178,8 @@ jobs:
             done
           ) &
 
-          echo "Creating Hello World Lua script..."
-          cat > "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_hello_world.lua" << 'EOF'
-          local resource_path = reaper.GetResourcePath()
-          local file = io.open(resource_path .. "/hello_from_github_actions.txt", "w")
-          if file then
-            file:write("Hello World from GitHub Actions!\n")
-            file:close()
-          end
-          reaper.ShowConsoleMsg("Hello World from GitHub Actions!\n")
-          EOF
-
-          echo "Starting REAPER Hello World test..."
-          reaper -nosplash -new -ignoreerrors -close:exit "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_hello_world.lua" || true
+          echo "Running REAPER Hello World test via scripts/run_reaper_hello_world.sh..."
+          bash "$GITHUB_WORKSPACE/scripts/run_reaper_hello_world.sh"
           echo "Finished REAPER Hello World test."
 
           echo "Running MIDI Drum Trainer test script in REAPER..."

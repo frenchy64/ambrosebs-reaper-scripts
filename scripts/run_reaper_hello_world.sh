@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-SCRIPT_DIR="${1:-$(pwd)/reaper/REAPER/Scripts/tests}"
-SCRIPT_PATH="$SCRIPT_DIR/test_hello_world.lua"
+# Create a temporary directory
+TMPDIR="$(mktemp -d)"
+SCRIPT_PATH="$TMPDIR/test_hello_world.lua"
 
 # Write Hello World Lua script
 cat > "$SCRIPT_PATH" << 'EOF'
