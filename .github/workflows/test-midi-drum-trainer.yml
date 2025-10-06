@@ -8,7 +8,8 @@ on:
       - '.github/workflows/test-midi-drum-trainer.yml'
 
 env:
-  REAPER_VERSION: "7.48"
+  REAPER_MAJOR_VERSION: "7"
+  REAPER_MINOR_VERSION: "48"
   SWS_VERSION: "2.14.0.7"
 
 jobs:
@@ -22,11 +23,11 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y xz-utils libasound2 libx11-6 libglib2.0-0 libgtk-3-0
+          sudo apt-get install -y xz-utils libx11-6 libglib2.0-0 libgtk-3-0
 
       - name: Download and extract REAPER
         env:
-          REAPER_DOWNLOAD_URL: "https://www.reaper.fm/files/${{ env.REAPER_VERSION }}/reaper_linux_x86_64.tar.xz"
+          REAPER_DOWNLOAD_URL: "https://www.reaper.fm/files/${{ env.REAPER_MAJOR_VERSION }}.x/reaper${{ env.REAPER_MAJOR_VERSION }}${{ env.REAPER_MINOR_VERSION }}_linux_x86_64.tar.xz"
         run: |
           wget -O reaper.tar.xz $REAPER_DOWNLOAD_URL
           tar -xf reaper.tar.xz
