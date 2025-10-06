@@ -27,9 +27,7 @@ local function set_lane_config(track, fx_idx, lanes)
   -- update number of lanes slider
   local lanes_slider_idx = get_slider_param_index_by_name(track, fx_idx, "Lanes")
   if lanes_slider_idx then
-    -- Lanes slider expects lane count minus 1 (if 0-based), or just the count if 1-based (check your JSFX slider definition).
-    -- Most JSFX "lanes" sliders are 1-based, so just use #scenario.lanes
-    reaper.TrackFX_SetParam(track, fx_idx, lanes_slider_idx, #lanes)
+    reaper.TrackFX_SetParam(track, fx_idx, lanes_slider_idx, #lanes-1)
   else
     reaper.ShowConsoleMsg("WARNING: Could not find 'Lanes' slider in JSFX.\n")
   end
