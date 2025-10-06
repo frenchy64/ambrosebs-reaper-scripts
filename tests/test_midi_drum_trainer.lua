@@ -204,8 +204,15 @@ for _, scenario in ipairs(scenarios) do
       { is_cc=true,  cc_controller=test.cc_controller or 2, msg2=test.cc_value, ppqpos=0, chan=0 },
       { is_cc=false, note=test.note or 60, vel=100, ppqpos=240, chan=0 }
     }
-    create_test_take(events)
+    local item, take = create_test_take(events)
     local output_events = render_and_get_output_note_events(track)
+
+    -- Move play cursor to start of item
+    local pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
+    reaper.SetEditCurPos(pos, false, false)
+    reaper.Main_OnCommand(1007, 0) -- Play
+    -- No sleep needed; REAPER will stop at the end of the MIDI item if nothing else is in the project.
+    --reaper.Main_OnCommand(1016, 0) -- Stop (optional, for safety)
 
     -- Print all NOTE events for debugging
     for i, ev in ipairs(output_events) do
