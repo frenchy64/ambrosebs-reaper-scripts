@@ -17,6 +17,7 @@ env:
   REAPER_MINOR_VERSION: "48"
   SWS_VERSION: "2.14.0.7"
   WDL_COMMIT: "3024ec8e000f769454b5ee4ac927dc5cecfc6a6b"
+  ACTIONS_CACHE_VERSION: "0" # increment this to simulate cache invalidation
 
 jobs:
   test-midi-drum-trainer:
@@ -32,51 +33,75 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential libx11-dev libglib2.0-0 libgtk-3-0 xz-utils git cmake
 
-      # - name: Cache WDL headless build
-      #   id: cache_wdl
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: |
-      #       ${{ github.workspace }}/wdl
-      #     key: wdl-${{ env.WDL_COMMIT }}
+      # Cache REAPER tarball only
+      - name: Cache REAPER tarball
+        id: cache_reaper
+        uses: actions/cache@v4
+        with:
+          path: tmp_reaper/reaper.tar.xz
+          key: ${{ env.ACTIONS_CACHE_VERSION }}-reaper-tarball-${{ env.REAPER_MAJOR_VERSION }}-${{ env.REAPER_MINOR_VERSION }}
 
-      # Build WDL headless (always runs unless cache-hit is true, but cache step is commented out)
-      - name: Build WDL headless
-        # if: steps.cache_wdl.outputs.cache-hit != 'true'  # uncomment for cache use
+      - name: Download REAPER tarball if needed
+        if: steps.cache_reaper.outputs.cache-hit != 'true'
+        env:
+          REAPER_DOWNLOAD_URL: "https://www.reaper.fm/files/${{ env.REAPER_MAJOR_VERSION }}.x/reaper${{ env.REAPER_MAJOR_VERSION }}${{ env.REAPER_MINOR_VERSION }}_linux_x86_64.tar.xz"
         run: |
-          git clone https://github.com/justinfrankel/WDL.git wdl
-          cd wdl
+          mkdir -p tmp_reaper
+          wget -O tmp_reaper/reaper.tar.xz $REAPER_DOWNLOAD_URL
+
+      - name: Extract REAPER and setup directories
+        run: |
+          mkdir -p tmp_reaper
+          tar -xf tmp_reaper/reaper.tar.xz -C tmp_reaper
+          mkdir -p reaper
+          cp -r tmp_reaper/reaper_linux_x86_64/* reaper/
+          mkdir -p reaper/REAPER/UserPlugins
+          mkdir -p reaper/REAPER/Scripts/tests
+
+      # Cache SWS extension directly in reaper/REAPER/UserPlugins
+      - name: Cache SWS Extension
+        id: cache_sws
+        uses: actions/cache@v4
+        with:
+          path: reaper/REAPER/UserPlugins/reaper_sws-x86_64.so
+          key: ${{ env.ACTIONS_CACHE_VERSION }}-sws-${{ env.SWS_VERSION }}
+
+      - name: Download and extract SWS Extension
+        if: steps.cache_sws.outputs.cache-hit != 'true'
+        env:
+          SWS_DOWNLOAD_URL: "https://www.sws-extension.org/download/featured/sws-${{ env.SWS_VERSION }}-Linux-x86_64.tar.xz"
+        run: |
+          mkdir -p tmp_sws
+          wget -O tmp_sws/sws.tar.xz $SWS_DOWNLOAD_URL
+          tar -xf tmp_sws/sws.tar.xz -C tmp_sws
+          ls tmp_sws/UserPlugins
+          cp tmp_sws/UserPlugins/reaper_sws-x86_64.so reaper/REAPER/UserPlugins/
+
+      # Cache WDL build (libSwell.so in REAPER dir)
+      - name: Cache WDL headless build
+        id: cache_wdl
+        uses: actions/cache@v4
+        with:
+          path: reaper/REAPER/libSwell.so
+          key: ${{ env.ACTIONS_CACHE_VERSION }}-libSwell-${{ env.WDL_COMMIT }}
+
+      # Build WDL headless and install libSwell.so into REAPER
+      - name: Build WDL headless and install libSwell.so
+        if: steps.cache_wdl.outputs.cache-hit != 'true'
+        run: |
+          git clone https://github.com/justinfrankel/WDL.git tmp_wdl_src
+          cd tmp_wdl_src
           git checkout ${WDL_COMMIT}
           cd WDL/swell
           make NOGDK=1 -Wno-error
-          echo "Listing all files under $(pwd) to search for libSwell.so:"
-          find . -type f | tee /tmp/wdl-files.log
-          echo "Directory tree under $(pwd):"
-          find . | tee /tmp/wdl-tree.log
-
-      - name: Prepare headless REAPER install
-        run: |
-          mkdir -p reaper/REAPER/UserPlugins
-          # Download and extract official SWS
-          wget -O sws.tar.xz "https://www.sws-extension.org/download/featured/sws-${SWS_VERSION}-Linux-x86_64.tar.xz"
-          tar -xf sws.tar.xz
-          cp UserPlugins/reaper_sws-x86_64.so reaper/REAPER/UserPlugins/
-          # Download official REAPER binary
-          wget -O reaper.tar.xz "https://www.reaper.fm/files/${REAPER_MAJOR_VERSION}.x/reaper${REAPER_MAJOR_VERSION}${REAPER_MINOR_VERSION}_linux_x86_64.tar.xz"
-          tar -xf reaper.tar.xz
-          mv reaper_linux_x86_64/reaper reaper/REAPER/reaper
-          chmod +x reaper/REAPER/reaper
-          # Locate libSwell.so from WDL build and copy to REAPER directory
-          cp wdl/WDL/swell/libSwell.so reaper/REAPER/libSwell.so
+          cp libSwell.so ../../../../reaper/REAPER/libSwell.so
 
       - name: Copy test script into REAPER scripts
         run: |
-          mkdir -p reaper/REAPER/Scripts/tests
           cp tests/test_midi_drum_trainer.lua reaper/REAPER/Scripts/tests/
 
       - name: Install REAPER license
         run: |
-          mkdir -p reaper/REAPER
           echo "${{ secrets.REAPER_LICENSE_KEY }}" > reaper/REAPER/license.txt
 
       # Combined step: start Xvfb, tail resource directory, run Hello World and main test scripts
@@ -89,7 +114,6 @@ jobs:
           sleep 2
 
           echo "Tailing REAPER resource directory for live changes..."
-          mkdir -p reaper/REAPER
           (find reaper/REAPER -type f | xargs -r tail -F 2>/dev/null | tee tail-resource.log &)
 
           echo "Creating Hello World Lua script..."
