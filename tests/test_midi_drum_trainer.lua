@@ -367,10 +367,23 @@ local function run_tests()
     end
     reaper.ShowConsoleMsg("All scenarios complete.\n")
     reaper.ShowConsoleMsg("===================================================\n")
-    reaper.ShowConsoleMsg(string.format(
-      "Summary: %d/%d scenarios passed, %d/%d unit tests passed.\n",
-      passed_scenarios, total_scenarios, passed_tests, total_tests))
+    local summary = string.format(
+      "Summary: %d/%d scenarios passed, %d/%d unit tests passed.",
+      passed_scenarios, total_scenarios, passed_tests, total_tests)
+    reaper.ShowConsoleMsg(summary .. "\n")
     reaper.ShowConsoleMsg("===================================================\n")
+
+    -- Write summary to file if requested by environment variable
+    local output_path = os.getenv("REAPER_MIDI_DRUM_TRAINER_SUMMARY_FILE")
+    if output_path and #output_path > 0 then
+      local file = io.open(output_path, "w")
+      if file then
+        file:write(summary .. "\n")
+        file:close()
+      else
+        reaper.ShowConsoleMsg("Failed to write summary file: " .. output_path .. "\n")
+      end
+    end
   end
 
   marker_poll()
