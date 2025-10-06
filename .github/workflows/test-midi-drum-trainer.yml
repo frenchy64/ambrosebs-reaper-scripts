@@ -41,6 +41,7 @@ jobs:
           wget -O sws.tar.xz $SWS_DOWNLOAD_URL
           tar -xf sws.tar.xz
           mkdir -p reaper/REAPER/UserPlugins
+          tar -tvf sws.tar.xz
           ls
           cp *.so reaper/REAPER/UserPlugins/
 
