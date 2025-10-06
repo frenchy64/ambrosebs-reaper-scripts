@@ -143,6 +143,7 @@ jobs:
           MONITOR_DIR="$GITHUB_WORKSPACE/reaper/REAPER"
           LOG_FILE="$GITHUB_WORKSPACE/tail-resource.log"
           LIVENESS_FILE="$MONITOR_DIR/hello_from_github_actions.txt"
+          MIDI_DRUM_TRAINER_SCRIPT="$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua"
           echo "Monitoring $MONITOR_DIR for changes..." > "$LOG_FILE"
 
           # General activity monitor
@@ -177,12 +178,30 @@ jobs:
             done
           ) &
 
-          echo "Running REAPER Hello World test via scripts/run_reaper_hello_world.sh..."
-          bash "$GITHUB_WORKSPACE/scripts/run_reaper_hello_world.sh" "$LIVENESS_FILE"
-          echo "Finished REAPER Hello World test."
+          echo "Running REAPER Hello World test via scripts/run_reaper_hello_world.sh in background..."
+          bash "$GITHUB_WORKSPACE/scripts/run_reaper_hello_world.sh" "$LIVENESS_FILE" &
+          REAPER_SERVER_PID=$!
 
-          echo "Running MIDI Drum Trainer test script in REAPER..."
-          reaper -nosplash -new -ignoreerrors -close:exit "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua" 2>&1 | tee "$GITHUB_WORKSPACE/reaper_test_output.log"
+          # Wait for liveness file to be written (proves REAPER is running)
+          echo "Waiting for liveness file $LIVENESS_FILE to exist..."
+          TIMEOUT=60  # seconds
+          SECONDS_WAITED=0
+          while [ ! -f "$LIVENESS_FILE" ]; do
+            sleep 1
+            SECONDS_WAITED=$((SECONDS_WAITED + 1))
+            if [ "$SECONDS_WAITED" -ge "$TIMEOUT" ]; then
+              echo "Timed out waiting for liveness file."
+              exit 1
+            fi
+          done
+
+          echo "Liveness file detected. Proceeding to run MIDI Drum Trainer..."
+
+          # Run MIDI Drum Trainer test script in the same REAPER instance
+          reaper -nonewinst -nosplash -new -ignoreerrors -close:exit "$MIDI_DRUM_TRAINER_SCRIPT" 2>&1 | tee "$GITHUB_WORKSPACE/reaper_test_output.log"
+
+          # Optionally: kill the Hello World instance if it keeps running
+          # kill $REAPER_SERVER_PID || true
 
       - name: Check test results and fail if any unit test fails
         run: |
