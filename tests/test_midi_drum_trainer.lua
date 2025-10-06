@@ -36,7 +36,6 @@ local function create_scenario_tracks(scenario_name, prev_last_track_idx)
   return folder_track, trainer_track, input_track
 end
 
--- Looks up the internal parameter index for a JSFX slider by its name, for a given track and fx index.
 function get_slider_param_index_by_name(track, fx_idx, slider_name)
   local num_params = reaper.TrackFX_GetNumParams(track, fx_idx)
   for i = 0, num_params - 1 do
@@ -83,7 +82,6 @@ local function set_lane_config(track, fx_idx, lanes)
   end
 end
 
--- Helper: Insert Drum Trainer JSFX if not already present, return fx index
 local function ensure_jsfx_on_track(track, jsfx_name)
   local fx_idx = -1
   for i = 0, reaper.TrackFX_GetCount(track)-1 do
@@ -114,10 +112,9 @@ local function create_named_midi_item(track, bar_idx, name)
   if take then
     reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", name, true)
   end
-  return item, start_time, end_time
+  return item, start_time, end_time, start_qn
 end
 
--- Helper: Insert MIDI events into a take at start (all at first tick for simplicity)
 local function insert_events_in_take(take, events)
   for _, ev in ipairs(events) do
     local is_cc = ev.is_cc == true
@@ -136,14 +133,13 @@ local function insert_events_in_take(take, events)
   reaper.MIDI_Sort(take)
 end
 
--- Wait until play position reaches (or exceeds) the given time, then stop the transport and call the callback
 function record_until(target_time, after_stop_callback)
   local function poll()
     local play_state = reaper.GetPlayState()
     local cur_pos = reaper.GetPlayPosition()
     if play_state & 4 ~= 0 then -- still recording
       if cur_pos >= target_time then
-        -- 1017 = Transport: Stop (save all recorded media)
+        -- 1017 = Transport: Stop (save all recorded media) - this avoids dialog
         reaper.Main_OnCommand(1017, 0)
         -- Wait a bit before continuing (e.g., 0.3 seconds)
         local wait_frames = 18 -- ~0.3 sec at 60fps
@@ -166,22 +162,28 @@ function record_until(target_time, after_stop_callback)
   poll()
 end
 
--- Arm, record, and get resulting output MIDI item; callback gets output item
-function render_and_get_output_item_async(trainer_track, start_time, end_time, cb)
+function render_and_get_output_item_async(trainer_track, start_time, end_time, start_qn, cb)
+  -- Always stop transport before starting a new test
+  reaper.Main_OnCommand(1016, 0)  -- 1016 = Transport: Stop
+
+  -- Set edit cursor and time selection for this test
+  reaper.SetEditCurPos(start_time, false, false)
+  reaper.GetSet_LoopTimeRange(true, false, start_time, end_time, false)
+
   -- Arm track for recording
   reaper.SetMediaTrackInfo_Value(trainer_track, "I_RECARM", 1)
   -- I_RECINPUT=4096: record output (MIDI)
-  reaper.SetMediaTrackInfo_Value(trainer_track, "I_RECINPUT", 4096)
-  -- I_RECMODE=5: auto-punch time selection mode (only record during time selection)
-  reaper.SetMediaTrackInfo_Value(trainer_track, "I_RECMODE", 5)
-  -- Set time selection to match test
-  reaper.GetSet_LoopTimeRange(true, false, start_time, end_time, false)
-  -- Move to start of item
-  reaper.SetEditCurPos(start_time, false, false)
+  reaper.SetMediaTrackInfo_Value(trainer_track, "I_RECINPUT", 4096) -- RECORD MIDI OUTPUT!
+  -- I_RECMODE=4: record output (MIDI) mode (NOT 5, which is auto-punch for audio)
+  reaper.SetMediaTrackInfo_Value(trainer_track, "I_RECMODE", 4)
+
+  -- We will record for only 1/4 beat (0.25 quarter notes) after start_qn, so output item matches input exactly
+  local robust_end_qn = start_qn + 0.25
+  local robust_end_time = reaper.TimeMap2_QNToTime(0, robust_end_qn)
+
   -- Start recording
   reaper.Main_OnCommand(1013, 0)
-  -- For robustness, record until slightly after end_time (0.01s)
-  record_until(end_time + 0.01, function()
+  record_until(robust_end_time, function()
     -- Find the new recorded MIDI item on output track in the bar's time range
     local out_item = nil
     for i = 0, reaper.CountTrackMediaItems(trainer_track)-1 do
@@ -202,7 +204,6 @@ function render_and_get_output_item_async(trainer_track, start_time, end_time, c
   end)
 end
 
--- Detect lane from note events
 local function detect_lane_zero_based(item)
   local take = reaper.GetActiveTake(item)
   if not take then return nil end
@@ -262,7 +263,6 @@ local scenarios = {
   ]]
 }
 
--- Async test runner, preserving all tracks and items for inspection
 local function run_tests()
   local scenario_idx = 1
   local prev_last_track_idx = reaper.CountTracks(0)-1
@@ -274,20 +274,16 @@ local function run_tests()
       reaper.ShowConsoleMsg("All scenarios complete.\n")
       return
     end
-    -- Create new track group for scenario
     local folder_track, trainer_track, input_track =
       create_scenario_tracks(scenario.name, prev_last_track_idx)
-    prev_last_track_idx = prev_last_track_idx + 3 -- update for next scenario
-    -- Insert Drum Trainer JSFX and configure
+    prev_last_track_idx = prev_last_track_idx + 3
     local fx_idx = ensure_jsfx_on_track(trainer_track, scenario.jsfx_name)
     set_lane_config(trainer_track, fx_idx, scenario.lanes)
-    -- Start with beat 1 for first test in this scenario
     local test_idx = 1
     local num_tests = #scenario.tests
 
     run_test = function()
       if test_idx > num_tests then
-        -- After all tests, disarm Output track and mute the scenario folder
         reaper.SetMediaTrackInfo_Value(trainer_track, "I_RECARM", 0)
         reaper.SetMediaTrackInfo_Value(folder_track, "B_MUTE", 1)
         scenario_idx = scenario_idx + 1
@@ -296,25 +292,20 @@ local function run_tests()
       end
       local test = scenario.tests[test_idx]
       local beat = test_idx
-      -- Create input MIDI item for this test
       local item_name = string.format("Test %d Input: %s", test_idx, test.name)
-      local input_item, start_time, end_time = create_named_midi_item(input_track, beat, item_name)
+      local input_item, start_time, end_time, start_qn = create_named_midi_item(input_track, beat, item_name)
       local take = reaper.GetActiveTake(input_item)
-      -- Set take name for input
       if take then
         reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", item_name, true)
       end
-      -- Insert test events (at PPQ 0 or as needed)
       insert_events_in_take(take, {
         { is_cc=true,  cc_controller=test.cc_controller or 2, msg2=test.cc_value, ppqpos=0, chan=0 },
         { is_cc=false, note=test.note or 60, vel=100, ppqpos=0, chan=0 }
       })
-      -- Move play cursor to start of test
+
       reaper.SetEditCurPos(start_time, false, false)
 
-      -- Record and analyze output
-      render_and_get_output_item_async(trainer_track, start_time, end_time, function(output_item)
-        -- Name output MIDI item for this test (item and take)
+      render_and_get_output_item_async(trainer_track, start_time, end_time, start_qn, function(output_item)
         local out_item_name = string.format("Test %d Output: %s", test_idx, test.name)
         if output_item then
           reaper.GetSetMediaItemInfo_String(output_item, "P_NAME", out_item_name, true)
@@ -323,7 +314,6 @@ local function run_tests()
             reaper.GetSetMediaItemTakeInfo_String(out_take, "P_NAME", out_item_name, true)
           end
         end
-        -- Analyze
         local detected = output_item and detect_lane_zero_based(output_item)
         local pass = detected == test.expected_lane
         local expected_str = test.expected_lane == nil and "no lane" or ("lane " .. tostring(test.expected_lane))
