@@ -132,7 +132,7 @@ jobs:
         run: |
           echo "$GITHUB_WORKSPACE/reaper/REAPER" >> $GITHUB_PATH
 
-      - name: Run Tests
+      - name: Run and monitor MIDI Drum Trainer tests
         env:
           DISPLAY: ":99"
         run: |
@@ -142,7 +142,6 @@ jobs:
 
           MONITOR_DIR="$GITHUB_WORKSPACE/reaper/REAPER"
           LOG_FILE="$GITHUB_WORKSPACE/tail-resource.log"
-          LIVENESS_FILE="$MONITOR_DIR/hello_from_github_actions.txt"
           MIDI_DRUM_TRAINER_SCRIPT="$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua"
           echo "Monitoring $MONITOR_DIR for changes..." > "$LOG_FILE"
 
@@ -160,48 +159,30 @@ jobs:
             done
           ) &
 
-          # Specific watcher for the liveness file
-          (
-            last_mod=""
-            while true; do
-              current_time=$(date "+%Y-%m-%d %H:%M:%S")
-              if [ -f "$LIVENESS_FILE" ]; then
-                file_mod=$(stat -c %Y "$LIVENESS_FILE")
-                if [ "$last_mod" != "$file_mod" ]; then
-                  echo "Liveness file $LIVENESS_FILE created or modified at $current_time" | tee -a "$LOG_FILE"
-                  last_mod="$file_mod"
-                fi
-              else
-                echo "Liveness file $LIVENESS_FILE not present at $current_time" | tee -a "$LOG_FILE"
-              fi
-              sleep 10
-            done
-          ) &
+          # Run REAPER with MIDI Drum Trainer and monitor its output for "Summary:"
+          echo "Starting REAPER MIDI Drum Trainer test..."
+          reaper -nosplash -new -ignoreerrors -close:exit "$MIDI_DRUM_TRAINER_SCRIPT" > "$GITHUB_WORKSPACE/reaper_test_output.log" 2>&1 &
+          REAPER_PID=$!
 
-          echo "Running REAPER Hello World test via scripts/run_reaper_hello_world.sh in background..."
-          bash "$GITHUB_WORKSPACE/scripts/run_reaper_hello_world.sh" "$LIVENESS_FILE" &
-          REAPER_SERVER_PID=$!
-
-          # Wait for liveness file to be written (proves REAPER is running)
-          echo "Waiting for liveness file $LIVENESS_FILE to exist..."
-          TIMEOUT=60  # seconds
+          echo "Monitoring REAPER output for test completion..."
+          TIMEOUT=120
           SECONDS_WAITED=0
-          while [ ! -f "$LIVENESS_FILE" ]; do
-            sleep 1
-            SECONDS_WAITED=$((SECONDS_WAITED + 1))
+          while true; do
+            if grep -q "Summary:" "$GITHUB_WORKSPACE/reaper_test_output.log"; then
+              echo "Test summary detected. Killing REAPER process $REAPER_PID."
+              kill $REAPER_PID || true
+              break
+            fi
+            sleep 2
+            SECONDS_WAITED=$((SECONDS_WAITED + 2))
             if [ "$SECONDS_WAITED" -ge "$TIMEOUT" ]; then
-              echo "Timed out waiting for liveness file."
-              exit 1
+              echo "Timed out waiting for test summary. Killing REAPER process $REAPER_PID."
+              kill $REAPER_PID || true
+              break
             fi
           done
 
-          echo "Liveness file detected. Proceeding to run MIDI Drum Trainer..."
-
-          # Run MIDI Drum Trainer test script in the same REAPER instance
-          reaper -nonewinst -nosplash -new -ignoreerrors -close:exit "$MIDI_DRUM_TRAINER_SCRIPT" 2>&1 | tee "$GITHUB_WORKSPACE/reaper_test_output.log"
-
-          # Optionally: kill the Hello World instance if it keeps running
-          # kill $REAPER_SERVER_PID || true
+          echo "Finished REAPER MIDI Drum Trainer test."
 
       - name: Check test results and fail if any unit test fails
         run: |
