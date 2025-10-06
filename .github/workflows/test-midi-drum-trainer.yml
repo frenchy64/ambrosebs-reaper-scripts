@@ -60,31 +60,26 @@ jobs:
           mkdir -p reaper/REAPER
           echo "${{ secrets.REAPER_LICENSE_KEY }}" > reaper/REAPER/license.txt
 
-      # --- NEW: Tailing resource directory ---
-      - name: Tail REAPER resource directory
+      # Combined step: start Xvfb, tail resource directory, run Hello World and main test scripts
+      - name: Tail REAPER resource directory and run tests
+        env:
+          DISPLAY: ":99"
         run: |
+          echo "Starting Xvfb for REAPER GUI..."
+          Xvfb :99 &
+          sleep 2
+
           echo "Tailing REAPER resource directory for live changes..."
           mkdir -p reaper/REAPER
-          # Tail everything in the resource directory, following new files and changes
-          # This runs in the background and outputs to tail-resource.log and stdout
-          (find reaper/REAPER -type f | xargs -r tail -F 2>/dev/null | tee tail-resource.log &) 
+          (find reaper/REAPER -type f | xargs -r tail -F 2>/dev/null | tee tail-resource.log &)
 
-      # --- NEW: "Hello World" test, start and stop REAPER ---
-      - name: REAPER Hello World test
-        env:
-          DISPLAY: ":99"
-        run: |
-          Xvfb :99 &
+          echo "Creating Hello World Lua script..."
+          echo 'reaper.ShowConsoleMsg("Hello World from GitHub Actions!\\n")' > reaper/REAPER/Scripts/tests/test_hello_world.lua
+
           echo "Starting REAPER Hello World test..."
-          # Start REAPER, print Hello World, and immediately exit
-          reaper/REAPER/reaper -nosplash -new -ignoreerrors -close:exit -eval 'reaper.ShowConsoleMsg("Hello World from GitHub Actions!\n")' || true
+          reaper/REAPER/reaper -nosplash -new -ignoreerrors -close:exit reaper/REAPER/Scripts/tests/test_hello_world.lua || true
           echo "Finished REAPER Hello World test."
 
-      - name: Run MIDI Drum Trainer test script in REAPER
-        env:
-          DISPLAY: ":99"
-        run: |
-          # At this point, the directory tailing is still running in the background
           echo "Running MIDI Drum Trainer test script in REAPER..."
           reaper/REAPER/reaper -nosplash -new -ignoreerrors -close:exit reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua 2>&1 | tee reaper_test_output.log
 
