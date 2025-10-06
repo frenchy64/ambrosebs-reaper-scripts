@@ -107,11 +107,19 @@ function record_until(target_time, after_stop_callback)
     local cur_pos = reaper.GetPlayPosition()
     if play_state & 4 ~= 0 then -- still recording
       if cur_pos >= target_time then
-        reaper.Main_OnCommand(1016, 0) -- Stop
-        reaper.defer(function()
-          -- Defer one more cycle to ensure item is available
-          after_stop_callback()
-        end)
+        -- Use action 1017: Transport: Stop (save all recorded media)
+        reaper.Main_OnCommand(1017, 0)
+        -- Wait a bit before continuing (e.g., 0.3 seconds)
+        local wait_frames = 18 -- ~0.3 seconds at 60fps
+        local function wait()
+          if wait_frames > 0 then
+            wait_frames = wait_frames - 1
+            reaper.defer(wait)
+          else
+            after_stop_callback()
+          end
+        end
+        wait()
       else
         reaper.defer(poll)
       end
@@ -217,11 +225,6 @@ local scenarios = {
   ]]
 }
 
--- Store and set "Always save recorded media" option at script start
-local proj = 0 -- current project
-local orig_rec_cfg = reaper.GetSetProjectInfo(proj, "RECORDCFG", 0, false)
-reaper.GetSetProjectInfo(proj, "RECORDCFG", 1, true) -- 1 = Always save
-
 -- Async test runner CPS style
 local total_scenarios = #scenarios
 local scenarios_passed = 0
@@ -241,8 +244,6 @@ local function run_test_scenarios(scenarios, scenario_idx, test_idx)
         scenarios_passed, total_scenarios, tests_passed, total_tests
       )
     )
-    -- Restore the previous "save recorded media" setting
-    reaper.GetSetProjectInfo(proj, "RECORDCFG", orig_rec_cfg, true)
     return
   end
   local scenario = scenarios[scenario_idx]
