@@ -128,6 +128,10 @@ jobs:
         run: |
           echo "${{ secrets.REAPER_LICENSE_KEY }}" > "$GITHUB_WORKSPACE/reaper/REAPER/license.txt"
 
+      - name: Add REAPER to PATH
+        run: |
+          echo "$GITHUB_WORKSPACE/reaper/REAPER" >> $GITHUB_PATH
+
       - name: Run Tests
         env:
           DISPLAY: ":99"
@@ -186,11 +190,11 @@ jobs:
           EOF
 
           echo "Starting REAPER Hello World test..."
-          "$GITHUB_WORKSPACE/reaper/REAPER/reaper" -nosplash -new -ignoreerrors -close:exit "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_hello_world.lua" || true
+          reaper -nosplash -new -ignoreerrors -close:exit "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_hello_world.lua" || true
           echo "Finished REAPER Hello World test."
 
           echo "Running MIDI Drum Trainer test script in REAPER..."
-          "$GITHUB_WORKSPACE/reaper/REAPER/reaper" -nosplash -new -ignoreerrors -close:exit "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua" 2>&1 | tee "$GITHUB_WORKSPACE/reaper_test_output.log"
+          reaper -nosplash -new -ignoreerrors -close:exit "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua" 2>&1 | tee "$GITHUB_WORKSPACE/reaper_test_output.log"
 
       - name: Check test results and fail if any unit test fails
         run: |
