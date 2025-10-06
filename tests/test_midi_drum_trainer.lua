@@ -217,6 +217,11 @@ local scenarios = {
   ]]
 }
 
+-- Store and set "Always save recorded media" option at script start
+local proj = 0 -- current project
+local orig_rec_cfg = reaper.GetSetProjectInfo(proj, "RECORDCFG", 0, false)
+reaper.GetSetProjectInfo(proj, "RECORDCFG", 1, true) -- 1 = Always save
+
 -- Async test runner CPS style
 local total_scenarios = #scenarios
 local scenarios_passed = 0
@@ -236,6 +241,8 @@ local function run_test_scenarios(scenarios, scenario_idx, test_idx)
         scenarios_passed, total_scenarios, tests_passed, total_tests
       )
     )
+    -- Restore the previous "save recorded media" setting
+    reaper.GetSetProjectInfo(proj, "RECORDCFG", orig_rec_cfg, true)
     return
   end
   local scenario = scenarios[scenario_idx]
