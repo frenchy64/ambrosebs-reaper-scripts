@@ -54,11 +54,9 @@ jobs:
         env:
           DISPLAY: ":99"
         run: |
-          # Start Xvfb for GUI-less REAPER execution
           Xvfb :99 &
+          reaper/REAPER/reaper -nosplash reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua > reaper_test_output.log 2>&1
 
-          # Run REAPER in batch mode, execute the Lua script, and capture output
-          reaper/REAPER/reaper -batch "do reaper.ExecProcess('reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua', 0)" > reaper_test_output.log 2>&1 || true
 
       - name: Check test results and fail if any unit test fails
         run: |
