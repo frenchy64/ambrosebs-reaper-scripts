@@ -33,21 +33,29 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential libx11-dev libglib2.0-0 libgtk-3-0 xz-utils git cmake
 
-      # Cache REAPER tarball only
-      - name: Cache REAPER tarball
-        id: cache_reaper
-        uses: actions/cache@v4
+      # Restore REAPER tarball cache
+      - name: Restore REAPER tarball cache
+        id: restore_reaper_cache
+        uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/tmp_reaper/reaper.tar.xz
           key: ${{ env.ACTIONS_CACHE_VERSION }}-reaper-tarball-${{ env.REAPER_MAJOR_VERSION }}-${{ env.REAPER_MINOR_VERSION }}
 
       - name: Download REAPER tarball if needed
-        if: steps.cache_reaper.outputs.cache-hit != 'true'
+        if: steps.restore_reaper_cache.outputs.cache-hit != 'true'
         env:
           REAPER_DOWNLOAD_URL: "https://www.reaper.fm/files/${{ env.REAPER_MAJOR_VERSION }}.x/reaper${{ env.REAPER_MAJOR_VERSION }}${{ env.REAPER_MINOR_VERSION }}_linux_x86_64.tar.xz"
         run: |
           mkdir -p "$GITHUB_WORKSPACE/tmp_reaper"
           wget -O "$GITHUB_WORKSPACE/tmp_reaper/reaper.tar.xz" $REAPER_DOWNLOAD_URL
+
+      # Save REAPER tarball cache if we just downloaded it
+      - name: Save REAPER tarball cache
+        if: steps.restore_reaper_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/tmp_reaper/reaper.tar.xz
+          key: ${{ env.ACTIONS_CACHE_VERSION }}-reaper-tarball-${{ env.REAPER_MAJOR_VERSION }}-${{ env.REAPER_MINOR_VERSION }}
 
       - name: Extract REAPER and setup directories
         run: |
@@ -58,16 +66,16 @@ jobs:
           mkdir -p "$GITHUB_WORKSPACE/reaper/REAPER/UserPlugins"
           mkdir -p "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests"
 
-      # Cache SWS extension directly in reaper/REAPER/UserPlugins
-      - name: Cache SWS Extension
-        id: cache_sws
-        uses: actions/cache@v4
+      # Restore SWS extension cache
+      - name: Restore SWS Extension cache
+        id: restore_sws_cache
+        uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/reaper/REAPER/UserPlugins/reaper_sws-x86_64.so
           key: ${{ env.ACTIONS_CACHE_VERSION }}-sws-${{ env.SWS_VERSION }}
 
       - name: Download and extract SWS Extension
-        if: steps.cache_sws.outputs.cache-hit != 'true'
+        if: steps.restore_sws_cache.outputs.cache-hit != 'true'
         env:
           SWS_DOWNLOAD_URL: "https://www.sws-extension.org/download/featured/sws-${{ env.SWS_VERSION }}-Linux-x86_64.tar.xz"
         run: |
@@ -77,17 +85,25 @@ jobs:
           ls "$GITHUB_WORKSPACE/tmp_sws/UserPlugins"
           cp "$GITHUB_WORKSPACE/tmp_sws/UserPlugins/reaper_sws-x86_64.so" "$GITHUB_WORKSPACE/reaper/REAPER/UserPlugins/"
 
-      # Cache WDL build (libSwell.so in REAPER dir)
-      - name: Cache WDL headless build
-        id: cache_wdl
-        uses: actions/cache@v4
+      # Save SWS extension cache if we just downloaded it
+      - name: Save SWS Extension cache
+        if: steps.restore_sws_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/reaper/REAPER/UserPlugins/reaper_sws-x86_64.so
+          key: ${{ env.ACTIONS_CACHE_VERSION }}-sws-${{ env.SWS_VERSION }}
+
+      # Restore WDL build cache
+      - name: Restore WDL headless build cache
+        id: restore_wdl_cache
+        uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/reaper/REAPER/libSwell.so
           key: ${{ env.ACTIONS_CACHE_VERSION }}-libSwell-${{ env.WDL_COMMIT }}
 
       # Build WDL headless and install libSwell.so into REAPER
       - name: Build WDL headless and install libSwell.so
-        if: steps.cache_wdl.outputs.cache-hit != 'true'
+        if: steps.restore_wdl_cache.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/justinfrankel/WDL.git "$GITHUB_WORKSPACE/tmp_wdl_src"
           cd "$GITHUB_WORKSPACE/tmp_wdl_src"
@@ -95,6 +111,14 @@ jobs:
           cd WDL/swell
           make NOGDK=1 -Wno-error
           cp "$(pwd)/libSwell.so" "$GITHUB_WORKSPACE/reaper/REAPER/libSwell.so"
+
+      # Save WDL build cache if we just built it
+      - name: Save WDL headless build cache
+        if: steps.restore_wdl_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/reaper/REAPER/libSwell.so
+          key: ${{ env.ACTIONS_CACHE_VERSION }}-libSwell-${{ env.WDL_COMMIT }}
 
       - name: Copy test script into REAPER scripts
         run: |
