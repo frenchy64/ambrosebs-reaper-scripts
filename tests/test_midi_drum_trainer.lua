@@ -6,8 +6,6 @@
 -- via SWS/SNM_SetIntConfigVar("promptendrec", 0) before recording,
 -- and restore the previous setting immediately after recording.
 -- This allows for fully automated, dialog-free test runs.
--- When constructing a GitHub Action workflow for this script,
--- ensure SWS Extensions are installed and available.
 
 local function create_scenario_tracks(scenario_name, prev_last_track_idx)
   -- Insert folder track for scenario

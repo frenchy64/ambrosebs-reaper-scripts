@@ -7,16 +7,13 @@ on:
       - 'tests/test_midi_drum_trainer.lua'
       - '.github/workflows/test-midi-drum-trainer.yml'
 
+env:
+  REAPER_VERSION: "7.48"
+  SWS_VERSION: "2.14.0.7"
+
 jobs:
   test-midi-drum-trainer:
     runs-on: ubuntu-latest
-
-    env:
-      REAPER_VERSION: "7.48"
-      SWS_VERSION: "2.14.0.7"
-      REAPER_DOWNLOAD_URL: "https://www.reaper.fm/files/${{ env.REAPER_VERSION }}/reaper_linux_x86_64.tar.xz"
-      SWS_DOWNLOAD_URL: "https://www.sws-extension.org/download/featured/sws-${{ env.SWS_VERSION }}-Linux-x86_64.tar.xz"
-      https://www.sws-extension.org/download/featured/sws-2.14.0.7-Linux-x86_64.tar.xz
 
     steps:
       - name: Checkout repository
@@ -28,12 +25,16 @@ jobs:
           sudo apt-get install -y xz-utils libasound2 libx11-6 libglib2.0-0 libgtk-3-0
 
       - name: Download and extract REAPER
+        env:
+          REAPER_DOWNLOAD_URL: "https://www.reaper.fm/files/${{ env.REAPER_VERSION }}/reaper_linux_x86_64.tar.xz"
         run: |
           wget -O reaper.tar.xz $REAPER_DOWNLOAD_URL
           tar -xf reaper.tar.xz
           mv reaper_linux_x86_64 reaper
 
       - name: Download and extract SWS Extension
+        env:
+          SWS_DOWNLOAD_URL: "https://www.sws-extension.org/download/featured/sws-${{ env.SWS_VERSION }}-Linux-x86_64.tar.xz"
         run: |
           wget -O sws.tar.xz $SWS_DOWNLOAD_URL
           tar -xf sws.tar.xz
