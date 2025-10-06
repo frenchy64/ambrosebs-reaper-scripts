@@ -323,7 +323,13 @@ local function run_tests()
   end
 
   function analyze_outputs()
-    for _, info in ipairs(scenario_info) do
+    reaper.ShowConsoleMsg("\n========== MIDI Drum Trainer Test Results ==========\n")
+    for sidx, info in ipairs(scenario_info) do
+      local scenario = info.scenario
+      local output_tracknum = reaper.GetMediaTrackInfo_Value(info.trainer_track, "IP_TRACKNUMBER")
+      reaper.ShowConsoleMsg(string.format("\nScenario %d: %s\n", sidx, scenario.name))
+      reaper.ShowConsoleMsg(string.format("  Output Track #: %d\n", output_tracknum))
+      reaper.ShowConsoleMsg("---------------------------------------------------\n")
       -- For each scenario, find the recorded output item (should be one long MIDI item)
       local output_take = nil
       for i = 0, reaper.CountTrackMediaItems(info.trainer_track)-1 do
@@ -335,23 +341,27 @@ local function run_tests()
         end
       end
       if not output_take then
-        reaper.ShowConsoleMsg("No output MIDI take found for scenario: " .. info.scenario.name .. "\n")
+        reaper.ShowConsoleMsg("  No output MIDI take found for this scenario!\n")
         goto continue_to_next
       end
-      -- For each test, analyze the logical interval
-      for tidx, test in ipairs(info.scenario.tests) do
+      for tidx, test in ipairs(scenario.tests) do
         local range_start_s = info.test_starts[tidx]
         local range_end_s = info.test_ends[tidx]
         local detected = analyze_take_range(output_take, range_start_s, range_end_s, test.expected_lane)
         local pass = detected == test.expected_lane
         local expected_str = test.expected_lane == nil and "no lane" or ("lane " .. tostring(test.expected_lane))
         local got_str = detected == nil and "no lane" or ("lane " .. tostring(detected))
-        reaper.ShowConsoleMsg(test.name .. ": " .. (pass and "PASS" or "FAIL") ..
-          " (Expected " .. expected_str .. ", got " .. got_str .. ")\n")
+        local status_str = pass and "PASS" or "FAIL"
+        reaper.ShowConsoleMsg(string.format(
+          "  Test %d: %-40s [%s]\n      Expected: %-10s Got: %s\n",
+          tidx, test.name, status_str, expected_str, got_str
+        ))
       end
       ::continue_to_next::
+      reaper.ShowConsoleMsg("---------------------------------------------------\n")
     end
     reaper.ShowConsoleMsg("All scenarios complete.\n")
+    reaper.ShowConsoleMsg("===================================================\n")
   end
 
   marker_poll()
