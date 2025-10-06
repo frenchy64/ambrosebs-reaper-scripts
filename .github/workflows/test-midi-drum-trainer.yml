@@ -134,12 +134,14 @@ jobs:
 
           # Specific watcher for the script file
           (
+            last_mod=""
             while true; do
               current_time=$(date "+%Y-%m-%d %H:%M:%S")
               if [ -f "$SCRIPT_FILE" ]; then
-                if [ "$last_mod" != "$(stat -c %Y "$SCRIPT_FILE")" ]; then
+                file_mod=$(stat -c %Y "$SCRIPT_FILE")
+                if [ "$last_mod" != "$file_mod" ]; then
                   echo "Script file $SCRIPT_FILE created or modified at $current_time" | tee -a "$LOG_FILE"
-                  last_mod=$(stat -c %Y "$SCRIPT_FILE")
+                  last_mod="$file_mod"
                 fi
               else
                 echo "Script file $SCRIPT_FILE not present at $current_time" | tee -a "$LOG_FILE"
@@ -149,14 +151,15 @@ jobs:
           ) &
 
           echo "Creating Hello World Lua script..."
-          echo 'local resource_path = reaper.GetResourcePath()
-local file = io.open(resource_path .. "/hello_from_github_actions.txt", "w")
-if file then
-  file:write("Hello World from GitHub Actions!\\n")
-  file:close()
-end
-reaper.ShowConsoleMsg("Hello World from GitHub Actions!\\n")
-' > "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_hello_world.lua"
+          cat > "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_hello_world.lua" << 'EOF'
+          local resource_path = reaper.GetResourcePath()
+          local file = io.open(resource_path .. "/hello_from_github_actions.txt", "w")
+          if file then
+            file:write("Hello World from GitHub Actions!\n")
+            file:close()
+          end
+          reaper.ShowConsoleMsg("Hello World from GitHub Actions!\n")
+          EOF
 
           echo "Starting REAPER Hello World test..."
           "$GITHUB_WORKSPACE/reaper/REAPER/reaper" -nosplash -new -ignoreerrors -close:exit "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/test_hello_world.lua" || true
