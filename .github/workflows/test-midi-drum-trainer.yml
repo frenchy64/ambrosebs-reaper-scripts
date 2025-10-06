@@ -41,7 +41,8 @@ jobs:
           wget -O sws.tar.xz $SWS_DOWNLOAD_URL
           tar -xf sws.tar.xz
           mkdir -p reaper/REAPER/UserPlugins
-          cp reaper_sws-x86_64.so reaper/REAPER/UserPlugins/
+          ls
+          cp *.so reaper/REAPER/UserPlugins/
 
       - name: Copy test script into REAPER scripts
         run: |
