@@ -25,6 +25,7 @@ else
   reaper.ShowConsoleMsg("Failed to write file!\\n")
 end
 reaper.ShowConsoleMsg("Hello World from GitHub Actions!\\n")
+reaper.Quit()
 EOF
 
 echo "Running REAPER Hello World script at $SCRIPT_PATH ..."
