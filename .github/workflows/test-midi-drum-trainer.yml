@@ -140,10 +140,9 @@ jobs:
           Xvfb :99 &
           sleep 2
 
-          echo "Monitoring REAPER resource directory for file activity..."
           MONITOR_DIR="$GITHUB_WORKSPACE/reaper/REAPER"
           LOG_FILE="$GITHUB_WORKSPACE/tail-resource.log"
-          SCRIPT_FILE="$MONITOR_DIR/hello_from_github_actions.txt"
+          LIVENESS_FILE="$MONITOR_DIR/hello_from_github_actions.txt"
           echo "Monitoring $MONITOR_DIR for changes..." > "$LOG_FILE"
 
           # General activity monitor
@@ -160,26 +159,26 @@ jobs:
             done
           ) &
 
-          # Specific watcher for the script file
+          # Specific watcher for the liveness file
           (
             last_mod=""
             while true; do
               current_time=$(date "+%Y-%m-%d %H:%M:%S")
-              if [ -f "$SCRIPT_FILE" ]; then
-                file_mod=$(stat -c %Y "$SCRIPT_FILE")
+              if [ -f "$LIVENESS_FILE" ]; then
+                file_mod=$(stat -c %Y "$LIVENESS_FILE")
                 if [ "$last_mod" != "$file_mod" ]; then
-                  echo "Script file $SCRIPT_FILE created or modified at $current_time" | tee -a "$LOG_FILE"
+                  echo "Liveness file $LIVENESS_FILE created or modified at $current_time" | tee -a "$LOG_FILE"
                   last_mod="$file_mod"
                 fi
               else
-                echo "Script file $SCRIPT_FILE not present at $current_time" | tee -a "$LOG_FILE"
+                echo "Liveness file $LIVENESS_FILE not present at $current_time" | tee -a "$LOG_FILE"
               fi
               sleep 10
             done
           ) &
 
           echo "Running REAPER Hello World test via scripts/run_reaper_hello_world.sh..."
-          bash "$GITHUB_WORKSPACE/scripts/run_reaper_hello_world.sh"
+          bash "$GITHUB_WORKSPACE/scripts/run_reaper_hello_world.sh" "$LIVENESS_FILE"
           echo "Finished REAPER Hello World test."
 
           echo "Running MIDI Drum Trainer test script in REAPER..."
