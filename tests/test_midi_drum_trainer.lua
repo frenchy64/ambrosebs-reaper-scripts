@@ -1,11 +1,4 @@
--- Data-driven JSFX Drum Trainer test script for REAPER
--- Now supports per-lane output channel mapping via hidden JSFX sliders.
-
--- The following are named exactly after the JSFX globals:
-local global_slider_count = 5
-local sliders_used_per_lane = 19
-local first_lane_slider = 16
-local slider_offset_output_channel = 18
+-- Data-driven JSFX Drum Trainer test script for REAPER, enhanced fixture setup.
 
 -- Helper: Insert and configure JSFX, returning track and fx index
 local function setup_jsfx_on_new_track(jsfx_name)
@@ -49,6 +42,37 @@ local function set_lane_output_channels(track, fx_idx, lanes)
     reaper.TrackFX_SetParam(track, fx_idx, slider_idx, normalized_value)
     local val = reaper.TrackFX_GetParam(track, fx_idx, slider_idx)
     reaper.ShowConsoleMsg("Slider " .. slider_idx .. " is " .. normalized_value .. " which is normalized from " .. desired_value ..  "\n")
+local function set_lane_config(track, fx_idx, lanes)
+  for i, lane in ipairs(lanes) do
+    local lane_num = i
+    -- Set CC Controller
+    if lane.cc_controller then
+      local idx = get_slider_param_index_by_name(track, fx_idx, "CCController" .. lane_num)
+      if idx then
+        reaper.TrackFX_SetParam(track, fx_idx, idx, lane.cc_controller)
+      end
+    end
+    -- Set CC Min Value
+    if lane.cc_min_value then
+      local idx = get_slider_param_index_by_name(track, fx_idx, "CCMinValue" .. lane_num)
+      if idx then
+        reaper.TrackFX_SetParam(track, fx_idx, idx, lane.cc_min_value)
+      end
+    end
+    -- Set CC Max Value
+    if lane.cc_max_value then
+      local idx = get_slider_param_index_by_name(track, fx_idx, "CCMaxValue" .. lane_num)
+      if idx then
+        reaper.TrackFX_SetParam(track, fx_idx, idx, lane.cc_max_value)
+      end
+    end
+    -- Set Output Channel (already handled in your script, but kept here for completeness)
+    if lane.output_channel then
+      local idx = get_slider_param_index_by_name(track, fx_idx, "OutputChannel" .. lane_num)
+      if idx then
+        reaper.TrackFX_SetParam(track, fx_idx, idx, lane.output_channel)
+      end
+    end
   end
 end
 
@@ -128,9 +152,9 @@ local scenarios = {
     name  = "Default 3-lane split (0-60, 61-120, 121-127)",
     jsfx_name = "ambrosebs_MIDI Drum Trainer",
     lanes = {
-      { cc_min_value=0,   cc_max_value=60   },
-      { cc_min_value=61,  cc_max_value=120  },
-      { cc_min_value=121, cc_max_value=127  }
+      { cc_controller=2, cc_min_value=0,   cc_max_value=60,   output_channel=1 },
+      { cc_controller=2, cc_min_value=61,  cc_max_value=120,  output_channel=2 },
+      { cc_controller=2, cc_min_value=121, cc_max_value=127,  output_channel=3 }
     },
     tests = {
       { name = "CC=40,  Note=60",  note = 60,  cc_controller = 2, cc_value =  40, expected_lane = 0 },
@@ -184,7 +208,10 @@ for _, scenario in ipairs(scenarios) do
   for _, test in ipairs(scenario.tests) do
     cleanup()
     local track, fx_idx = setup_jsfx_on_new_track(scenario.jsfx_name or "ambrosebs_MIDI Drum Trainer")
-    set_lane_output_channels(track, fx_idx, scenario.lanes)
+    set_lane_config(track, fx_idx, scenario.lanes)
+
+    -- **Send the initial CC event to set JSFX's CCValueN**
+    -- (It's important to send the CC event BEFORE the note event to ensure the lane's CCValue is initialized)
     local events = {
       { is_cc=true,  cc_controller=test.cc_controller or 2, msg2=test.cc_value, ppqpos=0, chan=0 },
       { is_cc=false, note=test.note or 60, vel=100, ppqpos=240, chan=0 }
