@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - 'MIDI/ambrosebs_MIDI Drum Trainer.jsfx'
       - 'tests/test_midi_drum_trainer.lua'
       - '.github/workflows/test-midi-drum-trainer.yml'
 
