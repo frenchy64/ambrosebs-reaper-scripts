@@ -1,0 +1,85 @@
+name: MIDI Drum Trainer Automated Tests
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tests/test_midi_drum_trainer.lua'
+      - '.github/workflows/test-midi-drum-trainer.yml'
+
+jobs:
+  test-midi-drum-trainer:
+    runs-on: ubuntu-latest
+
+    env:
+      REAPER_VERSION: "7.48"
+      SWS_VERSION: "2.14.0.7"
+      REAPER_DOWNLOAD_URL: "https://www.reaper.fm/files/${{ env.REAPER_VERSION }}/reaper_linux_x86_64.tar.xz"
+      SWS_DOWNLOAD_URL: "https://www.sws-extension.org/download/featured/sws-${{ env.SWS_VERSION }}-Linux-x86_64.tar.xz"
+      https://www.sws-extension.org/download/featured/sws-2.14.0.7-Linux-x86_64.tar.xz
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xz-utils libasound2 libx11-6 libglib2.0-0 libgtk-3-0
+
+      - name: Download and extract REAPER
+        run: |
+          wget -O reaper.tar.xz $REAPER_DOWNLOAD_URL
+          tar -xf reaper.tar.xz
+          mv reaper_linux_x86_64 reaper
+
+      - name: Download and extract SWS Extension
+        run: |
+          wget -O sws.tar.xz $SWS_DOWNLOAD_URL
+          tar -xf sws.tar.xz
+          mkdir -p reaper/REAPER/UserPlugins
+          cp sws.so reaper/REAPER/UserPlugins/
+
+      - name: Copy test script into REAPER scripts
+        run: |
+          mkdir -p reaper/REAPER/Scripts/tests
+          cp tests/test_midi_drum_trainer.lua reaper/REAPER/Scripts/tests/
+
+      - name: Run MIDI Drum Trainer test script in REAPER
+        env:
+          DISPLAY: ":99"
+        run: |
+          # Start Xvfb for GUI-less REAPER execution
+          Xvfb :99 &
+
+          # Run REAPER in batch mode, execute the Lua script, and capture output
+          reaper/REAPER/reaper -batch "do reaper.ExecProcess('reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua', 0)" > reaper_test_output.log 2>&1 || true
+
+      - name: Check test results and fail if any unit test fails
+        run: |
+          echo "========== MIDI Drum Trainer Test Results =========="
+          cat reaper_test_output.log
+
+          # Grep the summary and check for 'unit tests passed'
+          summary=$(grep 'Summary:' reaper_test_output.log || true)
+          echo "$summary"
+
+          # Extract passed/total counts
+          scenario_passed=$(echo "$summary" | sed -n 's/.* \([0-9]\+\/[0-9]\+\) scenarios passed.*/\1/p' | cut -d'/' -f1)
+          scenario_total=$(echo "$summary" | sed -n 's/.* \([0-9]\+\/[0-9]\+\) scenarios passed.*/\1/p' | cut -d'/' -f2)
+          test_passed=$(echo "$summary" | sed -n 's/.* \([0-9]\+\/[0-9]\+\) unit tests passed.*/\1/p' | cut -d'/' -f1)
+          test_total=$(echo "$summary" | sed -n 's/.* \([0-9]\+\/[0-9]\+\) unit tests passed.*/\1/p' | cut -d'/' -f2)
+
+          if [[ "$scenario_passed" != "$scenario_total" || "$test_passed" != "$test_total" ]]; then
+            echo "ERROR: Not all scenarios or unit tests passed!"
+            exit 1
+          fi
+
+          echo "All tests passed."
+
+      - name: Upload REAPER test output log (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reaper-test-output
+          path: reaper_test_output.log
