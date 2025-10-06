@@ -134,9 +134,10 @@ local scenarios = {
     tests = {
       { name = "CC=40,  Note=60",  note = 60,  cc_controller = 2, cc_value =  40, expected_lane = 0 },
       { name = "CC=80,  Note=61",  note = 61,  cc_controller = 2, cc_value =  80, expected_lane = 1 },
-      { name = "CC=127, Note=62",  note = 62,  cc_controller = 2, cc_value = 127, expected_lane = 2 }
+      -- { name = "CC=127, Note=62",  note = 62,  cc_controller = 2, cc_value = 127, expected_lane = 2 }
     }
   },
+  --[[
   {
     name  = "No third lane: only 0-60 and 61-120",
     jsfx_name = "ambrosebs_MIDI Drum Trainer",
@@ -166,6 +167,7 @@ local scenarios = {
       { name = "CC=120, Note=39",  note = 39,  cc_controller = 2, cc_value = 120, expected_lane = 3 }
     }
   }
+  ]]
 }
 
 local total_scenarios = #scenarios

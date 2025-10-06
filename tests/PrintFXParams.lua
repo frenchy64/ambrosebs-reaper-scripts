@@ -16,7 +16,7 @@ local prev_vals = {}
 
 -- Initialize with current values
 for i = 0, num_params-1 do
-  local _, val = reaper.TrackFX_GetParam(track, fx_idx, i)
+  local val = reaper.TrackFX_GetParam(track, fx_idx, i)
   prev_vals[i] = val
 end
 
