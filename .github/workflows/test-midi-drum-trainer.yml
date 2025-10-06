@@ -1,4 +1,4 @@
-name: MIDI Drum Trainer Automated Tests
+name: MIDI Drum Trainer Automated Tests (Headless REAPER Build)
 
 permissions:
   contents: read
@@ -15,7 +15,9 @@ on:
 env:
   REAPER_MAJOR_VERSION: "7"
   REAPER_MINOR_VERSION: "48"
+  REAPER_VERSION: "7.48"
   SWS_VERSION: "2.14.0.7"
+  WDL_COMMIT: "3024ec8e000f769454b5ee4ac927dc5cecfc6a6b"
 
 jobs:
   test-midi-drum-trainer:
@@ -26,29 +28,46 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Install dependencies
+      - name: Set up build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y xz-utils libx11-6 libglib2.0-0 libgtk-3-0
+          sudo apt-get install -y build-essential libx11-dev libglib2.0-0 libgtk-3-0 xz-utils git cmake
 
-      - name: Download and extract REAPER
-        env:
-          REAPER_DOWNLOAD_URL: "https://www.reaper.fm/files/${{ env.REAPER_MAJOR_VERSION }}.x/reaper${{ env.REAPER_MAJOR_VERSION }}${{ env.REAPER_MINOR_VERSION }}_linux_x86_64.tar.xz"
-        run: |
-          wget -O reaper.tar.xz $REAPER_DOWNLOAD_URL
-          tar -xf reaper.tar.xz
-          mv reaper_linux_x86_64 reaper
+      # Cache WDL build
+      - name: Cache WDL headless build
+        id: cache_wdl
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/wdl
+          key: wdl-${{ env.WDL_COMMIT }}
 
-      - name: Download and extract SWS Extension
-        env:
-          SWS_DOWNLOAD_URL: "https://www.sws-extension.org/download/featured/sws-${{ env.SWS_VERSION }}-Linux-x86_64.tar.xz"
+      - name: Build WDL headless if cache miss
+        if: steps.cache_wdl.outputs.cache-miss == 'true'
         run: |
-          wget -O sws.tar.xz $SWS_DOWNLOAD_URL
-          tar -xf sws.tar.xz
+          git clone https://github.com/justinfrankel/WDL.git wdl
+          cd wdl/WDL
+          git checkout ${WDL_COMMIT}
+          make NOGDK=1
+          echo "Listing all files under $(pwd) to search for libSwell.so:"
+          find . -type f | tee /tmp/wdl-files.log
+          echo "Directory tree under $(pwd):"
+          find . | tee /tmp/wdl-tree.log
+
+      - name: Prepare headless REAPER install
+        run: |
           mkdir -p reaper/REAPER/UserPlugins
-          tar -tvf sws.tar.xz
-          ls
+          # Download and extract official SWS
+          wget -O sws.tar.xz "https://www.sws-extension.org/download/featured/sws-${SWS_VERSION}-Linux-x86_64.tar.xz"
+          tar -xf sws.tar.xz
           cp UserPlugins/reaper_sws-x86_64.so reaper/REAPER/UserPlugins/
+          # Download official REAPER binary
+          wget -O reaper.tar.xz "https://www.reaper.fm/files/${REAPER_MAJOR_VERSION}.x/reaper${REAPER_MAJOR_VERSION}${REAPER_MINOR_VERSION}_linux_x86_64.tar.xz"
+          tar -xf reaper.tar.xz
+          mv reaper_linux_x86_64/reaper reaper/REAPER/reaper
+          chmod +x reaper/REAPER/reaper
+          # Locate libSwell.so from WDL build and copy to REAPER directory
+          cp wdl/WDL/libSwell.so reaper/REAPER/libSwell.so
 
       - name: Copy test script into REAPER scripts
         run: |
