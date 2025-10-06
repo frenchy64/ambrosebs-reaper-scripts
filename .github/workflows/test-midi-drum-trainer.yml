@@ -60,13 +60,32 @@ jobs:
           mkdir -p reaper/REAPER
           echo "${{ secrets.REAPER_LICENSE_KEY }}" > reaper/REAPER/license.txt
 
+      # --- NEW: Tailing resource directory ---
+      - name: Tail REAPER resource directory
+        run: |
+          echo "Tailing REAPER resource directory for live changes..."
+          mkdir -p reaper/REAPER
+          # Tail everything in the resource directory, following new files and changes
+          # This runs in the background and outputs to tail-resource.log and stdout
+          (find reaper/REAPER -type f | xargs -r tail -F 2>/dev/null | tee tail-resource.log &) 
+
+      # --- NEW: "Hello World" test, start and stop REAPER ---
+      - name: REAPER Hello World test
+        env:
+          DISPLAY: ":99"
+        run: |
+          Xvfb :99 &
+          echo "Starting REAPER Hello World test..."
+          # Start REAPER, print Hello World, and immediately exit
+          reaper/REAPER/reaper -nosplash -new -ignoreerrors -close:exit -eval 'reaper.ShowConsoleMsg("Hello World from GitHub Actions!\n")' || true
+          echo "Finished REAPER Hello World test."
+
       - name: Run MIDI Drum Trainer test script in REAPER
         env:
           DISPLAY: ":99"
         run: |
-          # Start Xvfb for GUI-less REAPER execution
-          Xvfb :99 &
-          # Run REAPER with extra flags to avoid dialogs/hangs and stream output
+          # At this point, the directory tailing is still running in the background
+          echo "Running MIDI Drum Trainer test script in REAPER..."
           reaper/REAPER/reaper -nosplash -new -ignoreerrors -close:exit reaper/REAPER/Scripts/tests/test_midi_drum_trainer.lua 2>&1 | tee reaper_test_output.log
 
       - name: Check test results and fail if any unit test fails
@@ -109,3 +128,10 @@ jobs:
         with:
           name: reaper-test-output
           path: reaper_test_output.log
+
+      - name: Upload REAPER resource tail log (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reaper-resource-tail
+          path: tail-resource.log
