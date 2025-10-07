@@ -132,7 +132,7 @@ jobs:
 
       - name: Install REAPER license
         run: |
-          echo "${{ secrets.REAPER_LICENSE_KEY }}" > "$GITHUB_WORKSPACE/reaper/REAPER/license.txt"
+          echo "${{ secrets.REAPER_LICENSE_KEY }}" > ~/.config/REAPER/reaper-license.rk"
 
       - name: Add REAPER to PATH
         run: |
