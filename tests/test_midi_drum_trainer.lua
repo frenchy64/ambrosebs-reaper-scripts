@@ -516,16 +516,25 @@ local function run_tests()
         reaper.defer(marker_poll)
       end
     else
-      if reaper.SNM_SetIntConfigVar then
-        local ok = reaper.SNM_SetIntConfigVar("promptendrec", prev_promptendrec)
-        if not ok then
-          log("WARNING: SWS could not restore promptendrec to previous value ("..tostring(prev_promptendrec)..").")
+      -- Recording not started yet or already stopped unexpectedly
+      -- Check if transport is completely stopped or just starting up
+      if play_state == 0 then
+        log("DEBUG: Recording hasn't started yet, play_state=" .. play_state .. ", deferring...")
+        reaper.defer(marker_poll)
+      else
+        -- Playback started but not recording
+        log("WARNING: Playback started but not recording, play_state=" .. play_state)
+        if reaper.SNM_SetIntConfigVar then
+          local ok = reaper.SNM_SetIntConfigVar("promptendrec", prev_promptendrec)
+          if not ok then
+            log("WARNING: SWS could not restore promptendrec to previous value ("..tostring(prev_promptendrec)..").")
+          end
         end
+        if metronome_enabled == 0 then
+          reaper.Main_OnCommand(40364, 0)
+        end
+        analyze_outputs()
       end
-      if metronome_enabled == 0 then
-        reaper.Main_OnCommand(40364, 0)
-      end
-      analyze_outputs()
     end
   end
 
