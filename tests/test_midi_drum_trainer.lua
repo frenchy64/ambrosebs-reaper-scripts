@@ -351,6 +351,9 @@ local function run_tests()
   log("Initial track count: " .. reaper.CountTracks(0))
   log("REAPER version: " .. reaper.GetAppVersion())
   log("Project sample rate: " .. reaper.GetSetProjectInfo(0, "PROJECT_SRATE", 0, false))
+  -- Get and log the project tempo
+  local bpm = reaper.Master_GetTempo()
+  log("Project BPM: " .. bpm)
   local prev_last_track_idx = reaper.CountTracks(0)-1
   local scenario_info = {}
   local max_end_qn = 0
@@ -477,19 +480,27 @@ local function run_tests()
       if cur_pos >= marker_time then
         log("DEBUG: Stopping transport using OnStopButton()")
         reaper.OnStopButton()
-        local function restore_pref_and_analyze()
-          if reaper.SNM_SetIntConfigVar then
-            local ok = reaper.SNM_SetIntConfigVar("promptendrec", prev_promptendrec)
-            if not ok then
-              log("WARNING: SWS could not restore promptendrec to previous value ("..tostring(prev_promptendrec)..").")
+        -- Wait a bit for recording to finalize, then analyze
+        local function wait_for_stop()
+          local play_state = reaper.GetPlayState()
+          if play_state == 0 then  -- 0 = stopped
+            log("DEBUG: Transport stopped, restoring settings and analyzing")
+            if reaper.SNM_SetIntConfigVar then
+              local ok = reaper.SNM_SetIntConfigVar("promptendrec", prev_promptendrec)
+              if not ok then
+                log("WARNING: SWS could not restore promptendrec to previous value ("..tostring(prev_promptendrec)..").")
+              end
             end
+            if metronome_enabled == 0 then
+              reaper.Main_OnCommand(40364, 0)
+            end
+            analyze_outputs()
+          else
+            log("DEBUG: Still stopping, play_state=" .. play_state)
+            reaper.defer(wait_for_stop)
           end
-          if metronome_enabled == 0 then
-            reaper.Main_OnCommand(40364, 0)
-          end
-          reaper.defer(analyze_outputs)
         end
-        reaper.defer(restore_pref_and_analyze)
+        reaper.defer(wait_for_stop)
       else
         reaper.defer(marker_poll)
       end
