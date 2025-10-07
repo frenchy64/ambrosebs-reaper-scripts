@@ -104,15 +104,21 @@ local function ensure_jsfx_on_track(track, jsfx_name)
   log("> > ensure_jsfx_on_track")
   local fx_idx = -1
   for i = 0, reaper.TrackFX_GetCount(track)-1 do
+    log("> > > track number "..i)
     local _, fxname = reaper.TrackFX_GetFXName(track, i, "")
+    log("> > > fx name: "..fxname)
     if fxname:find(jsfx_name, 1, true) then
       fx_idx = i
       break
     end
   end
   if fx_idx == -1 then
+    log("> > > fx add by name")
     fx_idx = reaper.TrackFX_AddByName(track, jsfx_name, false, 1) -- magic: instantiate JSFX
-    if fx_idx == -1 then error("Could not load JSFX: " .. tostring(jsfx_name)) end
+    if fx_idx == -1 then
+      log("Could not load JSFX: " .. tostring(jsfx_name))
+      error("Could not load JSFX: " .. tostring(jsfx_name))
+    end
   end
   log("> < ensure_jsfx_on_track")
   return fx_idx
