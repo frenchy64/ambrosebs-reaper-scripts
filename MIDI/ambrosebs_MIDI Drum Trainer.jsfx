@@ -2138,10 +2138,10 @@ mouse_cap & 1 == 0 ? active_control = 0;
 //   - Set new slider values
 //   - Update preset_version to 2
 
-// Save preset version
+// Save/load preset version (must be first to enable migration logic)
 file_var(0, preset_version);
 
-// Load and check preset version
+// Check preset version and perform migration if needed
 file_avail(0) >= 0 ? (
   // Preset file exists - check version and migrate if needed
   preset_version >= 1 ? (
@@ -2169,6 +2169,3 @@ file_avail(0) >= 0 ? (
   // No preset file available - this is a fresh load with default values
   preset_version = 1;
 );
-
-// This causes the general state to be kept between DAW "play"s
-file_var(0, dummy);
