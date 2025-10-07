@@ -78,7 +78,7 @@ local function set_lane_config(track, fx_idx, lanes)
     reaper.TrackFX_SetParam(track, fx_idx, lanes_slider_idx, #lanes-1)
   end
   for i, lane in ipairs(lanes) do
-    log("> > > set Lane "..i.."config)
+    log("> > > set Lane "..i.." config")
     local lane_num = i
     if lane.cc_controller then
       local idx = get_slider_param_index_by_name(track, fx_idx, "CCController" .. lane_num)
