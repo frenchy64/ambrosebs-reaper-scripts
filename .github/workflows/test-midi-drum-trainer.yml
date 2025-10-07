@@ -65,6 +65,7 @@ jobs:
           mkdir -p "$GITHUB_WORKSPACE/reaper"
           cp -r "$GITHUB_WORKSPACE/tmp_reaper/reaper_linux_x86_64/"* "$GITHUB_WORKSPACE/reaper/"
           mkdir -p "$GITHUB_WORKSPACE/reaper/REAPER/UserPlugins"
+          mkdir -p "$GITHUB_WORKSPACE/reaper/REAPER/Effects"
           mkdir -p "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests"
 
       # Restore SWS extension cache
