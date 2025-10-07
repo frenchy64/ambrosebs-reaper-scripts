@@ -6,6 +6,31 @@
 -- via SWS/SNM_SetIntConfigVar("promptendrec", 0) before recording,
 -- and restore the previous setting immediately after recording.
 -- This allows for fully automated, dialog-free test runs.
+-- MIDI Drum Trainer Automated Test Runner with streaming CI log output
+
+-- Helper to get env variable for output log file
+local function getenv(name)
+  local v = os.getenv(name)
+  if v == nil then return "" end
+  return v
+end
+
+local summary_env = getenv("REAPER_MIDI_DRUM_TRAINER_SUMMARY_FILE")
+local summary_file = (#summary_env > 0) and summary_env or nil
+
+-- Logging helper: prints to console and appends to file if configured
+local function log(msg)
+  reaper.ShowConsoleMsg(msg .. "\n")
+  if summary_file then
+    local f = io.open(summary_file, "a")
+    if f then
+      f:write(msg .. "\n")
+      f:close()
+    end
+  end
+end
+
+log("MIDI Drum Trainer Test Runner: Starting up...")
 
 local function create_scenario_tracks(scenario_name, prev_last_track_idx)
   -- Insert folder track for scenario
@@ -201,6 +226,7 @@ local scenarios = {
 }
 
 local function run_tests()
+  log("Setting up test scenarios...")
   local prev_last_track_idx = reaper.CountTracks(0)-1
   local scenario_info = {}
   local max_end_qn = 0
@@ -255,7 +281,7 @@ local function run_tests()
   local marker_time = reaper.TimeMap2_QNToTime(0, marker_qn)
   reaper.AddProjectMarker2(0, false, marker_time, 0, "End of recording", -1, 0)
   local marker_bar = math.floor(marker_qn / qn_per_bar) + 1
-  reaper.ShowConsoleMsg(string.format("DEBUG: 'End of recording' marker at time %.3f (bar %d)\n", marker_time, marker_bar))
+  log(string.format("DEBUG: 'End of recording' marker at time %.3f (bar %d)\n", marker_time, marker_bar))
 
   -- Enable metronome if not already enabled (40364 = Options: Metronome enabled)
   local metronome_enabled = reaper.GetToggleCommandState(40364)
@@ -272,7 +298,7 @@ local function run_tests()
   if reaper.SNM_SetIntConfigVar then
     local ok = reaper.SNM_SetIntConfigVar("promptendrec", 0)
     if not ok then
-      reaper.ShowConsoleMsg("WARNING: SWS could not set promptendrec=0. Dialog may still appear.\n")
+      log("WARNING: SWS could not set promptendrec=0. Dialog may still appear.")
     end
   end
 
@@ -284,14 +310,13 @@ local function run_tests()
     local cur_pos = reaper.GetPlayPosition()
     if play_state & 4 ~= 0 then -- magic: 4 = recording
       if cur_pos >= marker_time then
-        reaper.ShowConsoleMsg("DEBUG: Stopping transport using OnStopButton()\n")
-        reaper.OnStopButton() -- Simulate pressing Stop (should auto-save, no dialog with promptendrec=0)
-        -- Restore promptendrec as soon as possible
+        log("DEBUG: Stopping transport using OnStopButton()")
+        reaper.OnStopButton()
         local function restore_pref_and_analyze()
           if reaper.SNM_SetIntConfigVar then
             local ok = reaper.SNM_SetIntConfigVar("promptendrec", prev_promptendrec)
             if not ok then
-              reaper.ShowConsoleMsg("WARNING: SWS could not restore promptendrec to previous value ("..tostring(prev_promptendrec)..").\n")
+              log("WARNING: SWS could not restore promptendrec to previous value ("..tostring(prev_promptendrec)..").")
             end
           end
           if metronome_enabled == 0 then
@@ -307,7 +332,7 @@ local function run_tests()
       if reaper.SNM_SetIntConfigVar then
         local ok = reaper.SNM_SetIntConfigVar("promptendrec", prev_promptendrec)
         if not ok then
-          reaper.ShowConsoleMsg("WARNING: SWS could not restore promptendrec to previous value ("..tostring(prev_promptendrec)..").\n")
+          log("WARNING: SWS could not restore promptendrec to previous value ("..tostring(prev_promptendrec)..").")
         end
       end
       if metronome_enabled == 0 then
@@ -318,7 +343,7 @@ local function run_tests()
   end
 
   function analyze_outputs()
-    reaper.ShowConsoleMsg("\n========== MIDI Drum Trainer Test Results ==========\n")
+    log("========== MIDI Drum Trainer Test Results ==========")
     local total_scenarios = #scenario_info
     local total_tests = 0
     local passed_scenarios = 0
@@ -327,9 +352,10 @@ local function run_tests()
     for sidx, info in ipairs(scenario_info) do
       local scenario = info.scenario
       local output_tracknum = reaper.GetMediaTrackInfo_Value(info.trainer_track, "IP_TRACKNUMBER") -- magic: IP_TRACKNUMBER = 1-based
-      reaper.ShowConsoleMsg(string.format("\n%s\n", scenario.name))
-      reaper.ShowConsoleMsg(string.format("  Output Track #: %d\n", output_tracknum))
-      reaper.ShowConsoleMsg("---------------------------------------------------\n")
+      local output_tracknum = reaper.GetMediaTrackInfo_Value(info.trainer_track, "IP_TRACKNUMBER")
+      log(string.format("\n%s", scenario.name))
+      log(string.format("  Output Track #: %d", output_tracknum))
+      log("---------------------------------------------------")
       local scenario_pass = true
       -- For each scenario, find the recorded output item (should be one long MIDI item)
       local output_take = nil
@@ -342,7 +368,7 @@ local function run_tests()
         end
       end
       if not output_take then
-        reaper.ShowConsoleMsg("  No output MIDI take found for this scenario!\n")
+        log("  No output MIDI take found for this scenario!")
         scenario_pass = false
         goto continue_to_next
       end
@@ -356,34 +382,22 @@ local function run_tests()
         local got_str = detected == nil and "no lane" or ("lane " .. tostring(detected))
         local status_str = pass and "PASS" or "FAIL"
         if pass then passed_tests = passed_tests + 1 else scenario_pass = false end
-        reaper.ShowConsoleMsg(string.format(
-          "  Test %d: %-40s [%s]\n      Expected: %-10s Got: %s\n",
+        log(string.format(
+          "  Test %d: %-40s [%s]\n      Expected: %-10s Got: %s",
           tidx, test.name, status_str, expected_str, got_str
         ))
       end
       if scenario_pass then passed_scenarios = passed_scenarios + 1 end
       ::continue_to_next::
-      reaper.ShowConsoleMsg("---------------------------------------------------\n")
+      log("---------------------------------------------------")
     end
-    reaper.ShowConsoleMsg("All scenarios complete.\n")
-    reaper.ShowConsoleMsg("===================================================\n")
+    log("All scenarios complete.")
+    log("===================================================")
     local summary = string.format(
       "Summary: %d/%d scenarios passed, %d/%d unit tests passed.",
       passed_scenarios, total_scenarios, passed_tests, total_tests)
-    reaper.ShowConsoleMsg(summary .. "\n")
-    reaper.ShowConsoleMsg("===================================================\n")
-
-    -- Write summary to file if requested by environment variable
-    local output_path = os.getenv("REAPER_MIDI_DRUM_TRAINER_SUMMARY_FILE")
-    if output_path and #output_path > 0 then
-      local file = io.open(output_path, "w")
-      if file then
-        file:write(summary .. "\n")
-        file:close()
-      else
-        reaper.ShowConsoleMsg("Failed to write summary file: " .. output_path .. "\n")
-      end
-    end
+    log(summary)
+    log("===================================================")
   end
 
   marker_poll()
