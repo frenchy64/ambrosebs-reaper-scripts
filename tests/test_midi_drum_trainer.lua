@@ -71,11 +71,14 @@ function get_slider_param_index_by_name(track, fx_idx, slider_name)
 end
 
 local function set_lane_config(track, fx_idx, lanes)
+  log("> > set_lane_config")
   local lanes_slider_idx = get_slider_param_index_by_name(track, fx_idx, "Lanes")
+  log("> > > Lanes idx: "..lanes_slider_idx)
   if lanes_slider_idx then
     reaper.TrackFX_SetParam(track, fx_idx, lanes_slider_idx, #lanes-1)
   end
   for i, lane in ipairs(lanes) do
+    log("> > > set Lane "..i.."config)
     local lane_num = i
     if lane.cc_controller then
       local idx = get_slider_param_index_by_name(track, fx_idx, "CCController" .. lane_num)
@@ -94,9 +97,11 @@ local function set_lane_config(track, fx_idx, lanes)
       if idx then reaper.TrackFX_SetParam(track, fx_idx, idx, lane.output_channel) end
     end
   end
+  log("> < set_lane_config")
 end
 
 local function ensure_jsfx_on_track(track, jsfx_name)
+  log("> > ensure_jsfx_on_track")
   local fx_idx = -1
   for i = 0, reaper.TrackFX_GetCount(track)-1 do
     local _, fxname = reaper.TrackFX_GetFXName(track, i, "")
@@ -109,6 +114,7 @@ local function ensure_jsfx_on_track(track, jsfx_name)
     fx_idx = reaper.TrackFX_AddByName(track, jsfx_name, false, 1) -- magic: instantiate JSFX
     if fx_idx == -1 then error("Could not load JSFX: " .. tostring(jsfx_name)) end
   end
+  log("> < ensure_jsfx_on_track")
   return fx_idx
 end
 
