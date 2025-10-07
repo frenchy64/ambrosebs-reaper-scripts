@@ -24,27 +24,17 @@ local function save_midi_for_debugging(take, filename)
     log("ERROR: Cannot save MIDI - take is nil")
     return
   end
-  local temp_dir = reaper.GetResourcePath() .. "/midi_debug"
-  reaper.RecursiveCreateDirectory(temp_dir, 0)
-  local filepath = temp_dir .. "/" .. filename .. ".mid"
-  log("DEBUG: Attempting to save MIDI to: " .. filepath)
-  -- Export the take as MIDI file
-  local item = reaper.GetMediaItemTake_Item(take)
-  if item then
-    local track = reaper.GetMediaItemTake_Track(take)
-    -- Unfortunately, there's no direct API to export a take as MIDI
-    -- So we'll just log the MIDI events instead
-    local _, note_cnt, cc_cnt, _ = reaper.MIDI_CountEvts(take)
-    log("DEBUG: MIDI take has " .. note_cnt .. " notes and " .. cc_cnt .. " CC events")
-    -- Log first few MIDI events
-    for i = 0, math.min(note_cnt-1, 5) do
-      local _, _, _, startppq, endppq, chan, pitch, vel = reaper.MIDI_GetNote(take, i)
-      log(string.format("  Note %d: chan=%d, pitch=%d, vel=%d, ppq=%d-%d", i, chan, pitch, vel, startppq, endppq))
-    end
-    for i = 0, math.min(cc_cnt-1, 5) do
-      local _, _, _, ppq, chanmsg, chan, msg2, msg3 = reaper.MIDI_GetCC(take, i)
-      log(string.format("  CC %d: chan=%d, msg2=%d, msg3=%d, ppq=%d", i, chan, msg2, msg3, ppq))
-    end
+  -- Log MIDI events for debugging (directory creation may not work in headless mode)
+  local _, note_cnt, cc_cnt, _ = reaper.MIDI_CountEvts(take)
+  log("DEBUG: MIDI take '" .. filename .. "' has " .. note_cnt .. " notes and " .. cc_cnt .. " CC events")
+  -- Log first few MIDI events
+  for i = 0, math.min(note_cnt-1, 5) do
+    local _, _, _, startppq, endppq, chan, pitch, vel = reaper.MIDI_GetNote(take, i)
+    log(string.format("  Note %d: chan=%d, pitch=%d, vel=%d, ppq=%d-%d", i, chan, pitch, vel, startppq, endppq))
+  end
+  for i = 0, math.min(cc_cnt-1, 5) do
+    local _, _, _, ppq, chanmsg, chan, msg2, msg3 = reaper.MIDI_GetCC(take, i)
+    log(string.format("  CC %d: chan=%d, msg2=%d, msg3=%d, ppq=%d", i, chan, msg2, msg3, ppq))
   end
 end
 
