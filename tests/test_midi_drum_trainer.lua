@@ -390,7 +390,7 @@ local function run_tests()
       if take then
         local _, note_cnt, cc_cnt, _ = reaper.MIDI_CountEvts(take)
         log("> > > Verification: note_cnt=" .. note_cnt .. ", cc_cnt=" .. cc_cnt)
-        save_midi_for_debugging(take, string.format("scenario%d_test%d_input", sidx, tidx))
+        --save_midi_for_debugging(take, string.format("scenario%d_test%d_input", sidx, tidx))
       end
       log("> < Test "..tidx..": "..test.name)
     end
@@ -568,7 +568,7 @@ local function run_tests()
         goto continue_to_next
       end
       -- Save output for debugging
-      save_midi_for_debugging(output_take, string.format("scenario%d_output", sidx))
+      --save_midi_for_debugging(output_take, string.format("scenario%d_output", sidx))
       for tidx, test in ipairs(scenario.tests) do
         total_tests = total_tests + 1
         local range_start_s = info.test_starts[tidx]
