@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-if [ $# -ne 1 ]; then
-  echo "Usage: $0 <output-summary-path>"
-  exit 1
-fi
-
-SUMMARY_FILE="$1"
+SUMMARY_FILE="$HOME/.config/REAPER/test_midi_drum_trainer.log"
 TEST_SCRIPT="test/test_midi_drum_trainer_tests.lua"
 
 echo "Running REAPER with test script $TEST_SCRIPT and summary file $SUMMARY_FILE ..."

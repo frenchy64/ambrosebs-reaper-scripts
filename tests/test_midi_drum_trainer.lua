@@ -15,18 +15,16 @@ local function getenv(name)
   return v
 end
 
-local summary_env = getenv("REAPER_MIDI_DRUM_TRAINER_SUMMARY_FILE")
-local summary_file = (#summary_env > 0) and summary_env or nil
+local summary_file = reaper.GetResourcePath().."/test_midi_drum_trainer.log"
+os.remove(summary_file)
 
 -- Logging helper: prints to console and appends to file if configured
 local function log(msg)
   reaper.ShowConsoleMsg(msg .. "\n")
-  if summary_file then
-    local f = io.open(summary_file, "a")
-    if f then
-      f:write(msg .. "\n")
-      f:close()
-    end
+  local f = io.open(summary_file, "a")
+  if f then
+    f:write(msg .. "\n")
+    f:close()
   end
 end
 

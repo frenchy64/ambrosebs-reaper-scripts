@@ -140,10 +140,10 @@ jobs:
           Xvfb :99 &
           sleep 2
 
-          SUMMARY_FILE="$GITHUB_WORKSPACE/reaper_test_summary.txt"
-
           # Run test runner script and monitor summary file
-          bash "$GITHUB_WORKSPACE/scripts/run_midi_drum_trainer_tests.sh" "$SUMMARY_FILE"
+          bash "$GITHUB_WORKSPACE/scripts/run_midi_drum_trainer_tests.sh"
+
+          cp ~/.config/REAPER/test_midi_drum_trainer.log "$GITHUB_WORKSPACE/reaper_test_summary.txt"
 
       - name: Check test results and fail if any unit test fails
         run: |
