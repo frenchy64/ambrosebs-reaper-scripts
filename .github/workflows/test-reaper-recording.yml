@@ -2,6 +2,7 @@ name: Test REAPER Recording in Headless Mode
 
 on:
   workflow_dispatch:
+  push:
 
 env:
   REAPER_MAJOR_VERSION: 7
