@@ -231,6 +231,9 @@ lanes_limit = 8; // manually set in slider2
 
 global_slider_count = 5;         // Number of global (non-lane) sliders
 
+// Preset version for backwards compatibility when combining/changing sliders in the future
+preset_version = 1;
+
 sliders_per_lane = 30;
 first_lane_slider = 16;
 slider_offset_divs = 0;
@@ -2115,5 +2118,57 @@ mouse_wheel = 0;
 mouse_cap & 1 == 0 ? active_control = 0;
 
 @serialize
+// Preset versioning for backwards compatibility
+// 
+// This allows us to migrate old presets when breaking changes are made to sliders.
+// This approach is based on: https://geraintluff.github.io/jsfx-ui-lib/#versioning-and-complex-effects
+//
+// How to use when making breaking changes:
+// 1. Increment preset_version in @init section (e.g., from 1 to 2)
+// 2. Add migration logic below to convert old slider values to new format
+// 3. Update version history below
+//
+// Version history:
+//   1: Initial version with preset versioning support
+//
+// Example for future versions:
+// When combining sliders in version 2:
+//   - Read old slider values that will be removed
+//   - Calculate/convert to new combined slider format
+//   - Set new slider values
+//   - Update preset_version to 2
+
+// Save preset version
+file_var(0, preset_version);
+
+// Load and check preset version
+file_avail(0) >= 0 ? (
+  // Preset file exists - check version and migrate if needed
+  preset_version >= 1 ? (
+    // Current version - no migration needed
+    preset_version == 1 ? (
+      // All sliders are loaded automatically by REAPER
+      // This block is for future migration logic when preset_version > 1
+    );
+    
+    // Example migration from version 1 to version 2 (add when needed):
+    // preset_version == 1 ? (
+    //   // Example: Combine two sliders into one
+    //   // old_value_a = slider(old_slider_idx_a);
+    //   // old_value_b = slider(old_slider_idx_b);
+    //   // slider(new_combined_slider_idx) = (old_value_a + old_value_b) / 2;
+    //   preset_version = 2;
+    // );
+  ) : (
+    // Version 0 (unversioned) - this is an old preset from before versioning was added
+    // In the future, if breaking changes are made, add migration logic here
+    // For now, just update to current version
+    preset_version = 1;
+  );
+) : (
+  // No preset file available - this is a fresh load with default values
+  preset_version = 1;
+);
+
 // This causes the general state to be kept between DAW "play"s
 file_var(0, dummy);
