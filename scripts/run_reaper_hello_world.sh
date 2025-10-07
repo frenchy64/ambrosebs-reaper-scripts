@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -ex
 
 if [ $# -ne 1 ]; then
   echo "Usage: $0 <absolute-path-to-liveness-file>"

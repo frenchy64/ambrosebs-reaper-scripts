@@ -2,7 +2,7 @@
 set -e
 
 SUMMARY_FILE="$HOME/.config/REAPER/test_midi_drum_trainer.log"
-TEST_SCRIPT="test/test_midi_drum_trainer_tests.lua"
+TEST_SCRIPT="$(pwd)/tests/test_midi_drum_trainer.lua"
 
 echo "Running REAPER with test script $TEST_SCRIPT and summary file $SUMMARY_FILE ..."
 
@@ -18,7 +18,7 @@ REAPER_PID=$!
 TIMEOUT=240
 SECONDS_WAITED=0
 
-touch "$SUMMARY_FILE"
+#touch "$SUMMARY_FILE"
 LAST_SIZE=0
 
 while [ "$SECONDS_WAITED" -lt "$TIMEOUT" ]; do
