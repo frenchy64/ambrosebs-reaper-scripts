@@ -286,16 +286,20 @@ end
 local function analyze_take_range(take, range_start_s, range_end_s, expected_lane)
   local found_channels = {}
   local notecnt = select(2, reaper.MIDI_CountEvts(take)) -- magic: MIDI_CountEvts returns (retval, notecnt, ...), notes only
+  log(string.format("  > Analyzing take range [%.3f, %.3f), total notes=%d", range_start_s, range_end_s, notecnt))
   for i=0, notecnt-1 do
     local _, _, _, startppq, endppq, chan, pitch, vel = reaper.MIDI_GetNote(take, i)
     local start_time = reaper.MIDI_GetProjTimeFromPPQPos(take, startppq) -- magic: PPQ to seconds
     if (start_time >= range_start_s and start_time < range_end_s) then
+      log(string.format("  > > Found note in range: time=%.3f, chan=%d, pitch=%d, vel=%d", start_time, chan, pitch, vel))
       table.insert(found_channels, chan)
     end
   end
   if #found_channels == 0 then
+    log("  > No notes found in range")
     return nil
   end
+  log(string.format("  > Returning channel %d", found_channels[1]))
   return found_channels[1]
 end
 
