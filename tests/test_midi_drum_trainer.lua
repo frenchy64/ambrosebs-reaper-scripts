@@ -386,7 +386,7 @@ local function run_tests()
       end
       insert_events_in_take(take, {
         { is_cc=true,  cc_controller=test.cc_controller or 2, msg2=test.cc_value, ppqpos=0, chan=0 },
-        { is_cc=false, note=test.note or 60, vel=100, ppqpos=0, chan=0 }
+        { is_cc=false, note=test.note or 60, vel=100, ppqpos=1, chan=0 } -- slightly after CC
       }, 0.25) -- magic: item_len_qn = 0.25 (quarter note per test)
       -- Verify the events were inserted and save for debugging
       if take then
