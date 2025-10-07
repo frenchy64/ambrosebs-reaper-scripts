@@ -18,6 +18,36 @@ end
 local summary_file = reaper.GetResourcePath().."/test_midi_drum_trainer.log"
 os.remove(summary_file)
 
+-- Helper to save MIDI file for debugging
+local function save_midi_for_debugging(take, filename)
+  if not take then
+    log("ERROR: Cannot save MIDI - take is nil")
+    return
+  end
+  local temp_dir = reaper.GetResourcePath() .. "/midi_debug"
+  reaper.RecursiveCreateDirectory(temp_dir, 0)
+  local filepath = temp_dir .. "/" .. filename .. ".mid"
+  log("DEBUG: Attempting to save MIDI to: " .. filepath)
+  -- Export the take as MIDI file
+  local item = reaper.GetMediaItemTake_Item(take)
+  if item then
+    local track = reaper.GetMediaItemTake_Track(take)
+    -- Unfortunately, there's no direct API to export a take as MIDI
+    -- So we'll just log the MIDI events instead
+    local _, note_cnt, cc_cnt, _ = reaper.MIDI_CountEvts(take)
+    log("DEBUG: MIDI take has " .. note_cnt .. " notes and " .. cc_cnt .. " CC events")
+    -- Log first few MIDI events
+    for i = 0, math.min(note_cnt-1, 5) do
+      local _, _, _, startppq, endppq, chan, pitch, vel = reaper.MIDI_GetNote(take, i)
+      log(string.format("  Note %d: chan=%d, pitch=%d, vel=%d, ppq=%d-%d", i, chan, pitch, vel, startppq, endppq))
+    end
+    for i = 0, math.min(cc_cnt-1, 5) do
+      local _, _, _, ppq, chanmsg, chan, msg2, msg3 = reaper.MIDI_GetCC(take, i)
+      log(string.format("  CC %d: chan=%d, msg2=%d, msg3=%d, ppq=%d", i, chan, msg2, msg3, ppq))
+    end
+  end
+end
+
 -- Logging helper: prints to console and appends to file if configured
 local function log(msg)
   reaper.ShowConsoleMsg(msg .. "\n")
@@ -74,10 +104,14 @@ local function create_scenario_tracks(scenario_name, prev_last_track_idx)
     log("ERROR: Failed to create track send!")
     error("Failed to create track send")
   end
-  reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_MIDIFLAGS", 0) -- magic: MIDI only, no audio
+  reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_MIDIFLAGS", 1) -- magic: 1 = MIDI only (bit 0 set)
   reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_SRCCHAN", -1) -- magic: -1 = all channels
   reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_DSTCHAN", -1)
   log("> > > routing configured successfully")
+
+  -- Update arrange to ensure changes are committed
+  reaper.UpdateArrange()
+  reaper.TrackList_AdjustWindows(false)
 
   log("> < Create scenario tracks")
   return folder_track, trainer_track, input_track
@@ -317,13 +351,16 @@ local function run_tests()
         { is_cc=true,  cc_controller=test.cc_controller or 2, msg2=test.cc_value, ppqpos=0, chan=0 },
         { is_cc=false, note=test.note or 60, vel=100, ppqpos=0, chan=0 }
       }, 0.25) -- magic: item_len_qn = 0.25 (quarter note per test)
-      -- Verify the events were inserted
+      -- Verify the events were inserted and save for debugging
       if take then
         local _, note_cnt, cc_cnt, _ = reaper.MIDI_CountEvts(take)
         log("> > > Verification: note_cnt=" .. note_cnt .. ", cc_cnt=" .. cc_cnt)
+        save_midi_for_debugging(take, string.format("scenario%d_test%d_input", sidx, tidx))
       end
       log("> < Test "..tidx..": "..test.name)
     end
+    -- Update arrange to ensure all items are committed
+    reaper.UpdateArrange()
     scenario_info[#scenario_info+1] = {
       scenario = scenario,
       folder_track = folder_track,
@@ -359,6 +396,23 @@ local function run_tests()
   reaper.AddProjectMarker2(0, false, marker_time, 0, "End of recording", -1, 0)
   local marker_bar = math.floor(marker_qn / qn_per_bar) + 1
   log(string.format("DEBUG: 'End of recording' marker at time %.3f (bar %d)\n", marker_time, marker_bar))
+  log(string.format("DEBUG: max_end_qn=%.3f", max_end_qn))
+
+  -- Log all input items before recording
+  log("DEBUG: Verifying all input items before recording:")
+  for sidx, info in ipairs(scenario_info) do
+    local input_item_count = reaper.CountTrackMediaItems(info.input_track)
+    log(string.format("  Scenario %d: %d items on input track", sidx, input_item_count))
+    for i = 0, input_item_count-1 do
+      local item = reaper.GetTrackMediaItem(info.input_track, i)
+      local take = reaper.GetActiveTake(item)
+      if take then
+        local _, name = reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", "", false)
+        local _, note_cnt, cc_cnt, _ = reaper.MIDI_CountEvts(take)
+        log(string.format("    Item %d: %s (notes=%d, cc=%d)", i, name, note_cnt, cc_cnt))
+      end
+    end
+  end
 
   -- Enable metronome if not already enabled (40364 = Options: Metronome enabled)
   local metronome_enabled = reaper.GetToggleCommandState(40364)
@@ -458,6 +512,8 @@ local function run_tests()
         scenario_pass = false
         goto continue_to_next
       end
+      -- Save output for debugging
+      save_midi_for_debugging(output_take, string.format("scenario%d_output", sidx))
       for tidx, test in ipairs(scenario.tests) do
         total_tests = total_tests + 1
         local range_start_s = info.test_starts[tidx]
