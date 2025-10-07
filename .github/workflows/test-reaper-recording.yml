@@ -7,10 +7,18 @@ on:
 env:
   REAPER_MAJOR_VERSION: 7
   REAPER_MINOR_VERSION: 48
+  WDL_COMMIT: "3024ec8e000f769454b5ee4ac927dc5cecfc6a6b"
+  ACTIONS_CACHE_VERSION: "0"
 
 jobs:
   test-recording:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        wdl_build: [stock, custom]
+      fail-fast: false
+    
+    name: test-recording (${{ matrix.wdl_build }} libSwell)
     
     steps:
       - name: Checkout repository
@@ -19,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb
+          sudo apt-get install -y xvfb build-essential libx11-dev libglib2.0-0 libgtk-3-0 xz-utils git cmake
 
       - name: Download REAPER
         env:
@@ -35,6 +43,17 @@ jobs:
           cd reaper_linux_x86_64
           ./install-reaper.sh --install "$GITHUB_WORKSPACE/reaper_install" --integrate-user-desktop --usr-local-bin-symlink
           echo "$GITHUB_WORKSPACE/reaper_install/REAPER" >> $GITHUB_PATH
+
+      - name: Build WDL headless and install custom libSwell.so
+        if: matrix.wdl_build == 'custom'
+        run: |
+          git clone https://github.com/justinfrankel/WDL.git "$GITHUB_WORKSPACE/tmp_wdl_src"
+          cd "$GITHUB_WORKSPACE/tmp_wdl_src"
+          git checkout ${WDL_COMMIT}
+          cd WDL/swell
+          make NOGDK=1 -Wno-error
+          cp "$(pwd)/libSwell.so" "$GITHUB_WORKSPACE/reaper_install/REAPER/libSwell.so"
+          echo "Custom libSwell.so installed"
 
       - name: Start Xvfb
         run: |
@@ -52,5 +71,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: recording-test-results
+          name: recording-test-results-${{ matrix.wdl_build }}
           path: /tmp/reaper_recording_test.log
