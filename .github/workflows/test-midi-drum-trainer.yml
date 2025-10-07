@@ -10,6 +10,7 @@ on:
     paths:
       - 'MIDI/ambrosebs_MIDI Drum Trainer.jsfx'
       - 'tests/test_midi_drum_trainer.lua'
+      - 'scripts/run_midi_drum_trainer_tests.sh'
       - '.github/workflows/test-midi-drum-trainer.yml'
 
 env:
