@@ -390,6 +390,7 @@ local function run_tests()
       if take then
         local _, note_cnt, cc_cnt, _ = reaper.MIDI_CountEvts(take)
         log("> > > Verification: note_cnt=" .. note_cnt .. ", cc_cnt=" .. cc_cnt)
+        log("> > > About to exit verification block")
         --save_midi_for_debugging(take, string.format("scenario%d_test%d_input", sidx, tidx))
       end
       log("> < Test "..tidx..": "..test.name)
