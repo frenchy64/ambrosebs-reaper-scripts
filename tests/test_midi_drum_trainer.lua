@@ -31,29 +31,31 @@ end
 log("MIDI Drum Trainer Test Runner: Starting up...")
 
 local function create_scenario_tracks(scenario_name, prev_last_track_idx)
-  -- Insert folder track for scenario
+  log("> > Insert folder track for scenario")
   reaper.InsertTrackAtIndex(prev_last_track_idx + 1, true) -- magic: InsertTrackAtIndex(index, wantDefaults)
   local folder_track = reaper.GetTrack(0, prev_last_track_idx + 1)
   reaper.GetSetMediaTrackInfo_String(folder_track, "P_NAME", "Scenario: " .. scenario_name, true) -- magic: "P_NAME", true for set
   reaper.SetMediaTrackInfo_Value(folder_track, "I_FOLDERDEPTH", 1) -- magic: 1 = folder parent
 
-  -- Insert MIDI Drum Trainer output track
+  log("> > Insert MIDI Drum Trainer output track")
   reaper.InsertTrackAtIndex(prev_last_track_idx + 2, true)
   local trainer_track = reaper.GetTrack(0, prev_last_track_idx + 2)
   reaper.GetSetMediaTrackInfo_String(trainer_track, "P_NAME", "Output", true)
   reaper.SetMediaTrackInfo_Value(trainer_track, "I_FOLDERDEPTH", 0) -- magic: 0 = no folder change
 
-  -- Insert input track for feeding MIDI
+  log("> > Insert input track for feeding MIDI")
   reaper.InsertTrackAtIndex(prev_last_track_idx + 3, true)
   local input_track = reaper.GetTrack(0, prev_last_track_idx + 3)
   reaper.GetSetMediaTrackInfo_String(input_track, "P_NAME", "Input", true)
   reaper.SetMediaTrackInfo_Value(input_track, "I_FOLDERDEPTH", -1) -- magic: -1 = folder end
 
-  -- Set up routing (send from input to output)
+  log("> > Set up routing (send from input to output)")
   local send_idx = reaper.CreateTrackSend(input_track, trainer_track)
   reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_MIDIFLAGS", 0) -- magic: MIDI only, no audio
   reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_SRCCHAN", -1) -- magic: -1 = all channels
   reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_DSTCHAN", -1)
+
+  log("> < Create scenario tracks")
   return folder_track, trainer_track, input_track
 end
 
