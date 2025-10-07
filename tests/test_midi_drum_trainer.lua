@@ -230,6 +230,7 @@ local function run_tests()
   local max_end_qn = 0
 
   for sidx, scenario in ipairs(scenarios) do
+    log("> Scenario "..sidx..": "..scenario.name)
     local folder_track, trainer_track, input_track =
       create_scenario_tracks(scenario.name, prev_last_track_idx)
     prev_last_track_idx = prev_last_track_idx + 3
@@ -238,6 +239,7 @@ local function run_tests()
     local ntests = #scenario.tests
     local test_starts, test_ends, test_names, test_qns = {}, {}, {}, {}
     for tidx, test in ipairs(scenario.tests) do
+      log("> > Test "..tidx..": "..test.name)
       local beat = tidx
       local item_name = string.format("Test %d Input: %s", tidx, test.name)
       local input_item, start_time, end_time, start_qn = create_named_midi_item(input_track, beat, item_name)
@@ -254,6 +256,7 @@ local function run_tests()
         { is_cc=true,  cc_controller=test.cc_controller or 2, msg2=test.cc_value, ppqpos=0, chan=0 },
         { is_cc=false, note=test.note or 60, vel=100, ppqpos=0, chan=0 }
       }, 0.25) -- magic: item_len_qn = 0.25 (quarter note per test)
+      log("> < Test "..tidx..": "..test.name)
     end
     scenario_info[#scenario_info+1] = {
       scenario = scenario,
@@ -265,12 +268,15 @@ local function run_tests()
       test_names = test_names,
       test_qns = test_qns,
     }
+    log("< Scenario "..sidx..": "..scenario.name)
   end
 
-  for _, info in ipairs(scenario_info) do
+  for i, info in ipairs(scenario_info) do
+    log("> Arming Scenario "..i)
     reaper.SetMediaTrackInfo_Value(info.trainer_track, "I_RECARM", 1) -- magic: arm for record
     reaper.SetMediaTrackInfo_Value(info.trainer_track, "I_RECINPUT", 4096) -- magic: 4096 = record output (MIDI)
     reaper.SetMediaTrackInfo_Value(info.trainer_track, "I_RECMODE", 4)     -- magic: 4 = record output (MIDI) mode
+    log("< Arming Scenario "..i)
   end
 
   -- Place marker at start of next bar after max_end_qn
