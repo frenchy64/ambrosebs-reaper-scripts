@@ -130,29 +130,54 @@ end
 
 local function set_lane_config(track, fx_idx, lanes)
   log("> > set_lane_config")
+  local num_params = reaper.TrackFX_GetNumParams(track, fx_idx)
+  log("> > > FX has " .. num_params .. " parameters")
   local lanes_slider_idx = get_slider_param_index_by_name(track, fx_idx, "Lanes")
-  log("> > > Lanes idx: "..lanes_slider_idx)
+  log("> > > Lanes idx: "..tostring(lanes_slider_idx))
   if lanes_slider_idx then
     reaper.TrackFX_SetParam(track, fx_idx, lanes_slider_idx, #lanes-1)
+    log("> > > Set Lanes parameter to: " .. (#lanes-1))
+  else
+    log("WARNING: Could not find Lanes parameter!")
   end
   for i, lane in ipairs(lanes) do
     log("> > > set Lane "..i.." config")
     local lane_num = i
     if lane.cc_controller then
       local idx = get_slider_param_index_by_name(track, fx_idx, "CCController" .. lane_num)
-      if idx then reaper.TrackFX_SetParam(track, fx_idx, idx, lane.cc_controller) end
+      if idx then 
+        reaper.TrackFX_SetParam(track, fx_idx, idx, lane.cc_controller)
+        log("> > > > Set CCController" .. lane_num .. " to " .. lane.cc_controller)
+      else
+        log("WARNING: Could not find CCController" .. lane_num)
+      end
     end
     if lane.cc_min_value then
       local idx = get_slider_param_index_by_name(track, fx_idx, "CCMinValue" .. lane_num)
-      if idx then reaper.TrackFX_SetParam(track, fx_idx, idx, lane.cc_min_value) end
+      if idx then 
+        reaper.TrackFX_SetParam(track, fx_idx, idx, lane.cc_min_value)
+        log("> > > > Set CCMinValue" .. lane_num .. " to " .. lane.cc_min_value)
+      else
+        log("WARNING: Could not find CCMinValue" .. lane_num)
+      end
     end
     if lane.cc_max_value then
       local idx = get_slider_param_index_by_name(track, fx_idx, "CCMaxValue" .. lane_num)
-      if idx then reaper.TrackFX_SetParam(track, fx_idx, idx, lane.cc_max_value) end
+      if idx then 
+        reaper.TrackFX_SetParam(track, fx_idx, idx, lane.cc_max_value)
+        log("> > > > Set CCMaxValue" .. lane_num .. " to " .. lane.cc_max_value)
+      else
+        log("WARNING: Could not find CCMaxValue" .. lane_num)
+      end
     end
     if lane.output_channel then
       local idx = get_slider_param_index_by_name(track, fx_idx, "OutputChannel" .. lane_num)
-      if idx then reaper.TrackFX_SetParam(track, fx_idx, idx, lane.output_channel) end
+      if idx then 
+        reaper.TrackFX_SetParam(track, fx_idx, idx, lane.output_channel)
+        log("> > > > Set OutputChannel" .. lane_num .. " to " .. lane.output_channel)
+      else
+        log("WARNING: Could not find OutputChannel" .. lane_num)
+      end
     end
   end
   log("> < set_lane_config")
@@ -161,7 +186,9 @@ end
 local function ensure_jsfx_on_track(track, jsfx_name)
   log("> > ensure_jsfx_on_track")
   local fx_idx = -1
-  for i = 0, reaper.TrackFX_GetCount(track)-1 do
+  local fx_count = reaper.TrackFX_GetCount(track)
+  log("> > > Track has " .. fx_count .. " FX plugins")
+  for i = 0, fx_count-1 do
     log("> > > track number "..i)
     local _, fxname = reaper.TrackFX_GetFXName(track, i, "")
     log("> > > fx name: "..fxname)
@@ -173,10 +200,17 @@ local function ensure_jsfx_on_track(track, jsfx_name)
   if fx_idx == -1 then
     log("> > > fx add by name")
     fx_idx = reaper.TrackFX_AddByName(track, jsfx_name, false, 1) -- magic: instantiate JSFX
+    log("> > > fx_idx after add: " .. tostring(fx_idx))
     if fx_idx == -1 then
       log("Could not load JSFX: " .. tostring(jsfx_name))
+      -- Try to list available JSFX
+      log("Available JSFX search paths:")
+      log("  Resource path: " .. reaper.GetResourcePath())
       error("Could not load JSFX: " .. tostring(jsfx_name))
     end
+    -- Verify it was added
+    local _, loaded_name = reaper.TrackFX_GetFXName(track, fx_idx, "")
+    log("> > > Loaded FX name: " .. loaded_name)
   end
   log("> < ensure_jsfx_on_track")
   return fx_idx
