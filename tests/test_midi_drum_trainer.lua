@@ -34,26 +34,50 @@ local function create_scenario_tracks(scenario_name, prev_last_track_idx)
   log("> > Insert folder track for scenario")
   reaper.InsertTrackAtIndex(prev_last_track_idx + 1, true) -- magic: InsertTrackAtIndex(index, wantDefaults)
   local folder_track = reaper.GetTrack(0, prev_last_track_idx + 1)
+  log("> > > folder_track pointer: " .. tostring(folder_track))
+  if not folder_track then
+    log("ERROR: Failed to create folder track!")
+    error("Failed to create folder track")
+  end
   reaper.GetSetMediaTrackInfo_String(folder_track, "P_NAME", "Scenario: " .. scenario_name, true) -- magic: "P_NAME", true for set
   reaper.SetMediaTrackInfo_Value(folder_track, "I_FOLDERDEPTH", 1) -- magic: 1 = folder parent
+  log("> > > folder_track created successfully")
 
   log("> > Insert MIDI Drum Trainer output track")
   reaper.InsertTrackAtIndex(prev_last_track_idx + 2, true)
   local trainer_track = reaper.GetTrack(0, prev_last_track_idx + 2)
+  log("> > > trainer_track pointer: " .. tostring(trainer_track))
+  if not trainer_track then
+    log("ERROR: Failed to create trainer track!")
+    error("Failed to create trainer track")
+  end
   reaper.GetSetMediaTrackInfo_String(trainer_track, "P_NAME", "Output", true)
   reaper.SetMediaTrackInfo_Value(trainer_track, "I_FOLDERDEPTH", 0) -- magic: 0 = no folder change
+  log("> > > trainer_track created successfully")
 
   log("> > Insert input track for feeding MIDI")
   reaper.InsertTrackAtIndex(prev_last_track_idx + 3, true)
   local input_track = reaper.GetTrack(0, prev_last_track_idx + 3)
+  log("> > > input_track pointer: " .. tostring(input_track))
+  if not input_track then
+    log("ERROR: Failed to create input track!")
+    error("Failed to create input track")
+  end
   reaper.GetSetMediaTrackInfo_String(input_track, "P_NAME", "Input", true)
   reaper.SetMediaTrackInfo_Value(input_track, "I_FOLDERDEPTH", -1) -- magic: -1 = folder end
+  log("> > > input_track created successfully")
 
   log("> > Set up routing (send from input to output)")
   local send_idx = reaper.CreateTrackSend(input_track, trainer_track)
+  log("> > > send_idx: " .. tostring(send_idx))
+  if send_idx < 0 then
+    log("ERROR: Failed to create track send!")
+    error("Failed to create track send")
+  end
   reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_MIDIFLAGS", 0) -- magic: MIDI only, no audio
   reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_SRCCHAN", -1) -- magic: -1 = all channels
   reaper.SetTrackSendInfo_Value(input_track, 0, send_idx, "I_DSTCHAN", -1)
+  log("> > > routing configured successfully")
 
   log("> < Create scenario tracks")
   return folder_track, trainer_track, input_track
@@ -129,15 +153,27 @@ local function create_named_midi_item(track, test_idx, name)
   local end_qn = start_qn + 0.25
   local start_time = reaper.TimeMap2_QNToTime(0, start_qn) -- magic: QN to seconds
   local end_time = reaper.TimeMap2_QNToTime(0, end_qn)
+  log("> > > Creating MIDI item: " .. name .. " at QN " .. start_qn .. "-" .. end_qn .. " (time: " .. start_time .. "-" .. end_time .. ")")
   local item = reaper.CreateNewMIDIItemInProj(track, start_time, end_time, false)
+  log("> > > item pointer: " .. tostring(item))
+  if not item then
+    log("ERROR: Failed to create MIDI item!")
+    error("Failed to create MIDI item")
+  end
   reaper.GetSetMediaItemInfo_String(item, "P_NAME", name, true)
   local take = reaper.GetActiveTake(item)
-  if take then reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", name, true) end
+  log("> > > take pointer: " .. tostring(take))
+  if take then 
+    reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", name, true) 
+  else
+    log("WARNING: No active take for MIDI item!")
+  end
   return item, start_time, end_time, start_qn
 end
 
 -- Insert all MIDI events into the take, including note-off after note-on to avoid hanging notes.
 local function insert_events_in_take(take, events, item_len_qn)
+  log("> > > insert_events_in_take: take=" .. tostring(take) .. ", event count=" .. #events)
   local ppq_noteon = 0
   local ppq_noteoff = nil
   if item_len_qn then
@@ -147,26 +183,31 @@ local function insert_events_in_take(take, events, item_len_qn)
   else
     ppq_noteoff = 120 -- magic: fallback small duration
   end
+  log("> > > > ppq_noteon=" .. ppq_noteon .. ", ppq_noteoff=" .. ppq_noteoff)
 
-  for _, ev in ipairs(events) do
+  for idx, ev in ipairs(events) do
     local is_cc = ev.is_cc == true
     local msg1 = is_cc and (ev.cc_controller or 2) or (ev.note or 60)
+    log("> > > > Event " .. idx .. ": is_cc=" .. tostring(is_cc) .. ", msg1=" .. msg1 .. ", msg2=" .. tostring(ev.msg2 or ev.vel))
     -- Insert note-on or CC at start
-    reaper.MIDI_InsertCC(
+    local ok = reaper.MIDI_InsertCC(
       take, false, false, ev.ppqpos or ppq_noteon,
       is_cc and 0xB0 or 0x90,          -- magic: 0xB0 = CC, 0x90 = note-on
       ev.chan or 0, msg1, ev.msg2 or ev.vel
     )
+    log("> > > > > MIDI_InsertCC result: " .. tostring(ok))
     -- If this is a note-on, insert a note-off (0x80) at end of item
     if not is_cc then
-      reaper.MIDI_InsertCC(
+      local ok2 = reaper.MIDI_InsertCC(
         take, false, false, ppq_noteoff,
         0x80,                           -- magic: 0x80 = note-off
         ev.chan or 0, msg1, 0
       )
+      log("> > > > > MIDI_InsertCC (note-off) result: " .. tostring(ok2))
     end
   end
   reaper.MIDI_Sort(take)
+  log("> > > < insert_events_in_take complete")
 end
 
 -- Analyze the output MIDI take within a specific time range (in seconds)
@@ -239,6 +280,9 @@ local scenarios = {
 
 local function run_tests()
   log("Setting up test scenarios...")
+  log("Initial track count: " .. reaper.CountTracks(0))
+  log("REAPER version: " .. reaper.GetAppVersion())
+  log("Project sample rate: " .. reaper.GetSetProjectInfo(0, "PROJECT_SRATE", 0, false))
   local prev_last_track_idx = reaper.CountTracks(0)-1
   local scenario_info = {}
   local max_end_qn = 0
@@ -265,11 +309,19 @@ local function run_tests()
       local take = reaper.GetActiveTake(input_item)
       if take then
         reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", item_name, true)
+        log("> > > Take for input item exists, inserting events...")
+      else
+        log("ERROR: No take for input item!")
       end
       insert_events_in_take(take, {
         { is_cc=true,  cc_controller=test.cc_controller or 2, msg2=test.cc_value, ppqpos=0, chan=0 },
         { is_cc=false, note=test.note or 60, vel=100, ppqpos=0, chan=0 }
       }, 0.25) -- magic: item_len_qn = 0.25 (quarter note per test)
+      -- Verify the events were inserted
+      if take then
+        local _, note_cnt, cc_cnt, _ = reaper.MIDI_CountEvts(take)
+        log("> > > Verification: note_cnt=" .. note_cnt .. ", cc_cnt=" .. cc_cnt)
+      end
       log("> < Test "..tidx..": "..test.name)
     end
     scenario_info[#scenario_info+1] = {
@@ -287,9 +339,16 @@ local function run_tests()
 
   for i, info in ipairs(scenario_info) do
     log("> Arming Scenario "..i)
+    local track_num = reaper.GetMediaTrackInfo_Value(info.trainer_track, "IP_TRACKNUMBER")
+    log("> > Track number: " .. track_num)
     reaper.SetMediaTrackInfo_Value(info.trainer_track, "I_RECARM", 1) -- magic: arm for record
     reaper.SetMediaTrackInfo_Value(info.trainer_track, "I_RECINPUT", 4096) -- magic: 4096 = record output (MIDI)
     reaper.SetMediaTrackInfo_Value(info.trainer_track, "I_RECMODE", 4)     -- magic: 4 = record output (MIDI) mode
+    -- Verify the arm state
+    local arm_state = reaper.GetMediaTrackInfo_Value(info.trainer_track, "I_RECARM")
+    local rec_input = reaper.GetMediaTrackInfo_Value(info.trainer_track, "I_RECINPUT")
+    local rec_mode = reaper.GetMediaTrackInfo_Value(info.trainer_track, "I_RECMODE")
+    log("> > Armed state verified: I_RECARM=" .. arm_state .. ", I_RECINPUT=" .. rec_input .. ", I_RECMODE=" .. rec_mode)
     log("< Arming Scenario "..i)
   end
 
@@ -362,6 +421,7 @@ local function run_tests()
 
   function analyze_outputs()
     log("========== MIDI Drum Trainer Test Results ==========")
+    log("Total tracks in project: " .. reaper.CountTracks(0))
     local total_scenarios = #scenario_info
     local total_tests = 0
     local passed_scenarios = 0
@@ -377,10 +437,18 @@ local function run_tests()
       local scenario_pass = true
       -- For each scenario, find the recorded output item (should be one long MIDI item)
       local output_take = nil
-      for i = 0, reaper.CountTrackMediaItems(info.trainer_track)-1 do
+      local item_count = reaper.CountTrackMediaItems(info.trainer_track)
+      log("  Number of items on trainer track: " .. item_count)
+      for i = 0, item_count-1 do
         local it = reaper.GetTrackMediaItem(info.trainer_track, i)
+        log("  > Item " .. i .. " pointer: " .. tostring(it))
         local take = reaper.GetActiveTake(it)
+        log("  > Item " .. i .. " take pointer: " .. tostring(take))
         if take then
+          local _, take_name = reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", "", false)
+          log("  > Item " .. i .. " take name: " .. take_name)
+          local note_count = select(2, reaper.MIDI_CountEvts(take))
+          log("  > Item " .. i .. " note count: " .. note_count)
           output_take = take
           break
         end

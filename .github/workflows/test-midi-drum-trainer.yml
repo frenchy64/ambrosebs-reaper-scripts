@@ -130,9 +130,10 @@ jobs:
           mkdir -p ~/.config/REAPER/Effects/ambrosebs
           cp "$GITHUB_WORKSPACE/MIDI/ambrosebs_MIDI Drum Trainer.jsfx" ~/.config/REAPER/Effects/ambrosebs
 
-      - name: Install REAPER license
-        run: |
-          echo "${{ secrets.REAPER_LICENSE_KEY }}" > ~/.config/REAPER/reaper-license.rk
+      # Temporarily commented out for investigation
+      # - name: Install REAPER license
+      #   run: |
+      #     echo "${{ secrets.REAPER_LICENSE_KEY }}" > ~/.config/REAPER/reaper-license.rk
 
       - name: Add REAPER to PATH
         run: |
