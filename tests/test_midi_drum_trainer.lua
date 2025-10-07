@@ -181,6 +181,8 @@ local function set_lane_config(track, fx_idx, lanes)
     end
   end
   log("> < set_lane_config")
+  -- Ensure FX parameters are updated
+  reaper.UpdateArrange()
 end
 
 local function ensure_jsfx_on_track(track, jsfx_name)
@@ -211,6 +213,8 @@ local function ensure_jsfx_on_track(track, jsfx_name)
     -- Verify it was added
     local _, loaded_name = reaper.TrackFX_GetFXName(track, fx_idx, "")
     log("> > > Loaded FX name: " .. loaded_name)
+    -- Give FX time to initialize
+    reaper.UpdateArrange()
   end
   log("> < ensure_jsfx_on_track")
   return fx_idx
