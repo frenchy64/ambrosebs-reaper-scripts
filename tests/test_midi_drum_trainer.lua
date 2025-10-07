@@ -455,6 +455,18 @@ local function run_tests()
     end
   end
 
+  -- Log all track states before recording
+  log("DEBUG: Track states before recording:")
+  for sidx, info in ipairs(scenario_info) do
+    local folder_num = reaper.GetMediaTrackInfo_Value(info.folder_track, "IP_TRACKNUMBER")
+    local trainer_num = reaper.GetMediaTrackInfo_Value(info.trainer_track, "IP_TRACKNUMBER")
+    local input_num = reaper.GetMediaTrackInfo_Value(info.input_track, "IP_TRACKNUMBER")
+    log(string.format("  Scenario %d: folder=#%d, trainer=#%d (armed=%d), input=#%d", 
+      sidx, folder_num, trainer_num, 
+      reaper.GetMediaTrackInfo_Value(info.trainer_track, "I_RECARM"),
+      input_num))
+  end
+
   -- Enable metronome if not already enabled (40364 = Options: Metronome enabled)
   local metronome_enabled = reaper.GetToggleCommandState(40364)
   if metronome_enabled == 0 then
