@@ -58,6 +58,7 @@ slider2:0<0,7,1{1,2,3,4,5,6,7,8}>Lanes
 slider3:100<1,250,1>Error Bound (ms)
 slider4:0<0,1,1{Off,On}>Auto Shrink Error Bound
 slider5:0<-200,200>Latency Compensation (ms)
+// Important! update global_slider_count when adding new sliders here.
 
 // Hidden sliders per lane
 slider16:8<1,32,1>-Divisions1
@@ -78,6 +79,7 @@ slider30:-1<-1,127,1>-CCController1
 slider31:-1<-1,127,1>-CCValue1
 slider32:0<0,127,1>-CCMinValue1
 slider33:127<0,127,1>-CCMaxValue1
+slider34:0<0,16,1>-OutputChannel1
 
 slider46:8<1,32,1>-Divisions2
 slider47:0<-0.91666, 0.91666,0.01>-Swing2
@@ -97,6 +99,7 @@ slider60:-1<-1,127,1>-CCController2
 slider61:-1<-1,127,1>-CCValue2
 slider62:0<0,127,1>-CCMinValue2
 slider63:127<0,127,1>-CCMaxValue2
+slider64:0<0,16,1>-OutputChannel2
 
 slider76:8<1,32,1>-Divisions3
 slider77:0<-0.91666, 0.91666,0.01>-Swing3
@@ -116,6 +119,7 @@ slider90:-1<-1,127,1>-CCController3
 slider91:-1<-1,127,1>-CCValue3
 slider92:0<0,127,1>-CCMinValue3
 slider93:127<0,127,1>-CCMaxValue3
+slider94:0<0,16,1>-OutputChannel3
 
 slider106:8<1,32,1>-Divisions4
 slider107:0<-0.91666, 0.91666,0.01>-Swing4
@@ -135,6 +139,7 @@ slider120:-1<-1,127,1>-CCController4
 slider121:-1<-1,127,1>-CCValue4
 slider122:0<0,127,1>-CCMinValue4
 slider123:127<0,127,1>-CCMaxValue4
+slider124:0<0,16,1>-OutputChannel4
 
 slider136:8<1,32,1>-Divisions5
 slider137:0<-0.91666, 0.91666,0.01>-Swing5
@@ -154,6 +159,7 @@ slider151:-1<-1,127,1>-CCController5
 slider152:-1<-1,127,1>-CCValue5
 slider153:0<0,127,1>-CCMinValue5
 slider154:127<0,127,1>-CCMaxValue5
+slider155:0<0,16,1>-OutputChannel5
 
 slider166:8<1,32,1>-Divisions6
 slider167:0<-0.91666, 0.91666,0.01>-Swing6
@@ -173,6 +179,7 @@ slider180:-1<-1,127,1>-CCController5
 slider181:-1<-1,127,1>-CCValue6
 slider182:0<0,127,1>-CCMinValue6
 slider183:127<0,127,1>-CCMaxValue6
+slider184:0<0,16,1>-OutputChannel6
 
 slider196:8<1,32,1>-Divisions7
 slider197:0<-0.91666, 0.91666,0.01>-Swing7
@@ -192,6 +199,7 @@ slider210:-1<-1,127,1>-CCController7
 slider211:-1<-1,127,1>-CCValue7
 slider212:0<0,127,1>-CCMinValue7
 slider213:127<0,127,1>-CCMaxValue7
+slider214:0<0,16,1>-OutputChannel7
 
 slider226:8<1,32,1>-Divisions8
 slider227:0<-0.91666, 0.91666,0.01>-Swing8
@@ -211,6 +219,7 @@ slider240:-1<-1,127,1>-CCController8
 slider241:-1<-1,127,1>-CCValue8
 slider242:0<0,127,1>-CCMinValue8
 slider243:127<0,127,1>-CCMaxValue8
+slider244:0<0,16,1>-OutputChannel8
 
 @init
 note_on = $x90;
@@ -219,6 +228,8 @@ control_change = $xB0;
 error_bound_scale = 250;
 
 lanes_limit = 8; // manually set in slider2
+
+global_slider_count = 5;         // Number of global (non-lane) sliders
 
 sliders_per_lane = 30;
 first_lane_slider = 16;
@@ -240,8 +251,9 @@ slider_offset_cc_controller = 14;
 slider_offset_cc_value = 15;
 slider_offset_cc_min_value = 16;
 slider_offset_cc_max_value = 17;
+slider_offset_output_channel = 18;
 // Update sliders_used_per_lane when adding more sliders per lane
-sliders_used_per_lane = 18;
+sliders_used_per_lane = 19;
 
 control_phase = 1;
 control_swing = 2;
@@ -601,6 +613,12 @@ function getInputChannel(lane)
 function setInputChannel(lane, value)
 (
   setSlider(lane, slider_offset_in_channel, value, 0, 16, 0);
+);
+
+// no setter -- output channel for internal testing use only.
+function getOutputChannel(lane)
+(
+  getSlider(lane, slider_offset_output_channel);
 );
 
 function getCCChannel(lane)
@@ -1096,6 +1114,19 @@ isPlaying() ? (
   getClick(7) && (num_lanes>7) ? playGrid(7);
 );
 
+// Helper for sending MIDI Note On with lane output channel consideration
+function send_lane_midi(lane, offset, msg1, msg2, msg3)
+local(out_chan_slider, out_chan, out_status)
+(
+  out_chan_slider = getOutputChannel(lane); // 0: preserve input channel, >0: force out channel
+  out_status = msg1;
+  out_chan_slider > 0 ? ( // input channel by default
+    out_chan = out_chan_slider - 1; // 1=ch0, 2=ch1, ..., 16=ch15
+    out_status = (msg1 & 0xf0) | out_chan;
+  );
+  midisend(offset, out_status, msg2, msg3);
+);
+
 while (midirecv(offset,msg1,msg2,msg3)) (
    noteStatus = msg1 & 0xF0;
    channel = msg1 & 0x0F;
@@ -1141,6 +1172,9 @@ while (midirecv(offset,msg1,msg2,msg3)) (
        midisend(offset, msg1, msg2, msg3)
      )
      : lane < 0 ?
+       // TODO figure out fallthru logic. see Scenario 2 "No third lane" for a good motivation
+       // to simply not pass thru midi notes that match no lanes. Sometimes you might want
+       // it pass thru, so maybe this needs to be a config.
        midisend(offset, msg1, msg2, msg3)
      : (
        reltime = getRelTime(offset);
@@ -1168,7 +1202,7 @@ while (midirecv(offset,msg1,msg2,msg3)) (
        // or keep timing miss but record CC status for visualization
        (hit == 0 && !cc_in_range) ? hit = 2;
        
-       hit == 0 ? midisend(offset,msg1,note,msg3);
+       hit == 0 ? send_lane_midi(lane,offset,msg1,note,msg3);
        decayHistogram(lane);
        recordHistory(reltime, hit, lane, note, cc_status);
        recordCCFeedback(lane);

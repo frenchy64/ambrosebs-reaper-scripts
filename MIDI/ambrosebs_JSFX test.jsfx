@@ -1,0 +1,7 @@
+desc:Slider test
+slider1:0<0,10,1>First
+slider2:0<0,10,1>Second
+slider3:0<0,10,1>Third
+@init
+@slider
+@block

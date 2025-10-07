@@ -1,0 +1,190 @@
+name: MIDI Drum Trainer Automated Tests (Headless REAPER Build)
+
+permissions:
+  contents: read
+  actions: write
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'MIDI/ambrosebs_MIDI Drum Trainer.jsfx'
+      - 'tests/test_midi_drum_trainer.lua'
+      - 'scripts/run_midi_drum_trainer_tests.sh'
+      - '.github/workflows/test-midi-drum-trainer.yml'
+
+env:
+  REAPER_MAJOR_VERSION: "7"
+  REAPER_MINOR_VERSION: "48"
+  SWS_VERSION: "2.14.0.7"
+  WDL_COMMIT: "3024ec8e000f769454b5ee4ac927dc5cecfc6a6b"
+  ACTIONS_CACHE_VERSION: "0" # increment this to simulate cache invalidation
+
+jobs:
+  test-midi-drum-trainer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libx11-dev libglib2.0-0 libgtk-3-0 xz-utils git cmake
+
+      # Restore REAPER tarball cache
+      - name: Restore REAPER tarball cache
+        id: restore_reaper_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/tmp_reaper/reaper.tar.xz
+          key: ${{ env.ACTIONS_CACHE_VERSION }}-reaper-tarball-${{ env.REAPER_MAJOR_VERSION }}-${{ env.REAPER_MINOR_VERSION }}
+
+      - name: Download REAPER tarball if needed
+        if: steps.restore_reaper_cache.outputs.cache-hit != 'true'
+        env:
+          REAPER_DOWNLOAD_URL: "https://www.reaper.fm/files/${{ env.REAPER_MAJOR_VERSION }}.x/reaper${{ env.REAPER_MAJOR_VERSION }}${{ env.REAPER_MINOR_VERSION }}_linux_x86_64.tar.xz"
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tmp_reaper"
+          wget -O "$GITHUB_WORKSPACE/tmp_reaper/reaper.tar.xz" $REAPER_DOWNLOAD_URL
+
+      # Save REAPER tarball cache if we just downloaded it
+      - name: Save REAPER tarball cache
+        if: steps.restore_reaper_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/tmp_reaper/reaper.tar.xz
+          key: ${{ env.ACTIONS_CACHE_VERSION }}-reaper-tarball-${{ env.REAPER_MAJOR_VERSION }}-${{ env.REAPER_MINOR_VERSION }}
+
+      - name: Extract REAPER and setup directories
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tmp_reaper"
+          tar -xf "$GITHUB_WORKSPACE/tmp_reaper/reaper.tar.xz" -C "$GITHUB_WORKSPACE/tmp_reaper"
+          mkdir -p "$GITHUB_WORKSPACE/reaper"
+          cp -r "$GITHUB_WORKSPACE/tmp_reaper/reaper_linux_x86_64/"* "$GITHUB_WORKSPACE/reaper/"
+          mkdir -p "$GITHUB_WORKSPACE/reaper/REAPER/UserPlugins"
+          mkdir -p "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests"
+
+      # Restore SWS extension cache
+      - name: Restore SWS Extension cache
+        id: restore_sws_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/reaper/REAPER/UserPlugins/reaper_sws-x86_64.so
+          key: ${{ env.ACTIONS_CACHE_VERSION }}-sws-${{ env.SWS_VERSION }}
+
+      - name: Download and extract SWS Extension
+        if: steps.restore_sws_cache.outputs.cache-hit != 'true'
+        env:
+          SWS_DOWNLOAD_URL: "https://www.sws-extension.org/download/featured/sws-${{ env.SWS_VERSION }}-Linux-x86_64.tar.xz"
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tmp_sws"
+          wget -O "$GITHUB_WORKSPACE/tmp_sws/sws.tar.xz" $SWS_DOWNLOAD_URL
+          tar -xf "$GITHUB_WORKSPACE/tmp_sws/sws.tar.xz" -C "$GITHUB_WORKSPACE/tmp_sws"
+          ls "$GITHUB_WORKSPACE/tmp_sws/UserPlugins"
+          cp "$GITHUB_WORKSPACE/tmp_sws/UserPlugins/reaper_sws-x86_64.so" "$GITHUB_WORKSPACE/reaper/REAPER/UserPlugins/"
+
+      # Save SWS extension cache if we just downloaded it
+      - name: Save SWS Extension cache
+        if: steps.restore_sws_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/reaper/REAPER/UserPlugins/reaper_sws-x86_64.so
+          key: ${{ env.ACTIONS_CACHE_VERSION }}-sws-${{ env.SWS_VERSION }}
+
+      # Restore WDL build cache
+      - name: Restore WDL headless build cache
+        id: restore_wdl_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/reaper/REAPER/libSwell.so
+          key: ${{ env.ACTIONS_CACHE_VERSION }}-libSwell-${{ env.WDL_COMMIT }}
+
+      # Build WDL headless and install libSwell.so into REAPER
+      - name: Build WDL headless and install libSwell.so
+        if: steps.restore_wdl_cache.outputs.cache-hit != 'true'
+        run: |
+          git clone https://github.com/justinfrankel/WDL.git "$GITHUB_WORKSPACE/tmp_wdl_src"
+          cd "$GITHUB_WORKSPACE/tmp_wdl_src"
+          git checkout ${WDL_COMMIT}
+          cd WDL/swell
+          make NOGDK=1 -Wno-error
+          cp "$(pwd)/libSwell.so" "$GITHUB_WORKSPACE/reaper/REAPER/libSwell.so"
+
+      # Save WDL build cache if we just built it
+      - name: Save WDL headless build cache
+        if: steps.restore_wdl_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/reaper/REAPER/libSwell.so
+          key: ${{ env.ACTIONS_CACHE_VERSION }}-libSwell-${{ env.WDL_COMMIT }}
+
+      - name: Copy test script into REAPER scripts
+        run: |
+          cp "$GITHUB_WORKSPACE/tests/test_midi_drum_trainer.lua" "$GITHUB_WORKSPACE/reaper/REAPER/Scripts/tests/"
+
+      - name: Copy MIDI Drum Trainer into REAPER resource directory
+        run: |
+          mkdir -p ~/.config/REAPER/Effects/ambrosebs
+          cp "$GITHUB_WORKSPACE/MIDI/ambrosebs_MIDI Drum Trainer.jsfx" ~/.config/REAPER/Effects/ambrosebs
+
+      - name: Install REAPER license
+        run: |
+          echo "${{ secrets.REAPER_LICENSE_KEY }}" > ~/.config/REAPER/reaper-license.rk
+
+      - name: Add REAPER to PATH
+        run: |
+          echo "$GITHUB_WORKSPACE/reaper/REAPER" >> $GITHUB_PATH
+
+      - name: Run and monitor MIDI Drum Trainer tests
+        env:
+          DISPLAY: ":99"
+        run: |
+          echo "Starting Xvfb for REAPER GUI..."
+          Xvfb :99 &
+          sleep 2
+
+          # Run test runner script and monitor summary file
+          bash "$GITHUB_WORKSPACE/scripts/run_midi_drum_trainer_tests.sh"
+
+          cp ~/.config/REAPER/test_midi_drum_trainer.log "$GITHUB_WORKSPACE/reaper_test_summary.txt"
+
+      - name: Check test results and fail if any unit test fails
+        run: |
+          echo "========== MIDI Drum Trainer Test Results =========="
+          cat "$GITHUB_WORKSPACE/reaper_test_summary.txt"
+
+          summary=$(cat "$GITHUB_WORKSPACE/reaper_test_summary.txt" | grep 'Summary:' || true)
+          echo "$summary"
+
+          if [[ -z "$summary" ]]; then
+            echo "ERROR: No summary found in REAPER summary file. Script did not run or test results not printed."
+            exit 1
+          fi
+
+          scenario_passed=$(echo "$summary" | sed -n 's/.* \([0-9]\+\)\/\([0-9]\+\) scenarios passed.*/\1/p')
+          scenario_total=$(echo "$summary" | sed -n 's/.* \([0-9]\+\)\/\([0-9]\+\) scenarios passed.*/\2/p')
+          test_passed=$(echo "$summary" | sed -n 's/.* \([0-9]\+\)\/\([0-9]\+\) unit tests passed.*/\1/p')
+          test_total=$(echo "$summary" | sed -n 's/.* \([0-9]\+\)\/\([0-9]\+\) unit tests passed.*/\2/p')
+
+          if [[ "$scenario_passed" != "$scenario_total" || "$test_passed" != "$test_total" ]]; then
+            echo "ERROR: Not all scenarios or unit tests passed!"
+            exit 1
+          fi
+          echo "All tests passed."
+
+      - name: Upload REAPER test summary file (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reaper-test-summary
+          path: ${{ github.workspace }}/reaper_test_summary.txt
+
+      - name: Upload REAPER resource tail log (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reaper-resource-tail
+          path: ${{ github.workspace }}/tail-resource.log

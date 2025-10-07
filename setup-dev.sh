@@ -7,6 +7,12 @@ if [ ! -d "$HOME/.config/REAPER/Effects" ]; then
   exit 1
 fi
 
-if [ ! -f "$HOME/.config/REAPER/Effects/ambrosebs MIDI" ]; then
-  ln -s "$(pwd)/MIDI" "$HOME/.config/REAPER/Effects/ambrosebs MIDI"
+MIDI_LINK="$HOME/.config/REAPER/Effects/ambrosebs MIDI"
+TESTS_LINK="$HOME/.config/REAPER/Scripts/ambrosebs Tests"
+
+if [ ! -f "$MIDI_LINK" ]; then
+  ln -s "$(pwd)/MIDI" "$MIDI_LINK"
+fi
+if [ ! -f "$TESTS_LINK" ]; then
+  ln -s "$(pwd)/tests" "$TESTS_LINK"
 fi
