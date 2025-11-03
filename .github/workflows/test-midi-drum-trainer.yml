@@ -94,32 +94,32 @@ jobs:
           path: ${{ github.workspace }}/reaper/REAPER/UserPlugins/reaper_sws-x86_64.so
           key: ${{ env.ACTIONS_CACHE_VERSION }}-sws-${{ env.SWS_VERSION }}
 
-      # Restore WDL build cache
-      - name: Restore WDL headless build cache
-        id: restore_wdl_cache
-        uses: actions/cache/restore@v4
-        with:
-          path: ${{ github.workspace }}/reaper/REAPER/libSwell.so
-          key: ${{ env.ACTIONS_CACHE_VERSION }}-libSwell-${{ env.WDL_COMMIT }}
+      # Restore WDL build cache (DISABLED - using stock libSwell.so)
+      # - name: Restore WDL headless build cache
+      #   id: restore_wdl_cache
+      #   uses: actions/cache/restore@v4
+      #   with:
+      #     path: ${{ github.workspace }}/reaper/REAPER/libSwell.so
+      #     key: ${{ env.ACTIONS_CACHE_VERSION }}-libSwell-${{ env.WDL_COMMIT }}
 
-      # Build WDL headless and install libSwell.so into REAPER
-      - name: Build WDL headless and install libSwell.so
-        if: steps.restore_wdl_cache.outputs.cache-hit != 'true'
-        run: |
-          git clone https://github.com/justinfrankel/WDL.git "$GITHUB_WORKSPACE/tmp_wdl_src"
-          cd "$GITHUB_WORKSPACE/tmp_wdl_src"
-          git checkout ${WDL_COMMIT}
-          cd WDL/swell
-          make NOGDK=1 -Wno-error
-          cp "$(pwd)/libSwell.so" "$GITHUB_WORKSPACE/reaper/REAPER/libSwell.so"
+      # Build WDL headless and install libSwell.so into REAPER (DISABLED)
+      # - name: Build WDL headless and install libSwell.so
+      #   if: steps.restore_wdl_cache.outputs.cache-hit != 'true'
+      #   run: |
+      #     git clone https://github.com/justinfrankel/WDL.git "$GITHUB_WORKSPACE/tmp_wdl_src"
+      #     cd "$GITHUB_WORKSPACE/tmp_wdl_src"
+      #     git checkout ${WDL_COMMIT}
+      #     cd WDL/swell
+      #     make NOGDK=1 -Wno-error
+      #     cp "$(pwd)/libSwell.so" "$GITHUB_WORKSPACE/reaper/REAPER/libSwell.so"
 
-      # Save WDL build cache if we just built it
-      - name: Save WDL headless build cache
-        if: steps.restore_wdl_cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ github.workspace }}/reaper/REAPER/libSwell.so
-          key: ${{ env.ACTIONS_CACHE_VERSION }}-libSwell-${{ env.WDL_COMMIT }}
+      # Save WDL build cache if we just built it (DISABLED)
+      # - name: Save WDL headless build cache
+      #   if: steps.restore_wdl_cache.outputs.cache-hit != 'true'
+      #   uses: actions/cache/save@v4
+      #   with:
+      #     path: ${{ github.workspace }}/reaper/REAPER/libSwell.so
+      #     key: ${{ env.ACTIONS_CACHE_VERSION }}-libSwell-${{ env.WDL_COMMIT }}
 
       - name: Copy test script into REAPER scripts
         run: |
@@ -130,9 +130,10 @@ jobs:
           mkdir -p ~/.config/REAPER/Effects/ambrosebs
           cp "$GITHUB_WORKSPACE/MIDI/ambrosebs_MIDI Drum Trainer.jsfx" ~/.config/REAPER/Effects/ambrosebs
 
-      - name: Install REAPER license
-        run: |
-          echo "${{ secrets.REAPER_LICENSE_KEY }}" > ~/.config/REAPER/reaper-license.rk
+      # Temporarily commented out for investigation
+      # - name: Install REAPER license
+      #   run: |
+      #     echo "${{ secrets.REAPER_LICENSE_KEY }}" > ~/.config/REAPER/reaper-license.rk
 
       - name: Add REAPER to PATH
         run: |
